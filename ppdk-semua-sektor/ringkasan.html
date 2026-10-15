@@ -1,0 +1,134 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Ringkasan Bulanan · Staf</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="tenang.css">
+<style>
+.nums{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--ink);border-bottom:1px solid var(--rule)}
+.nums div{padding:16px 14px 18px 0}
+.nums b{display:block;font:800 40px/1 var(--display);font-stretch:85%}
+.nums span{font-size:13px;color:var(--muted)}
+.nums .x b{color:var(--petrol)}
+.bar-r{display:grid;grid-template-columns:140px 1fr 56px;gap:12px;align-items:center;padding:9px 0;font-size:14px;border-bottom:1px solid var(--rule)}
+.bar-r .bar{height:8px;background:var(--paper-2);position:relative}
+.bar-r .bar i{position:absolute;inset:0 auto 0 0;background:var(--petrol)}
+.bar-r b{font:600 13px/1 var(--mono);text-align:right}
+.trend{display:flex;align-items:flex-end;gap:10px;height:120px;border-bottom:1px solid var(--rule-2);padding-top:10px}
+.trend div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;font:500 11px/1 var(--mono);color:var(--muted)}
+.trend i{display:block;width:100%;max-width:46px;background:var(--rule-2)}
+.trend div:last-child i{background:var(--petrol)}
+.trend div:last-child{color:var(--ink)}
+.tl{display:flex;gap:10px;margin-top:6px}
+.tl span{flex:1;text-align:center;font:500 11px/1 var(--mono);color:var(--muted)}
+/* Mod pembentangan 16:9 */
+.full{position:fixed;inset:0;z-index:80;background:var(--scrim);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.stage{width:min(1280px,94vw,calc((90vh - 60px) * 16 / 9));aspect-ratio:16/9;background:var(--card);border:1px solid var(--rule);padding:clamp(18px,3.5vw,48px);display:flex;flex-direction:column;container-type:inline-size}
+.stage .kk{font:500 clamp(10px,1.1cqi,13px)/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--petrol)}
+.stage h2{font:800 clamp(20px,3.6cqi,44px)/1.1 var(--display);margin:8px 0 auto}
+.stage .nums b{font-size:clamp(28px,6cqi,76px)}
+.stage .nums span{font-size:clamp(11px,1.3cqi,15px)}
+.stage .bar-r{font-size:clamp(12px,1.5cqi,17px);grid-template-columns:30% 1fr 12%}
+.stage .trend{height:clamp(120px,24cqi,300px)}
+.stage .ft{display:flex;justify-content:space-between;margin-top:clamp(10px,2cqi,24px);font:500 clamp(9px,1cqi,11px)/1 var(--mono);color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+.fnav{display:flex;gap:10px;margin-top:12px;align-items:center}
+.fnav button{background:var(--card)}
+@media (max-width:780px){.nums{grid-template-columns:1fr 1fr}.nums b{font-size:34px}.bar-r{grid-template-columns:120px 1fr 48px}}
+</style>
+</head>
+<body>
+<div id="content" class="wrap-n">
+  <div class="page-h"><div><h1>Ringkasan Bulanan</h1><div class="sub" id="ctx"></div></div><button class="btn btn-line" type="button" id="pap">Paparan</button></div>
+  <div id="body"></div>
+  <div style="margin-top:28px"><button class="btn btn-ink" type="button" id="pres"><svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Mod Pembentangan</button></div>
+</div>
+
+<script src="shared.js"></script>
+<script src="data.js"></script>
+<script>
+(function () {
+  M.mount({ page: 'ringkasan' });
+  var $ = function (id) { return document.getElementById(id); };
+  var NUM = { /* ILUSTRASI */
+    SPr: { a: 22, s: 9, p: 8, x: ['Sesi data EMIS', 41], tr: [14, 18, 16, 21, 19, 22] },
+    SPb: { a: 46, s: 31, p: 17, x: ['Guru dibimbing', 212], tr: [29, 35, 38, 33, 41, 46] },
+    SPS: { a: 34, s: 27, p: 12, x: ['Audit selesai', 18], tr: [22, 25, 30, 28, 31, 34] },
+    SPbM: { a: 29, s: 24, p: 11, x: ['Murid terlibat', 1840], tr: [18, 26, 24, 30, 27, 29] },
+    SPsK: { a: 17, s: 13, p: 7, x: ['Sesi intervensi', 52], tr: [12, 14, 15, 13, 16, 17] },
+    SPP: { a: 21, s: 19, p: 9, x: ['Pusat peperiksaan disemak', 38], tr: [10, 12, 14, 17, 19, 21] },
+    Pengurusan: { a: 38, s: 26, p: 10, x: ['Tiket ISD ditutup', 64], tr: [30, 28, 34, 36, 35, 38] }
+  };
+  var JENIS = [['Lawatan pemantauan PdP', 14], ['Bimbingan guru', 13], ['Bengkel / kursus', 7], ['Mesyuarat', 6], ['Program murid', 4]];
+  var MO = ['Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt'];
+  var st = { sek: '', ver: 'dalaman', i: 0 };
+
+  function data() {
+    var keys = st.sek === 'ALL' ? Object.keys(NUM) : [st.sek];
+    if (st.ver === 'awam') keys = keys.filter(function (k) { return k !== 'SPsK' && k !== 'SPP'; });
+    var d = { a: 0, s: 0, p: 0, tr: [0, 0, 0, 0, 0, 0], x: null, blocked: !keys.length };
+    keys.forEach(function (k) { var n = NUM[k]; d.a += n.a; d.s += n.s; d.p += n.p; n.tr.forEach(function (v, i) { d.tr[i] += v; }); });
+    if (keys.length > 1) d.s = Math.round(d.s * .62);
+    if (keys.length === 1 && st.ver === 'dalaman') d.x = NUM[keys[0]].x;
+    return d;
+  }
+  function numsH(d) {
+    return '<div class="nums"><div><b>' + d.a + '</b><span>Aktiviti selesai</span></div><div><b>' + d.s + '</b><span>Sekolah terlibat</span></div>' +
+      (st.ver === 'awam' ? '' : '<div><b>' + d.p + '</b><span>Pegawai terlibat</span></div>') +
+      (d.x ? '<div class="x"><b>' + d.x[1].toLocaleString('ms-MY') + '</b><span>' + d.x[0] + '</span></div>' : '') + '</div>';
+  }
+  function liputH(d) { var f = d.a / 46; return [['Sekolah rendah', Math.round(21 * f), 118], ['Sekolah menengah', Math.round(10 * f), 44]].map(function (x) { return '<div class="bar-r"><span>' + x[0] + '</span><span class="bar"><i style="width:' + Math.min(100, x[1] / x[2] * 100) + '%"></i></span><b>' + x[1] + '/' + x[2] + '</b></div>'; }).join(''); }
+  function jenisH() { return JENIS.map(function (x) { return '<div class="bar-r"><span>' + x[0] + '</span><span class="bar"><i style="width:' + (x[1] / 14 * 100) + '%"></i></span><b>' + x[1] + '</b></div>'; }).join(''); }
+  function trendH(d) { var mx = Math.max.apply(null, d.tr); return '<div class="trend">' + d.tr.map(function (v) { return '<div>' + v + '<i style="height:' + (v / mx * 85) + '%"></i></div>'; }).join('') + '</div><div class="tl">' + MO.map(function (m) { return '<span>' + m + '</span>'; }).join('') + '</div>'; }
+  function label() { return (st.sek === 'ALL' ? 'Semua sektor' : M.sekName(st.sek)) + ' · Oktober 2026' + (st.ver === 'awam' ? ' · versi awam' : ''); }
+
+  function render() {
+    var d = data();
+    $('ctx').textContent = label();
+    if (d.blocked) { $('body').innerHTML = '<div class="empty" style="border-top:1px solid var(--ink)">Sektor ini tiada versi awam sehingga sektor bersetuju.</div>'; return; }
+    $('body').innerHTML = numsH(d) +
+      '<div class="sec-t"><h2>Sekolah terlibat</h2></div>' + liputH(d) +
+      (st.ver === 'awam' ? '' : '<div class="sec-t"><h2>Jenis aktiviti</h2><span>ikut katalog sektor</span></div>' + jenisH()) +
+      '<div class="sec-t"><h2>6 bulan</h2></div>' + trendH(d);
+  }
+  function slides() { return st.ver === 'awam' ? ['exec', 'lip', 'tr'] : ['exec', 'lip', 'jen', 'tr']; }
+  function slide() {
+    var d = data(), s = slides(), k = s[st.i];
+    var T = { exec: ['Laporan eksekutif', label().split(' · ')[0], numsH(d)], lip: ['Liputan', 'Sekolah terlibat', liputH(d)], jen: ['Tujuan', 'Jenis aktiviti', jenisH()], tr: ['Trend', 'Aktiviti selesai, 6 bulan', trendH(d)] }[k];
+    return '<div class="stage"><div class="kk">' + T[0] + ' · Oktober 2026</div><h2>' + T[1] + '</h2><div>' + T[2] + '</div><div class="ft"><span>PPDK.CH · Ringkasan Bulanan</span><span>' + (st.i + 1) + ' / ' + s.length + '</span></div></div>' +
+      '<div class="fnav"><button class="btn btn-line btn-sm" data-n="-1"' + (st.i ? '' : ' disabled') + '>← Sebelum</button><button class="btn btn-line btn-sm" data-n="1"' + (st.i < s.length - 1 ? '' : ' disabled') + '>Seterusnya →</button><button class="btn btn-line btn-sm" data-n="x">Tutup</button></div>';
+  }
+  function pres() {
+    if (data().blocked) return;
+    st.i = 0; var f = document.createElement('div'); f.className = 'full'; f.id = 'full'; f.innerHTML = slide(); document.body.appendChild(f);
+    f.addEventListener('click', function (e) { var b = e.target.closest('[data-n]'); if (!b) return; var n = b.getAttribute('data-n'); if (n === 'x') { f.remove(); return; } st.i += +n; f.innerHTML = slide(); });
+  }
+  document.addEventListener('keydown', function (e) {
+    var f = $('full'); if (!f) return;
+    if (e.key === 'Escape') f.remove();
+    if (e.key === 'ArrowRight' && st.i < slides().length - 1) { st.i++; f.innerHTML = slide(); }
+    if (e.key === 'ArrowLeft' && st.i > 0) { st.i--; f.innerHTML = slide(); }
+  });
+  function paparan() {
+    var d = M.drawer({ title: 'Paparan', body:
+      '<div class="field"><label class="lbl" for="psek">Sektor</label><select id="psek"><option value="ALL">Semua sektor</option>' + M.SEKTOR.map(function (s) { return '<option value="' + s.k + '"' + (s.k === st.sek ? ' selected' : '') + '>' + s.n + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label class="lbl" for="pbln">Bulan</label><select id="pbln"><option>Oktober 2026</option><option>September 2026</option></select></div>' +
+      '<div class="field"><span class="lbl">Versi</span><div class="seg" id="pver"><button type="button" data-v="dalaman" aria-pressed="' + (st.ver === 'dalaman') + '">Dalaman</button><button type="button" data-v="awam" aria-pressed="' + (st.ver === 'awam') + '">Versi awam</button></div><p class="hint">Versi awam: agregat sahaja; SPsK &amp; SPP tidak termasuk.</p></div>',
+      foot: '<button class="btn btn-ink" data-act="ok">Tunjuk</button>' });
+    if (st.sek === 'ALL') d.querySelector('#psek').value = 'ALL';
+    var v = st.ver;
+    d.querySelector('#pver').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; v = b.getAttribute('data-v'); [].forEach.call(this.children, function (x) { x.setAttribute('aria-pressed', x === b); }); });
+    d.querySelector('[data-act="ok"]').addEventListener('click', function () { st.sek = d.querySelector('#psek').value; st.ver = v; M.closeDrawer(); render(); });
+  }
+  $('pap').addEventListener('click', paparan);
+  $('pres').addEventListener('click', pres);
+  function init() { st.sek = M.role() === 'kppd' ? 'ALL' : M.me().sek; render(); }
+  document.addEventListener('rolechange', init);
+  init();
+})();
+</script>
+</body>
+</html>

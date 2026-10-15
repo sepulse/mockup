@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pratonton Telefon</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+body{margin:0;background:#1d2526;color:#E9E6DE;font:500 12px/1.4 "IBM Plex Mono",monospace;letter-spacing:.05em;text-transform:uppercase;min-height:100vh}
+.bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:10px 16px}
+.bar a{color:#8FE0D3;text-decoration:none;padding:5px 8px;border:1px solid rgba(255,255,255,.2)}
+.bar a.on{background:#8FE0D3;color:#0A2B2F}
+.stage{display:flex;justify-content:center;padding:8px 16px 32px}
+.phone{width:390px;height:844px;max-width:100%;border:10px solid #0b0f0f;outline:1px solid #3a4341;background:#000;box-shadow:0 30px 80px rgba(0,0,0,.45)}
+iframe{width:100%;height:100%;border:0;display:block;background:#F2F0EA}
+</style>
+</head>
+<body>
+<div class="bar"><a href="index.html">← Halaman utama</a><span>Telefon 390 × 844</span><span id="links"></span></div>
+<div class="stage"><div class="phone"><iframe id="f" title="Pratonton telefon"></iframe></div></div>
+<script>
+(function () {
+  var pages = [['hari-ini.html', 'Hari ini'], ['jadual.html', 'Jadual'], ['rekod.html', '+ Rekod'], ['aktiviti.html', 'Aktiviti'], ['ringkasan.html', 'Ringkasan'], ['profil.html', 'Profil'], ['log-masuk.html', 'Log masuk'], ['portal.html', 'ppdk.ch'], ['sektor.html', 'Sektor'], ['tentang.html', 'Tentang']];
+  var p = new URLSearchParams(location.search).get('p') || pages[0][0];
+  if (!/^[a-z-]+\.html(\?[\w=&-]*)?$/.test(p)) p = pages[0][0];
+  document.getElementById('f').src = p;
+  document.getElementById('links').innerHTML = pages.map(function (x) { return '<a class="' + (p.indexOf(x[0]) === 0 ? 'on' : '') + '" href="telefon.html?p=' + x[0] + '">' + x[1] + '</a>'; }).join(' ');
+})();
+</script>
+</body>
+</html>

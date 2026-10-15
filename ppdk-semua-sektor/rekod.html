@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Rekod · Staf</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="tenang.css">
+<style>
+.picker{position:relative}
+.sug{position:absolute;left:0;right:0;top:100%;z-index:20;background:var(--card);border:1px solid var(--ink);max-height:240px;overflow:auto}
+.sug button{display:block;width:100%;padding:10px 12px;text-align:left;font-size:14.5px;border-bottom:1px solid var(--rule)}
+.sug button:hover{background:var(--paper-2)}
+.chosen{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.chosen:empty{display:none}
+.dn{font:600 13px/1 var(--mono);color:var(--petrol);margin-top:6px}
+.sulit{display:flex;gap:10px;align-items:flex-start;padding:12px 0;font-size:14px;cursor:pointer}
+.sulit input{width:18px;height:18px;accent-color:var(--isd);margin-top:1px}
+.sulit small{display:block;color:var(--muted);font-size:12.5px}
+.seg.wrap{flex-wrap:wrap}
+</style>
+</head>
+<body>
+<div id="content" class="wrap-n">
+  <div class="page-h"><div><h1 id="h1">Rekod</h1></div><button class="text-btn" type="button" id="salin">Salin rekod lepas</button></div>
+  <div class="seg" id="kind" role="group" aria-label="Jenis rekod"><button type="button" data-v="tugas" aria-pressed="true">Tugas rasmi</button><button type="button" data-v="cuti">Tidak di pejabat</button></div>
+
+  <form id="f" novalidate style="margin-top:18px">
+    <div data-k="tugas">
+      <div class="fg"><div class="lbl2">Jenis</div><select id="jenis" aria-label="Jenis urusan"></select></div>
+      <div class="fg"><div class="lbl2">Bila</div>
+        <div class="inline">
+          <div><label class="sr" for="tarikh">Tarikh</label><input id="tarikh" type="date" value="2026-10-15"></div>
+          <div class="tm"><label class="sr" for="mula">Mula</label><input id="mula" type="time" value="08:00"></div>
+          <div class="tm"><label class="sr" for="akhir">Tamat</label><input id="akhir" type="time" value="12:30"></div>
+          <label class="check"><input type="checkbox" id="sehari"> Sehari</label>
+        </div>
+        <div class="dn" id="dn">Khamis</div>
+      </div>
+      <div class="fg"><div class="lbl2">Di mana</div>
+        <div class="seg wrap" id="mod"><button type="button" data-v="sekolah" aria-pressed="true">Sekolah</button><button type="button" data-v="lain">Lokasi lain</button><button type="button" data-v="online">Atas talian</button><button type="button" data-v="hibrid">Hibrid</button></div>
+        <div id="w-sek" class="picker" style="margin-top:12px">
+          <label class="search"><span class="sr">Cari sekolah</span><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="sq" type="search" autocomplete="off" placeholder="Taip nama sekolah"></label>
+          <div class="sug" id="ssug" hidden></div><div class="chosen" id="schosen"></div>
+        </div>
+        <div id="w-lain" hidden style="margin-top:12px"><input id="lokasi" type="text" list="lokl" placeholder="cth. Pejabat PPD Kuching"><datalist id="lokl"><option>Pejabat PPD Kuching</option><option>Dewan Seminar PPD Kuching</option><option>Auditorium JPN Sarawak</option></datalist></div>
+        <div id="w-on" hidden style="margin-top:12px"><select id="plat" aria-label="Platform"><option>Google Meet</option><option>Microsoft Teams</option><option>Zoom</option><option>Lain-lain</option></select></div>
+      </div>
+      <label class="sulit"><input type="checkbox" id="sulit"><span><b>Sulit</b><small>Kes murid/guru atau peperiksaan. Rakan hanya nampak “lokasi dirahsiakan”.</small></span></label>
+      <div class="fg"><div class="lbl2">Lagi <small>pilihan</small></div>
+        <div class="addrow" id="adds"><button type="button" data-add="peserta">+ Pegawai bersama</button><button type="button" data-add="tajuk">+ Tajuk sendiri</button><button type="button" data-add="catatan">+ Catatan</button><button type="button" data-add="kpi">+ Kod KPI</button></div>
+        <div id="x-peserta" class="field picker" hidden><label class="lbl" for="pq">Pegawai bersama</label><label class="search"><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="pq" type="search" autocomplete="off" placeholder="Taip nama"></label><div class="sug" id="psug" hidden></div><div class="chosen" id="pchosen"></div></div>
+        <div id="x-tajuk" class="field" hidden><label class="lbl" for="tajuk">Tajuk</label><input id="tajuk" type="text" placeholder="Kosong = ikut jenis"></div>
+        <div id="x-catatan" class="field" hidden><label class="lbl" for="catatan">Catatan</label><textarea id="catatan"></textarea></div>
+        <div id="x-kpi" class="field" hidden><label class="lbl" for="kpi">Kod KPI</label><select id="kpi"><option value="">— Tiada —</option><option>RPM TS3 · Std 3.3.2 (contoh)</option></select></div>
+      </div>
+    </div>
+
+    <div data-k="cuti" hidden>
+      <div class="fg"><div class="lbl2">Bila</div>
+        <div class="inline"><div><label class="sr" for="cdari">Dari</label><input id="cdari" type="date" value="2026-10-19"></div><div><label class="sr" for="chingga">Hingga</label><input id="chingga" type="date" value="2026-10-19"></div></div>
+        <div class="seg" id="cbhg" style="margin-top:10px"><button type="button" data-v="penuh" aria-pressed="true">Sehari</button><button type="button" data-v="pagi">Pagi</button><button type="button" data-v="petang">Petang</button></div>
+      </div>
+      <div class="fg"><div class="lbl2">Jenis <small>hanya KPPD &amp; HR</small></div><select id="cjenis" aria-label="Jenis"><option>Cuti rehat</option><option>Cuti sakit</option><option>Cuti lain</option></select></div>
+      <p class="tiny" style="margin-top:12px">Rakan nampak “Tidak di pejabat” sahaja. Makluman, bukan permohonan cuti (HRMIS).</p>
+    </div>
+
+    <div class="savebar2"><a class="btn btn-line" href="hari-ini.html">Batal</a><button class="btn btn-ink" type="submit" id="save">Simpan</button></div>
+  </form>
+</div>
+
+<script src="shared.js"></script>
+<script src="data.js"></script>
+<script>
+(function () {
+  M.mount({ page: 'rekod' });
+  var $ = function (id) { return document.getElementById(id); };
+  var params = new URLSearchParams(location.search);
+  var st = { kind: params.get('jenis') === 'cuti' ? 'cuti' : 'tugas', mod: 'sekolah', sekolah: [], peserta: [] };
+
+  function katalog() { var k = M.KATALOG[M.me().sek] || M.KATALOG._; $('jenis').innerHTML = k.map(function (x) { return '<option>' + x + '</option>'; }).join(''); }
+  function setKind(k) { st.kind = k; [].forEach.call($('kind').children, function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-v') === k); }); [].forEach.call(document.querySelectorAll('[data-k]'), function (el) { el.hidden = el.getAttribute('data-k') !== k; }); $('salin').hidden = k !== 'tugas'; }
+  function setMod(v) { st.mod = v; [].forEach.call($('mod').children, function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-v') === v); }); $('w-sek').hidden = !(v === 'sekolah' || v === 'hibrid'); $('w-lain').hidden = v !== 'lain'; $('w-on').hidden = !(v === 'online' || v === 'hibrid'); }
+  function chips() {
+    $('schosen').innerHTML = st.sekolah.map(function (s, i) { return '<span class="chip">' + M.esc(s) + '<button type="button" class="x" data-rms="' + i + '" aria-label="Buang">✕</button></span>'; }).join('');
+    $('pchosen').innerHTML = st.peserta.map(function (p, i) { return '<span class="chip">' + M.esc(p) + '<button type="button" class="x" data-rmp="' + i + '" aria-label="Buang">✕</button></span>'; }).join('');
+  }
+  function sug(inp, box, items, pick) {
+    inp.addEventListener('input', function () { var t = inp.value.trim().toLowerCase(); if (!t) { box.hidden = true; return; } var h = items().filter(function (x) { return x.toLowerCase().indexOf(t) >= 0; }).slice(0, 6); box.innerHTML = h.length ? h.map(function (x) { return '<button type="button" data-v="' + M.esc(x) + '">' + M.esc(x) + '</button>'; }).join('') : '<div class="empty" style="padding:12px">Tiada. Guna “Lokasi lain”.</div>'; box.hidden = false; });
+    box.addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; pick(b.getAttribute('data-v')); inp.value = ''; box.hidden = true; chips(); });
+  }
+  sug($('sq'), $('ssug'), function () { return M.SEKOLAH.map(function (s) { return s.n; }).filter(function (n) { return st.sekolah.indexOf(n) < 0; }); }, function (v) { st.sekolah.push(v); });
+  sug($('pq'), $('psug'), function () { return D.STAF.map(function (s) { return s.n; }).filter(function (n) { return n !== M.me().name && st.peserta.indexOf(n) < 0; }); }, function (v) { st.peserta.push(v); });
+  function reveal(k) { $('x-' + k).hidden = false; var b = document.querySelector('[data-add="' + k + '"]'); if (b) b.hidden = true; }
+  function fill(r, same) {
+    $('jenis').value = r.jenis; $('mula').value = r.mula; $('akhir').value = r.akhir;
+    st.sekolah = r.sekolah.slice(); st.peserta = r.peserta.slice();
+    setMod(r.mod === 'atas_talian' ? 'online' : r.mod === 'hibrid' ? 'hibrid' : r.sekolah.length ? 'sekolah' : 'lain');
+    if (r.lokasi && r.mod === 'fizikal') $('lokasi').value = r.lokasi;
+    if (r.peserta.length) reveal('peserta');
+    if (r.tajuk) { $('tajuk').value = r.tajuk; reveal('tajuk'); }
+    $('sulit').checked = r.tahap === 'sulit';
+    if (same) $('tarikh').value = r.tarikh; else $('tarikh').value = '';
+    dn(); chips();
+  }
+  function dn() { var d = $('tarikh').value; $('dn').textContent = d ? M.dayName(d) : 'Pilih tarikh'; }
+
+  $('kind').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) setKind(b.getAttribute('data-v')); });
+  $('mod').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) setMod(b.getAttribute('data-v')); });
+  $('cbhg').addEventListener('click', function (e) { var b = e.target.closest('button'); if (b) [].forEach.call(this.children, function (x) { x.setAttribute('aria-pressed', x === b); }); });
+  $('adds').addEventListener('click', function (e) { var b = e.target.closest('[data-add]'); if (b) { reveal(b.getAttribute('data-add')); var f = $('x-' + b.getAttribute('data-add')).querySelector('input,textarea,select'); if (f) f.focus(); } });
+  $('sehari').addEventListener('change', function () { [].forEach.call(document.querySelectorAll('.tm'), function (x) { x.hidden = $('sehari').checked; }); });
+  $('tarikh').addEventListener('input', dn);
+  document.addEventListener('click', function (e) {
+    var a = e.target.closest('[data-rms]'), b = e.target.closest('[data-rmp]');
+    if (a) { st.sekolah.splice(+a.getAttribute('data-rms'), 1); chips(); }
+    if (b) { st.peserta.splice(+b.getAttribute('data-rmp'), 1); chips(); }
+    if (!e.target.closest('.picker')) { $('ssug').hidden = true; $('psug').hidden = true; }
+  });
+  $('salin').addEventListener('click', function () {
+    var m = M.me(), seen = {}, list = D.REKOD.filter(function (r) { return r.owner === m.name && r.status !== 'dibatalkan'; }).sort(function (a, b) { return a.tarikh < b.tarikh ? 1 : -1; }).filter(function (r) { if (seen[r.tajuk]) return false; seen[r.tajuk] = 1; return true; }).slice(0, 5);
+    var d = M.drawer({ title: 'Salin rekod lepas', body: '<p class="tiny" style="margin-bottom:10px">Semua diisi kecuali tarikh.</p><div class="list">' + (list.map(function (r) { return '<button class="li" data-s="' + r.id + '"><span class="t">' + r.mula + '</span><span><span class="n">' + M.esc(r.tajuk) + '</span><span class="s" style="display:block">' + M.esc(D.where(r).t.replace('Tugas rasmi — ', '')) + '</span></span><span></span></button>'; }).join('') || '<div class="empty">Tiada rekod lepas.</div>') + '</div>' });
+    d.addEventListener('click', function (e) { var b = e.target.closest('[data-s]'); if (!b) return; fill(D.REKOD.filter(function (r) { return r.id === b.getAttribute('data-s'); })[0]); M.closeDrawer(); $('tarikh').focus(); });
+  });
+  $('f').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (st.kind === 'cuti') { M.toast('Makluman disimpan'); return; }
+    if (!$('tarikh').value) { M.toast('Pilih tarikh. <b>Belum disimpan.</b>'); $('tarikh').focus(); return; }
+    if ((st.mod === 'sekolah' || st.mod === 'hibrid') && !st.sekolah.length) { M.toast('Pilih sekolah. <b>Belum disimpan.</b>'); $('sq').focus(); return; }
+    if (st.mod === 'lain' && !$('lokasi').value.trim()) { M.toast('Isi lokasi. <b>Belum disimpan.</b>'); $('lokasi').focus(); return; }
+    var past = $('tarikh').value < M.TODAY;
+    M.toast(past ? 'Disimpan · <a href="aktiviti.html?lapor=A102" style="color:inherit;text-decoration:underline">Lengkapkan laporan</a>' : 'Disimpan · <a href="#" id="peek" style="color:inherit;text-decoration:underline">Lihat apa rakan nampak</a>');
+    var pk = document.getElementById('peek');
+    if (pk) pk.addEventListener('click', function (ev) {
+      ev.preventDefault();
+      var place = $('sulit').checked ? 'lokasi dirahsiakan' : st.mod === 'online' ? 'Atas talian' : st.mod === 'lain' ? $('lokasi').value : (st.mod === 'hibrid' ? 'Hibrid · ' : '') + st.sekolah.join(', ');
+      var t = $('sehari').checked ? 'Sehari' : $('mula').value + '–' + $('akhir').value;
+      M.drawer({ title: 'Apa rakan nampak', body: '<div class="list"><div class="li"><span class="t">' + t + '</span><span><span class="n">' + M.esc(M.me().name) + ' ' + M.sk(M.me().sek) + '</span><span class="s" style="display:block">' + M.esc(place) + '</span></span><span></span></div></div><p class="tiny" style="margin-top:10px">Tajuk, catatan dan pegawai bersama hanya dalam butiran.</p>' });
+    });
+  });
+
+  function init() {
+    katalog(); setKind(st.kind); setMod('sekolah'); chips(); dn();
+    var u = params.get('ubah'), s = params.get('salin'), r = D.REKOD.filter(function (x) { return x.id === (u || s); })[0];
+    if (r) { fill(r, !!u); $('h1').textContent = u ? 'Ubah rekod' : 'Salin rekod'; }
+  }
+  document.addEventListener('rolechange', function () { st.sekolah = []; st.peserta = []; init(); });
+  init();
+})();
+</script>
+</body>
+</html>

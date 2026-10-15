@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PPDK.CH · Semua Sektor</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="tenang.css">
+<style>
+.iw{max-width:860px;margin:0 auto;padding:44px clamp(16px,3vw,32px) 80px}
+.iw h1{font:800 clamp(30px,4.4vw,46px)/1.05 var(--display);letter-spacing:-.02em;margin-top:12px;max-width:18ch}
+.iw > p{color:var(--ink-2);margin-top:12px;font-size:16px;max-width:60ch;line-height:1.55}
+.iw h2{font:700 18px/1.2 var(--display);margin:38px 0 10px}
+.doors{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-top:1px solid var(--ink)}
+.doors div{padding:14px 14px 16px 0;border-bottom:1px solid var(--rule)}
+.doors .mono{color:var(--petrol)}
+.doors b{display:block;font-size:15px;margin-top:6px}
+.doors span{display:block;font-size:13px;color:var(--muted);margin-top:2px}
+.doors .new b::after{content:"Baharu";margin-left:8px;font:600 10px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:#fff;background:var(--petrol);padding:3px 5px;vertical-align:2px}
+.sc{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--rule)}
+.sc b{font-size:15.5px}
+.sc span{display:block;font-size:13.5px;color:var(--muted);margin-top:2px}
+.sc a{font-weight:600;font-size:13.5px;color:var(--petrol)}
+ul.pr{list-style:none;border-top:1px solid var(--ink)}
+ul.pr li{display:grid;grid-template-columns:200px minmax(0,1fr);gap:14px;padding:12px 0;border-bottom:1px solid var(--rule);font-size:14.5px}
+ul.pr li b{font-weight:600}
+ul.pr li span{color:var(--ink-2)}
+@media (max-width:700px){.doors{grid-template-columns:1fr 1fr}ul.pr li{grid-template-columns:1fr;gap:2px}}
+</style>
+</head>
+<body>
+<div id="content" class="iw">
+  <div class="mono" style="color:var(--petrol)">PPDK.CH · Pejabat Pendidikan Daerah Kuching</div>
+  <h1>Satu sistem untuk semua sektor PPD Kuching</h1>
+  <p>Pegawai merekod jadual dan aktiviti sekali sahaja. Jadual harian, laporan, ringkasan bulanan dan paparan awam dijana daripada rekod yang sama.</p>
+
+  <h2>Empat alamat, satu sistem</h2>
+  <div class="doors">
+    <div><span class="mono">ppdk.ch</span><b>Portal PPD</b><span>Aktiviti diterbitkan · awam</span></div>
+    <div><span class="mono">ict.ppdk.ch</span><b>Dashboard ICT</b><span>Sedia ada · kekal</span></div>
+    <div><span class="mono">ptis.ppdk.ch</span><b>Borang PTIS</b><span>Sedia ada · kekal</span></div>
+    <div class="new"><span class="mono">staf.ppdk.ch</span><b>Ruang staf</b><span>Semua pegawai · log masuk</span></div>
+  </div>
+
+  <h2>Ruang staf · staf.ppdk.ch</h2>
+  <div style="border-top:1px solid var(--ink)">
+    <div class="sc"><div><b>Log masuk</b><span>E-mel rasmi @moe.gov.my atau DELIMa; log masuk pertama: sahkan maklumat, kata laluan, peringatan</span></div><a href="log-masuk.html">Komputer</a><a href="telefon.html?p=log-masuk.html">Telefon</a></div>
+    <div class="sc"><div><b>Hari ini</b><span>Tugas saya seterusnya dan jadual rakan sekerja hari ini</span></div><a href="hari-ini.html">Komputer</a><a href="telefon.html?p=hari-ini.html">Telefon</a></div>
+    <div class="sc"><div><b>Jadual</b><span>Rancangan minggu ini: saya, sektor saya atau semua pegawai</span></div><a href="jadual.html">Komputer</a><a href="telefon.html?p=jadual.html">Telefon</a></div>
+    <div class="sc"><div><b>Rekod</b><span>Rekod tugas rasmi atau makluman tidak di pejabat dalam beberapa ketikan</span></div><a href="rekod.html">Komputer</a><a href="telefon.html?p=rekod.html">Telefon</a></div>
+    <div class="sc"><div><b>Rekod Aktiviti</b><span>Lengkapkan laporan dan mohon terbit</span></div><a href="aktiviti.html">Komputer</a><a href="telefon.html?p=aktiviti.html">Telefon</a></div>
+    <div class="sc"><div><b>Ringkasan Bulanan</b><span>Angka sektor dijana automatik; boleh dibentang 16:9</span></div><a href="ringkasan.html">Komputer</a><a href="telefon.html?p=ringkasan.html">Telefon</a></div>
+    <div class="sc"><div><b>Profil</b><span>Maklumat saya, akses saya, apa rakan nampak, peringatan, keselamatan</span></div><a href="profil.html">Komputer</a><a href="telefon.html?p=profil.html">Telefon</a></div>
+  </div>
+
+  <h2>Portal awam · ppdk.ch</h2>
+  <div style="border-top:1px solid var(--ink)">
+    <div class="sc"><div><b>Utama</b><span>Aktiviti diterbitkan semua sektor dan angka bulan ini</span></div><a href="portal.html">Komputer</a><a href="telefon.html?p=portal.html">Telefon</a></div>
+    <div class="sc"><div><b>Sektor</b><span>Fungsi, ketua sektor dan aktiviti setiap sektor</span></div><a href="sektor.html?s=SPb">Komputer</a><a href="telefon.html?p=sektor.html">Telefon</a></div>
+    <div class="sc"><div><b>Laporan aktiviti</b><span>Halaman setiap aktiviti; dipautkan dari hantaran Facebook</span></div><a href="laporan.html?id=A101">Komputer</a><a href="telefon.html?p=laporan.html">Telefon</a></div>
+    <div class="sc"><div><b>Tentang &amp; hubungi</b><span>Carta organisasi dijana daripada senarai staf, sentiasa terkini</span></div><a href="tentang.html">Komputer</a><a href="telefon.html?p=tentang.html">Telefon</a></div>
+  </div>
+
+  <h2>Prinsip</h2>
+  <ul class="pr">
+    <li><b>Rekod sekali</b><span>Satu rekod untuk jadual, laporan, ringkasan dan hantaran Facebook. Tiada salin semula.</span></li>
+    <li><b>Dalaman dahulu</b><span>Rekod baharu hanya dilihat staf. Paparan awam selepas semakan penerbit sektor.</span></li>
+    <li><b>Bukan pengesanan lokasi</b><span>Jadual berdasarkan rekod pegawai, bukan GPS atau kehadiran.</span></li>
+    <li><b>Cuti dipapar neutral</b><span>Rakan hanya nampak “Tidak di pejabat”. Kelulusan cuti kekal melalui HRMIS.</span></li>
+    <li><b>Tiada ranking pegawai</b><span>Ringkasan menunjukkan jumlah sektor, bukan perbandingan individu.</span></li>
+    <li><b>Kes sensitif dilindungi</b><span>Tugas sulit dipapar “lokasi dirahsiakan”; tidak boleh diterbitkan.</span></li>
+  </ul>
+
+  <p class="tiny" style="margin-top:26px">Paparan contoh dengan data ilustrasi. Butang “Demo” di bucu skrin menukar peranan: Staf, Ketua Sektor atau KPPD.</p>
+</div>
+<script src="shared.js"></script>
+<script>M.mount({ bare: true });</script>
+</body>
+</html>
