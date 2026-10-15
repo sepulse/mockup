@@ -7,7 +7,7 @@
 <title>Profil · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="base.css">
-<link rel="stylesheet" href="tenang.css">
+<link rel="stylesheet" href="gaya.css">
 <style>
 .ph-id{display:grid;grid-template-columns:72px minmax(0,1fr);gap:18px;align-items:center;padding:30px 0 20px}
 .ph-id .avatar{width:72px;height:72px;font-size:24px}
@@ -95,7 +95,7 @@
     d.querySelector('.btn-ink').addEventListener('click', function () { M.toast('Kata laluan ditukar'); });
   });
   document.addEventListener('click', function (e) { var o = e.target.closest('[data-out]'); if (o) { o.closest('.dev').remove(); M.toast('Peranti dilog keluar'); } });
-  $('tema').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; M.store.set('adr5-theme', b.getAttribute('data-v')); document.documentElement.setAttribute('data-theme', b.getAttribute('data-v')); render(); });
+  $('tema').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; M.store.set('ppdk-demo-tema', b.getAttribute('data-v')); document.documentElement.setAttribute('data-theme', b.getAttribute('data-v')); render(); });
   document.addEventListener('rolechange', render);
   render();
 })();

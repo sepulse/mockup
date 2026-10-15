@@ -1,5 +1,4 @@
-/* ADR-005 — mockup arah UX. Data ILUSTRASI (nama, sekolah dan angka rekaan).
-   Suis peranan ialah alat perbandingan mockup, BUKAN kawalan keselamatan. */
+/* PPDK.CH semua sektor — paparan contoh. Data ilustrasi (nama, sekolah dan angka rekaan). */
 (function () {
   'use strict';
   var store = {
@@ -82,11 +81,11 @@
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
   /* ---------- Peranan & tema ---------- */
-  function role() { var r = store.get('adr5t-role', 'staf'); return ROLES[r] ? r : 'staf'; }
+  function role() { var r = store.get('ppdk-demo-peranan', 'staf'); return ROLES[r] ? r : 'staf'; }
   function me() { return ROLES[role()]; }
-  function setRole(r) { store.set('adr5t-role', r); document.documentElement.setAttribute('data-role', r); refreshBars(); document.dispatchEvent(new CustomEvent('rolechange', { detail: r })); }
-  function theme() { var t = store.get('adr5-theme', '') || document.documentElement.getAttribute('data-theme') || ''; if (!t) t =(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'; return t; }
-  function setTheme(t) { store.set('adr5-theme', t); document.documentElement.setAttribute('data-theme', t); refreshBars(); }
+  function setRole(r) { store.set('ppdk-demo-peranan', r); document.documentElement.setAttribute('data-role', r); refreshBars(); document.dispatchEvent(new CustomEvent('rolechange', { detail: r })); }
+  function theme() { var t = store.get('ppdk-demo-tema', '') || document.documentElement.getAttribute('data-theme') || ''; if (!t) t =(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'; return t; }
+  function setTheme(t) { store.set('ppdk-demo-tema', t); document.documentElement.setAttribute('data-theme', t); refreshBars(); }
   document.documentElement.setAttribute('data-role', role());
   document.documentElement.setAttribute('data-theme', theme());
 
@@ -98,7 +97,7 @@
     { id: 'aktiviti', href: 'aktiviti.html', ic: 'list', l: 'Rekod Aktiviti', m: 'Aktiviti' },
     { id: 'ringkasan', href: 'ringkasan.html', ic: 'slides', l: 'Ringkasan Bulanan', m: 'Ringkasan' }
   ];
-  /* Alat mockup: satu butang kecil terapung, bukan sebahagian UI. */
+  /* Butang demo */
   function toolHtml(opts) {
     var r = role(), t = theme();
     return '<div class="mpanel" id="mpanel" hidden><div class="mono">Demo · data ilustrasi</div>' +

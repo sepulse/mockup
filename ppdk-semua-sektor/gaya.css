@@ -1,4 +1,4 @@
-/* Versi tenang — atas base.css (token A-1). Prinsip: satu senarai dominan, satu tindakan utama, butiran selepas ketik. */
+/* PPDK.CH semua sektor — paparan contoh. Data ilustrasi (nama, sekolah dan angka rekaan). */
 :root{--mock-h:env(safe-area-inset-top,0px)}
 .main{padding-bottom:72px}
 .side{top:0;height:100vh}
@@ -8,7 +8,7 @@
 .page-h .sub{margin-top:4px;color:var(--muted);font-size:14px}
 .wrap-n{max-width:760px}
 
-/* Alat mockup terapung */
+/* Butang demo */
 .mtool{position:fixed;left:16px;bottom:16px;z-index:95;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
 .mfab{height:30px;padding:0 10px;background:#1d2526;color:#E9E6DE;font:600 10.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px dashed #F59E0B;opacity:.85}
 .mfab:hover{opacity:1}
@@ -19,7 +19,7 @@
 .mlinks{display:flex;flex-direction:column;gap:4px;margin-top:6px;font-size:13px}
 .mlinks a{color:var(--petrol);font-weight:600}
 
-/* Senarai tenang */
+/* Senarai */
 .list{border-top:1px solid var(--ink)}
 .li{display:grid;grid-template-columns:96px minmax(0,1fr) auto;gap:14px;align-items:baseline;width:100%;text-align:left;padding:14px 2px;border-bottom:1px solid var(--rule)}
 .li:hover{background:var(--paper-2)}
@@ -68,7 +68,7 @@ details.more summary{cursor:pointer;font-size:13.5px;font-weight:600;color:var(-
 .drawer-f .links{display:flex;gap:18px}
 .drawer-f .btn:only-child{margin-left:auto}
 
-/* Borang tenang */
+/* Borang */
 .fg{border-top:1px solid var(--ink);padding:18px 0 4px}
 .fg + .fg{border-top-color:var(--rule)}
 .fg > .lbl2{font:700 15px/1.2 var(--display);margin-bottom:10px;display:flex;justify-content:space-between;align-items:baseline}

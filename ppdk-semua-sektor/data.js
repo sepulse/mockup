@@ -1,4 +1,4 @@
-/* ADR-005 — data ILUSTRASI untuk mockup. Nama, sekolah dan angka rekaan.
+/* PPDK.CH semua sektor — paparan contoh. Data ilustrasi (nama, sekolah dan angka rekaan). */
    Satu rekod = satu aktiviti (bukan satu laporan setiap peserta). Cuti = jadual berasingan `ketidakhadiran`. */
 (function () {
   'use strict';
@@ -128,7 +128,7 @@
   }
 
   function tarikhLabel(r) { return r.tarikh === r.tamat ? M.fmtDate(r.tarikh) : M.fmtDate(r.tarikh) + ' – ' + M.fmtDate(r.tamat); }
-  /* Versi tenang: satu blok utama (bila, di mana, siapa), satu tindakan utama, butiran lain dilipat. */
+  /* satu blok utama (bila, di mana, siapa), satu tindakan utama, butiran lain dilipat. */
   function openRecord(r) {
     var m = M.me(), mine = r.owner === m.name, hid = r.tahap === 'sulit' && !canSulit(r);
     var w = where(r), past = r.tamat < M.TODAY || r.status === 'selesai';
