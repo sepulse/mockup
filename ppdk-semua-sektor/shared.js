@@ -97,13 +97,13 @@
     { id: 'aktiviti', href: 'aktiviti.html', ic: 'list', l: 'Rekod Aktiviti', m: 'Aktiviti' },
     { id: 'ringkasan', href: 'ringkasan.html', ic: 'slides', l: 'Ringkasan Bulanan', m: 'Ringkasan' }
   ];
-  /* Butang demo */
+  /* */
   function toolHtml(opts) {
     var r = role(), t = theme();
     return '<div class="mpanel" id="mpanel" hidden><div class="mono">Demo · data ilustrasi</div>' +
       (opts.noRole ? '' : '<div class="mlbl">Lihat sebagai</div><div class="seg" data-mock="role">' + ['staf', 'ketua', 'kppd'].map(function (k) { return '<button type="button" data-v="' + k + '" aria-pressed="' + (r === k) + '">' + ROLES[k].label + '</button>'; }).join('') + '</div>') +
       '<div class="mlbl">Tema</div><div class="seg" data-mock="theme"><button type="button" data-v="light" aria-pressed="' + (t === 'light') + '">Cerah</button><button type="button" data-v="dark" aria-pressed="' + (t === 'dark') + '">Gelap</button></div>' +
-      '<div class="mlinks"><a href="index.html">Halaman utama</a></div></div>' +
+      '<div class="mlinks"><a href="index.html" target="_top">Halaman utama</a></div></div>' +
       '<button type="button" class="mfab" id="mfab" aria-expanded="false" aria-controls="mpanel">Demo · ' + (opts.noRole ? 'Awam' : ROLES[r].label) + '</button>';
   }
   function refreshBars() {
