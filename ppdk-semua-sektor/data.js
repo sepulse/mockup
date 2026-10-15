@@ -1,5 +1,4 @@
 /* PPDK.CH semua sektor — paparan contoh. Data ilustrasi (nama, sekolah dan angka rekaan). */
-   Satu rekod = satu aktiviti (bukan satu laporan setiap peserta). Cuti = jadual berasingan `ketidakhadiran`. */
 (function () {
   'use strict';
   var STAF = [
