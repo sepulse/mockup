@@ -85,7 +85,11 @@
   M.mount({ page: 'aktiviti' });
   var $ = function (id) { return document.getElementById(id); };
   var id = new URLSearchParams(location.search).get('id');
-  var r = D.REKOD.filter(function (x) { return x.id === id; })[0], me = M.me();
+  var me = M.me(), baru = !id;
+  /* Pintu "Laporan terus": tiada rekod lagi. Rekod dicipta automatik bila pegawai simpan (draf atau laporan). */
+  var r = baru ? { id: 'N' + Date.now().toString(36), owner: me.name, sek: me.sek, tarikh: M.TODAY, tamat: M.TODAY, mula: '08:00', akhir: '12:00',
+    jenis: (M.KATALOG[me.sek] || M.KATALOG._)[0], tajuk: '', mod: 'fizikal', sekolah: [], lokasi: '', peserta: [], status: 'selesai', laporan: 'belum', tahap: 'dalaman', baru: true }
+    : D.REKOD.filter(function (x) { return x.id === id; })[0];
   var STEPS = ['Maklumat', 'Kandungan', 'Semak & simpan'], step = 0;
 
   if (!r || r.owner !== me.name) {
@@ -94,9 +98,13 @@
     return;
   }
   document.documentElement.style.setProperty('--sc', 'var(--s-' + (r.sek === 'Pengurusan' ? 'PGR' : r.sek) + ')');
-  var w = D.where(r), place = w.t.replace('Tugas rasmi — ', '');
+  var w, place;
+  function refresh() {
+    w = D.where(r); place = w.t.replace('Tugas rasmi — ', '');
+    $('ctx').innerHTML = (r.tajuk ? M.esc(r.tajuk) : 'Laporan baharu · rekod dicipta bila disimpan') + ' ' + M.sk(r.sek);
+  }
   r.peserta = r.peserta || [];
-  $('ctx').innerHTML = M.esc(r.tajuk) + ' ' + M.sk(r.sek);
+  refresh();
 
   function team() { return [r.owner].concat(r.peserta); }
   function lines(t) { return (t || '').split(/\n+/).map(function (x) { return x.replace(/^\s*(\d+[.)]|[-•*])\s*/, '').trim(); }).filter(Boolean); }
@@ -106,6 +114,7 @@
   /* ---------- Langkah 1: Maklumat (daripada rekod + konfigurasi sektor) ---------- */
   function p1() {
     var A = D.aka(r.sek);
+    if (r.baru) return p1baru(A);
     return '<div class="auto"><dl class="dl">' +
       '<dt>Akauntabiliti</dt><dd>' + M.esc(A[0]) + '</dd>' +
       '<dt>Tugas utama</dt><dd>' + M.esc(A[1]) + '</dd>' +
@@ -117,6 +126,39 @@
       '<div class="field" style="margin-top:20px"><span class="lbl">Penglibatan</span><div class="team" id="tim">' + whoH() + '</div></div>' +
       '<div class="field"><label class="lbl" for="ruj">No. rujukan <span class="muted" style="font-weight:400">— pilihan</span></label><input id="ruj" type="text" placeholder="Contoh: surat panggilan, no. tiket" value="' + M.esc(r.ruj || '') + '"></div>' +
       '<p class="tiny" style="margin-top:6px">Seterusnya: tulis catatan ringkas, AI sediakan Objektif, Rumusan, Impak dan Tindak Susul.</p>';
+  }
+  function p1baru(A) {
+    var K = M.KATALOG[r.sek] || M.KATALOG._, md = r.mod === 'atas_talian' ? 'online' : r.sekolah.length || !r.lokasi ? 'sekolah' : 'lain';
+    if (r._md) md = r._md;
+    return '<div class="auto"><dl class="dl"><dt>Akauntabiliti</dt><dd>' + M.esc(A[0]) + '</dd><dt>Tugas utama</dt><dd>' + M.esc(A[1]) + '</dd></dl>' +
+      '<p class="tiny">Daripada tetapan sektor. Tiada rekod lagi — <b>rekod dicipta automatik bila anda simpan</b> dan terus muncul di Jadual, Log Pergerakan dan Ringkasan.</p></div>' +
+      '<div class="field" style="margin-top:20px"><label class="lbl" for="ftajuk">Tajuk <span style="color:var(--isd)">*</span></label><input id="ftajuk" type="text" placeholder="Contoh: Kunjung bantu Program Pemulihan Khas" value="' + M.esc(r.tajuk) + '"></div>' +
+      '<div class="field"><label class="lbl" for="fjenis">Jenis aktiviti</label><select id="fjenis">' + K.map(function (x) { return '<option' + (x === r.jenis ? ' selected' : '') + '>' + M.esc(x) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="num3" style="grid-template-columns:1.4fr 1fr 1fr"><div class="field"><label class="lbl" for="ftarikh">Tarikh</label><input id="ftarikh" type="date" max="' + M.TODAY + '" value="' + r.tarikh + '"></div>' +
+      '<div class="field"><label class="lbl" for="fmula">Mula</label><input id="fmula" type="time" value="' + r.mula + '"></div><div class="field"><label class="lbl" for="fakhir">Tamat</label><input id="fakhir" type="time" value="' + r.akhir + '"></div></div>' +
+      '<div class="field"><span class="lbl">Tempat <span style="color:var(--isd)">*</span></span><div class="seg" id="fmod">' + [['sekolah', 'Sekolah'], ['lain', 'Lokasi lain'], ['online', 'Atas talian']].map(function (x) { return '<button type="button" data-md="' + x[0] + '" aria-pressed="' + (md === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div></div>' +
+      (md === 'sekolah' ? '<div class="field"><label class="lbl" for="fsek">Sekolah <span class="muted" style="font-weight:400">— pisahkan dengan koma</span></label><input id="fsek" type="text" list="dlsek" placeholder="Taip nama sekolah" value="' + M.esc(r.sekolah.join(', ')) + '"><datalist id="dlsek">' + M.SEKOLAH.map(function (x) { return '<option value="' + M.esc(x.n) + '">'; }).join('') + '</datalist></div>'
+        : md === 'lain' ? '<div class="field"><label class="lbl" for="flok">Lokasi</label><input id="flok" type="text" placeholder="Contoh: Auditorium JPN Sarawak" value="' + M.esc(r.lokasi || '') + '"></div>'
+        : '<p class="tiny" style="margin:-4px 0 14px">Tempat dicatat "Lokasi masing-masing" dalam laporan.</p>') +
+      '<div class="field"><span class="lbl">Penglibatan</span><div class="team" id="tim">' + whoH() + '</div></div>';
+  }
+  function readP1() {
+    if (!$('ftajuk')) return;
+    r.tajuk = $('ftajuk').value.trim(); r.jenis = $('fjenis').value; r.tarikh = r.tamat = $('ftarikh').value || M.TODAY; r.mula = $('fmula').value || '08:00'; r.akhir = $('fakhir').value || '12:00';
+    var md = (document.querySelector('#fmod [aria-pressed="true"]') || {}).getAttribute ? document.querySelector('#fmod [aria-pressed="true"]').getAttribute('data-md') : 'sekolah';
+    r._md = md; r.mod = md === 'online' ? 'atas_talian' : 'fizikal';
+    if ($('fsek')) { r.sekolah = $('fsek').value.split(',').map(function (x) { return x.trim(); }).filter(Boolean); r.lokasi = ''; }
+    if ($('flok')) { r.lokasi = $('flok').value.trim(); r.sekolah = []; }
+    if (md === 'online') { r.sekolah = []; r.lokasi = ''; }
+    refresh();
+  }
+  function p1ok() { return r.tajuk && (r.mod === 'atas_talian' || r.sekolah.length || r.lokasi); }
+  /* Cipta rekod (sekali) — selepas ini sama seperti laporan daripada rekod sedia ada. */
+  function create() {
+    if (!r.baru) return;
+    delete r.baru; delete r._md; D.REKOD.push(r);
+    try { history.replaceState(null, '', 'lapor.html?id=' + encodeURIComponent(r.id)); } catch (e) {}
+    M.toast('Rekod dicipta · muncul di Jadual dan Log Pergerakan');
   }
   function whoH() {
     return team().map(function (n, i) { return '<span>' + M.esc(n) + (i ? ' <button type="button" data-rm="' + (i - 1) + '" aria-label="Buang ' + M.esc(n) + '" style="border:0;padding:0 2px;min-height:0">✕</button>' : ' <em class="muted" style="font-style:normal;font-size:12px">pemilik</em>') + '</span>'; }).join('') +
@@ -199,10 +241,11 @@
 
   /* ---------- Kawalan ---------- */
   function collect() {
+    readP1();
     if ($('ruj')) r.ruj = $('ruj').value.trim();
     if ($('rum')) { r.obj = $('obj').value.trim(); r.cat = $('cat').value.trim(); r.rum = $('rum').value.trim(); r.imp = $('imp').value.trim(); r.ts = $('ts').value.trim(); if ($('khas')) r.khas = $('khas').value.trim();
       var b = [].map.call(document.querySelectorAll('.bil'), function (x) { return x.value ? Number(x.value) : 0; }); r.bil = b.some(Boolean) ? b : null; }
-    D.persist();
+    if (!r.baru) D.persist();
   }
   function render() {
     $('main').innerHTML = '<nav class="steps" aria-label="Langkah laporan">' + STEPS.map(function (s, i) { return '<button type="button" data-step="' + i + '"' + (i === step ? ' aria-current="step"' : '') + (i < step ? ' class="ok"' : '') + '><b>' + (i < step ? '✓ ' : '') + 'Langkah ' + (i + 1) + '</b><span>' + s + '</span></button>'; }).join('') + '</nav>' +
@@ -214,6 +257,7 @@
   }
   function go(n) {
     collect();
+    if (r.baru && n > 0 && !p1ok()) { if (step !== 0) { step = 0; render(); } M.toast('Isi tajuk dan tempat dahulu'); ($('ftajuk') && !r.tajuk ? $('ftajuk') : document.querySelector('#fsek,#flok') || $('ftajuk')).focus(); return; }
     if (n === 2 && !r.rum) { if (step !== 1) { step = 1; render(); } $('rum').focus(); M.toast('Isi rumusan dahulu'); return; }
     step = n; render();
   }
@@ -228,7 +272,8 @@
     if (t.closest('[data-step]')) { var n = +t.closest('[data-step]').getAttribute('data-step'); if (n !== step) go(n); return; }
     if (t.closest('#next')) { go(step + 1); return; }
     if (t.closest('#prev')) { go(step - 1); return; }
-    if (t.closest('#draf')) { collect(); M.toast('Draf disimpan · belum lengkap'); return; }
+    var mdb = t.closest('[data-md]'); if (mdb) { collect(); r._md = mdb.getAttribute('data-md'); render(); return; }
+    if (t.closest('#draf')) { collect(); if (r.baru) { if (!p1ok()) { step = 0; render(); M.toast('Isi tajuk dan tempat dahulu'); return; } create(); } D.persist(); M.toast('Draf disimpan · belum lengkap'); return; }
     if (t.closest('#addp')) { addPegawai(); return; }
     if (t.closest('[data-rm]')) { r.peserta.splice(+t.closest('[data-rm]').getAttribute('data-rm'), 1); D.persist(); $('tim').innerHTML = whoH(); return; }
     if (t.closest('#ai')) { draft(); return; }
@@ -239,6 +284,7 @@
     if (t.closest('#save')) {
       collect();
       var cks = document.querySelectorAll('.ck'); if ([].some.call(cks, function (x) { return !x.checked; })) { M.toast('Tandakan semua semakan dahulu'); return; }
+      if (r.baru) create();
       r.status = 'selesai'; r.laporan = 'lengkap'; D.persist(); done(); M.toast('Laporan disimpan · kekal dalaman');
     }
   });
