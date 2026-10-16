@@ -91,7 +91,10 @@
     if (r.mod === 'hibrid') r.penyertaan = { 'Lina Marlissa': 'atas_talian' };
   });
   try { var retained = JSON.parse(sessionStorage.getItem(stateKey)); if (retained) { REKOD = retained.rekod; CUTI = retained.cuti; } } catch(e) {}
-  function persist() { sessionStorage.setItem(stateKey, JSON.stringify({rekod:REKOD, cuti:CUTI})); }
+  function persist() {
+    try { sessionStorage.setItem(stateKey, JSON.stringify({rekod:REKOD, cuti:CUTI})); return true; }
+    catch (e) { M.toast('Storan sesi penuh atau tidak tersedia. Kurangkan gambar dan cuba simpan semula.'); return false; }
+  }
   function online(r, name) { return r.mod === 'atas_talian' || (r.mod === 'hibrid' && r.penyertaan && r.penyertaan[name || M.me().name] === 'atas_talian'); }
   function physical(r,name){return r.mod==='fizikal'||(r.mod==='hibrid'&&r.penyertaan&&r.penyertaan[name||M.me().name]==='fizikal');}
   function summary(sek, month, awam) {
@@ -191,7 +194,14 @@
     }
     if (!hid && !mine && M.role() === 'ketua' && r.sek === m.sek && r.laporan === 'lengkap' && r.tahap === 'dalaman' && r.mohon)
       foot = '<button class="btn btn-line" data-close>Tutup</button><a class="btn btn-ink" href="aktiviti.html?terbit=' + r.id + '">Semak &amp; terbit</a>';
+    /* Hari tugas: Mula → Tamat → terus ke laporan pada rekod yang sama. */
+    if (!hid && mine && !ict(r) && r.status !== 'dibatalkan' && r.status !== 'selesai' && onDate(r, M.TODAY))
+      foot = r.dimula ? (r.tamat <= M.TODAY ? '<span class="tiny">Tugas sedang berjalan</span><button class="btn btn-ink" data-act="tamat">Tamatkan &amp; tulis laporan</button>' : '<span class="tiny">Tugas berbilang hari · sedang berjalan</span><button class="btn btn-line" data-close>Tutup</button>')
+        : '<a class="text-btn" href="rekod.html?ubah=' + r.id + '">Ubah rancangan</a><button class="btn btn-ink" data-act="mula">Mula tugas</button>';
     var d = M.drawer({ title: hid ? 'Tugas rasmi' : M.esc(r.tajuk), body: body, foot: foot });
+    var st0 = d.querySelector('[data-act="mula"]'), en0 = d.querySelector('[data-act="tamat"]');
+    if (st0) st0.addEventListener('click', function () { r.dimula = true; if (!persist()) { delete r.dimula; return; } M.closeDrawer(); document.dispatchEvent(new Event('datachange')); openRecord(r); M.toast('Tugas dimulakan'); });
+    if (en0) en0.addEventListener('click', function () { r.status = 'selesai'; if (!persist()) { r.status = 'dirancang'; return; } M.closeDrawer(); location.href = 'lapor.html?id=' + encodeURIComponent(r.id); });
     var b = d.querySelector('[data-act="batal"]');
     if (b) b.addEventListener('click', function () {
       d.querySelector('.drawer-b').insertAdjacentHTML('beforeend', '<div class="restricted"><label class="lbl" for="sb">Sebab (pilihan)</label><input id="sb" type="text" placeholder="cth. Ditunda oleh sekolah"><div style="margin-top:10px"><button class="btn btn-dark btn-sm" data-act="sah">Sahkan batal</button></div></div>');

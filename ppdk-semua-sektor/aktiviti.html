@@ -56,7 +56,7 @@
 </div>
 
 <script src="shared.js?v=8a697040"></script>
-<script src="data.js?v=221f8e00"></script>
+<script src="data.js?v=2abbace7"></script>
 <script>
 (function () {
   M.mount({ page: 'aktiviti' });
@@ -120,19 +120,23 @@
   function terbit(r) {
     var m = M.me(), isPub = (M.role() === 'ketua' && r.sek === m.sek) || M.role() === 'kppd';
     if (r.tahap === 'sulit') { D.openRecord(r); return; }
-    var sens = r.sek === 'SPsK' || r.sek === 'SPP';
+    var sens = r.sek === 'SPsK' || r.sek === 'SPP', noPhoto = !((r.photos && r.photos.length) || r.gam);
     var place = D.where(r).t.replace('Tugas rasmi — ', '');
     var body = (sens ? '<p class="flag warn">Sektor ' + r.sek + ': penerbitan awam belum dibuka.</p>' : '') +
-      '<div class="pcard"><div class="ph">Gambar utama</div><div class="b">' + M.sk(r.sek) + '<h4>' + M.esc(r.tajuk) + '</h4><p>' + M.fmtDate(r.tarikh) + ' · ' + M.esc(place) + '</p><p style="margin-top:8px">' + M.esc(r.rum||'Rumusan belum diisi.') + '</p></div></div>' +
+      '<div class="pcard">' + (r.photos && r.photos[0] ? '<img src="' + M.esc(r.photos[0].src) + '" alt="Gambar utama" style="display:block;width:100%;aspect-ratio:16/8;object-fit:cover">' : '<div class="ph">Gambar utama</div>') + '<div class="b">' + M.sk(r.sek) + '<h4>' + M.esc(r.tajuk) + '</h4><p>' + M.fmtDate(r.tarikh) + ' · ' + M.esc(place) + '</p><p style="margin-top:8px">' + M.esc(r.rum||'Rumusan belum diisi.') + '</p></div></div>' +
       '<details class="more"><summary>Lihat kapsyen Facebook</summary><div class="fbcap">' + M.esc(D.post(r, 'fb')) + '</div></details>' +
-      (isPub ? '<div class="section-t">Semakan penerbit</div><div class="chk"><label><input type="checkbox" class="ck"> Tiada nama murid, data kes atau peperiksaan</label><label><input type="checkbox" class="ck"> Gambar sesuai untuk awam</label><label><input type="checkbox" class="ck"> Fakta dan nama sekolah betul</label></div>' : '<p class="tiny" style="margin-top:14px">Penerbit sektor ' + r.sek + ' akan menyemak sebelum diterbitkan di ppdk.ch dan Facebook.</p>');
+      (isPub ? '<div class="section-t">Semakan penerbit</div><div class="chk"><label><input type="checkbox" class="ck"> Tiada nama murid, data kes atau peperiksaan</label><label><input type="checkbox" class="ck"> Gambar sesuai untuk awam</label><label><input type="checkbox" class="ck"> Fakta dan nama sekolah betul</label></div>' : (!r.mohon ? (noPhoto ? '<p class="flag warn" style="margin-top:14px">Tambah sekurang-kurangnya 1 gambar sebelum mohon terbit. <a class="text-btn" href="lapor.html?id=' + r.id + '">Tambah gambar</a></p>' : '') +
+        '<div class="section-t">Sebelum hantar</div><div class="chk"><label><input type="checkbox" class="ck2"> Tiada nama murid, data kes, kesihatan atau peperiksaan</label><label><input type="checkbox" class="ck2"> Gambar sesuai untuk paparan awam</label></div>' : '') +
+        '<p class="tiny" style="margin-top:14px">Penerbit sektor ' + r.sek + ' akan menyemak sebelum diterbitkan di ppdk.ch dan Facebook.</p>');
     var foot = isPub ? '<button class="text-btn" data-act="back">Pulangkan</button><button class="btn btn-ink" data-act="pub" disabled>Terbit</button>'
-      : r.mohon ? '<button class="btn btn-line" data-close>Tutup</button>' : '<button class="btn btn-ink" data-act="mohon"' + (sens ? ' disabled' : '') + '>Hantar kepada penerbit</button>';
+      : r.mohon ? '<button class="btn btn-line" data-close>Tutup</button>' : '<button class="btn btn-ink" data-act="mohon" disabled>Hantar kepada penerbit</button>';
     var d = M.drawer({ title: isPub ? 'Semak & terbit' : 'Mohon terbit', body: body, foot: foot });
     var cks = d.querySelectorAll('.ck'), pb = d.querySelector('[data-act="pub"]');
     [].forEach.call(cks, function (c) { c.addEventListener('change', function () { pb.disabled = sens || [].some.call(cks, function (x) { return !x.checked; }); }); });
     if (pb) pb.addEventListener('click', function () { r.tahap = 'umum'; r.mohon = false; D.persist(); M.closeDrawer(); list(); M.toast('Diterbitkan'); });
-    var mo = d.querySelector('[data-act="mohon"]'); if (mo) mo.addEventListener('click', function () { r.mohon = true; D.persist(); M.closeDrawer(); list(); M.toast('Dihantar kepada penerbit ' + r.sek); });
+    var c2 = d.querySelectorAll('.ck2'), mo = d.querySelector('[data-act="mohon"]');
+    [].forEach.call(c2, function (c) { c.addEventListener('change', function () { mo.disabled = sens || noPhoto || [].some.call(c2, function (x) { return !x.checked; }); }); });
+    if (mo) mo.addEventListener('click', function () { r.mohon = true; D.persist(); M.closeDrawer(); list(); M.toast('Dihantar kepada penerbit ' + r.sek); });
     var bk = d.querySelector('[data-act="back"]'); if (bk) bk.addEventListener('click', function () { r.mohon = false; D.persist(); M.closeDrawer(); list(); M.toast('Dipulangkan kepada pegawai'); });
   }
 
