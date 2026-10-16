@@ -7,7 +7,7 @@
 <title>Rekod Aktiviti · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="base.css?v=9eee8c54">
-<link rel="stylesheet" href="gaya.css?v=4e92cfc8">
+<link rel="stylesheet" href="gaya.css?v=cc708408">
 <style>
 .sum{font-size:14px;color:var(--ink-2);margin-bottom:16px}
 .gal{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
@@ -37,8 +37,8 @@
   <div class="list" id="list" style="margin-top:14px"></div>
 </div>
 
-<script src="shared.js?v=c2616f6b"></script>
-<script src="data.js?v=0ba6581e"></script>
+<script src="shared.js?v=7284f59d"></script>
+<script src="data.js?v=261f632f"></script>
 <script>
 (function () {
   M.mount({ page: 'aktiviti' });
@@ -92,17 +92,18 @@
   function lapor(r) {
     if (r.owner !== M.me().name) { D.openRecord(r); return; }
     var body = '<p class="sum">' + M.fmtDate(r.tarikh) + ' · ' + r.mula + '–' + r.akhir + '<br>' + M.esc(D.where(r).t.replace('Tugas rasmi — ', '')) + '</p>' +
-      '<div class="field"><label class="lbl" for="rum">Rumusan / dapatan <span style="color:var(--isd)">*</span></label><textarea id="rum" rows="5" placeholder="Apa yang berlaku dan dapatan utama."></textarea></div>' +
-      '<div class="field"><label class="lbl" for="obj">Objektif <span class="muted" style="font-weight:400">— templat, semak</span></label><textarea id="obj" rows="2">Memantau pelaksanaan PdP dan memberi bimbingan kepada guru.</textarea></div>' +
+      '<div class="field"><label class="lbl" for="rum">Rumusan / dapatan <span style="color:var(--isd)">*</span></label><textarea id="rum" rows="5" placeholder="Apa yang berlaku dan dapatan utama.">' + M.esc(r.rum||'') + '</textarea></div>' +
+      '<div class="field"><label class="lbl" for="obj">Objektif <span class="muted" style="font-weight:400">— pilihan</span></label><textarea id="obj" rows="2">' + M.esc(r.obj||'') + '</textarea></div>' +
       '<div class="addrow" id="ladd" style="margin-top:14px"><button type="button" data-add="imp">+ Impak</button><button type="button" data-add="gam">+ Gambar</button><button type="button" data-add="bil">+ Bilangan peserta</button></div>' +
-      '<div class="field" id="x-imp" hidden><label class="lbl" for="imp">Impak</label><textarea id="imp" rows="3"></textarea></div>' +
+      '<div class="field" id="x-imp" hidden><label class="lbl" for="imp">Impak</label><textarea id="imp" rows="3">' + M.esc(r.imp||'') + '</textarea></div>' +
       '<div class="field" id="x-gam" hidden><span class="lbl">Gambar (maks. 10)</span><div class="gal"><button type="button" class="ph" style="border-style:dashed;font-size:20px" aria-label="Tambah gambar">+</button></div></div>' +
       '<div class="field" id="x-bil" hidden><span class="lbl">Bilangan peserta (tiada nama)</span><div class="num3"><input type="number" min="0" placeholder="Guru" aria-label="Guru"><input type="number" min="0" placeholder="Murid" aria-label="Murid"><input type="number" min="0" placeholder="Pihak luar" aria-label="Pihak luar"></div></div>';
-    var d = M.drawer({ title: M.esc(r.tajuk), body: body, foot: '<button class="text-btn" data-close>Simpan draf</button><button class="btn btn-ink" data-act="done">Simpan laporan</button>' });
+    var d = M.drawer({ title: M.esc(r.tajuk), body: body, foot: '<button class="text-btn" data-act="draft">Simpan draf</button><button class="btn btn-ink" data-act="done">Simpan laporan</button>' });
+    function storeReport(){r.rum=d.querySelector('#rum').value.trim();r.obj=d.querySelector('#obj').value.trim();r.imp=d.querySelector('#imp').value.trim();D.persist();} d.querySelector('[data-act="draft"]').onclick=function(){storeReport();M.closeDrawer();M.toast('Draf disimpan · belum lengkap');};
     d.querySelector('#ladd').addEventListener('click', function (e) { var b = e.target.closest('[data-add]'); if (!b) return; d.querySelector('#x-' + b.getAttribute('data-add')).hidden = false; b.hidden = true; });
     d.querySelector('[data-act="done"]').addEventListener('click', function () {
       if (!d.querySelector('#rum').value.trim()) { d.querySelector('#rum').focus(); M.toast('Isi rumusan dahulu'); return; }
-      r.status = 'selesai'; r.laporan = 'lengkap'; M.closeDrawer(); list(); M.toast('Laporan disimpan · kekal dalaman');
+      storeReport(); r.status = 'selesai'; r.laporan = 'lengkap'; D.persist(); M.closeDrawer(); list(); M.toast('Laporan disimpan · kekal dalaman');
     });
   }
 
@@ -113,17 +114,17 @@
     var sens = r.sek === 'SPsK' || r.sek === 'SPP';
     var place = D.where(r).t.replace('Tugas rasmi — ', '');
     var body = (sens ? '<p class="flag warn">Sektor ' + r.sek + ': penerbitan awam belum dibuka.</p>' : '') +
-      '<div class="pcard"><div class="ph">Gambar utama</div><div class="b">' + M.sk(r.sek) + '<h4>' + M.esc(r.tajuk) + '</h4><p>' + M.fmtDate(r.tarikh) + ' · ' + M.esc(place) + '</p><p style="margin-top:8px"><i>Rumusan daripada laporan pegawai dipapar di sini.</i></p></div></div>' +
-      '<details class="more"><summary>Lihat kapsyen Facebook</summary><div class="fbcap">📌 ' + M.esc(r.tajuk.toUpperCase()) + '\n🗓 ' + M.fmtDate(r.tarikh) + '\n📍 ' + M.esc(place) + '\n\n<i>[objektif &amp; rumusan daripada laporan]</i>\n\n#PPDKuching #' + r.sek + '</div></details>' +
+      '<div class="pcard"><div class="ph">Gambar utama</div><div class="b">' + M.sk(r.sek) + '<h4>' + M.esc(r.tajuk) + '</h4><p>' + M.fmtDate(r.tarikh) + ' · ' + M.esc(place) + '</p><p style="margin-top:8px">' + M.esc(r.rum||'Rumusan belum diisi.') + '</p></div></div>' +
+      '<details class="more"><summary>Lihat kapsyen Facebook</summary><div class="fbcap">📌 ' + M.esc(r.tajuk.toUpperCase()) + '\n🗓 ' + M.fmtDate(r.tarikh) + '\n📍 ' + M.esc(place) + '\n\n' + M.esc(r.rum||'') + '\n\n#PPDKuching #' + r.sek + '</div></details>' +
       (isPub ? '<div class="section-t">Semakan penerbit</div><div class="chk"><label><input type="checkbox" class="ck"> Tiada nama murid, data kes atau peperiksaan</label><label><input type="checkbox" class="ck"> Gambar sesuai untuk awam</label><label><input type="checkbox" class="ck"> Fakta dan nama sekolah betul</label></div>' : '<p class="tiny" style="margin-top:14px">Penerbit sektor ' + r.sek + ' akan menyemak sebelum diterbitkan di ppdk.ch dan Facebook.</p>');
     var foot = isPub ? '<button class="text-btn" data-act="back">Pulangkan</button><button class="btn btn-ink" data-act="pub" disabled>Terbit</button>'
       : r.mohon ? '<button class="btn btn-line" data-close>Tutup</button>' : '<button class="btn btn-ink" data-act="mohon"' + (sens ? ' disabled' : '') + '>Hantar kepada penerbit</button>';
     var d = M.drawer({ title: isPub ? 'Semak & terbit' : 'Mohon terbit', body: body, foot: foot });
     var cks = d.querySelectorAll('.ck'), pb = d.querySelector('[data-act="pub"]');
     [].forEach.call(cks, function (c) { c.addEventListener('change', function () { pb.disabled = sens || [].some.call(cks, function (x) { return !x.checked; }); }); });
-    if (pb) pb.addEventListener('click', function () { r.tahap = 'umum'; r.mohon = false; M.closeDrawer(); list(); M.toast('Diterbitkan'); });
-    var mo = d.querySelector('[data-act="mohon"]'); if (mo) mo.addEventListener('click', function () { r.mohon = true; M.closeDrawer(); list(); M.toast('Dihantar kepada penerbit ' + r.sek); });
-    var bk = d.querySelector('[data-act="back"]'); if (bk) bk.addEventListener('click', function () { r.mohon = false; M.closeDrawer(); list(); M.toast('Dipulangkan kepada pegawai'); });
+    if (pb) pb.addEventListener('click', function () { r.tahap = 'umum'; r.mohon = false; D.persist(); M.closeDrawer(); list(); M.toast('Diterbitkan'); });
+    var mo = d.querySelector('[data-act="mohon"]'); if (mo) mo.addEventListener('click', function () { r.mohon = true; D.persist(); M.closeDrawer(); list(); M.toast('Dihantar kepada penerbit ' + r.sek); });
+    var bk = d.querySelector('[data-act="back"]'); if (bk) bk.addEventListener('click', function () { r.mohon = false; D.persist(); M.closeDrawer(); list(); M.toast('Dipulangkan kepada pegawai'); });
   }
 
   $('tapis').addEventListener('click', tapis);

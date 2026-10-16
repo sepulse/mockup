@@ -7,7 +7,7 @@
 <title>Log Masuk · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="base.css?v=9eee8c54">
-<link rel="stylesheet" href="gaya.css?v=4e92cfc8">
+<link rel="stylesheet" href="gaya.css?v=cc708408">
 <style>
 body{display:flex;min-height:100vh;align-items:flex-start;justify-content:center}
 .box{width:min(420px,100%);padding:56px 20px 80px}
@@ -36,8 +36,8 @@ body{display:flex;min-height:100vh;align-items:flex-start;justify-content:center
   <div class="mono">Ruang staf · PPD Kuching</div>
   <div id="view"></div>
 </div>
-<script src="shared.js?v=c2616f6b"></script>
-<script src="data.js?v=0ba6581e"></script>
+<script src="shared.js?v=7284f59d"></script>
+<script src="data.js?v=261f632f"></script>
 <script>
 (function () {
   M.mount({ bare: true });
@@ -47,14 +47,14 @@ body{display:flex;min-height:100vh;align-items:flex-start;justify-content:center
   function total() { return via === 'emel' ? 3 : 2; }
 
   function login() {
-    $('view').innerHTML = '<h1>Log masuk</h1><p class="lead">Gunakan akaun rasmi KPM anda.</p>' +
+    $('view').innerHTML = '<h1>Log masuk</h1><p class="lead">Gunakan e-mel rasmi dan kata laluan PPDK.CH.</p>' +
       '<form id="lf" novalidate><div class="field"><label class="lbl" for="em">E-mel rasmi</label><input id="em" type="text" inputmode="email" autocomplete="username" placeholder="nama@moe.gov.my"></div>' +
-      '<div class="field"><label class="lbl" for="pw">Kata laluan</label><input id="pw" type="password" autocomplete="current-password" style="width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--rule-2);background:var(--card)"></div>' +
+      '<div class="field"><label class="lbl" for="pw">Kata laluan PPDK.CH</label><input id="pw" type="password" autocomplete="current-password" style="width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--rule-2);background:var(--card)"></div>' +
       '<button class="btn btn-ink btn-block" style="margin-top:18px" type="submit">Log masuk</button></form>' +
       '<div class="or">atau</div><button class="btn btn-line btn-block" type="button" id="delima"><span class="g">G</span>Log masuk dengan DELIMa</button>' +
       '<p class="tiny" style="margin-top:22px">Lupa kata laluan atau tiada akaun? Hubungi Unit ICT PPD Kuching.</p>';
-    $('lf').addEventListener('submit', function (e) { e.preventDefault(); via = 'emel'; sah(); });
-    $('delima').addEventListener('click', function () { via = 'delima'; sah(); });
+    $('lf').addEventListener('submit', function (e) { e.preventDefault(); via='emel'; if(sessionStorage.getItem('ppdk-demo-mula')) location.href='hari-ini.html'; else sah(); });
+    $('delima').addEventListener('click', function () { via='delima'; if(sessionStorage.getItem('ppdk-demo-mula'))location.href='hari-ini.html'; else sah(); });
   }
   function sah() {
     var m = M.me(), s = D.staf(m.name);
@@ -73,7 +73,7 @@ body{display:flex;min-height:100vh;align-items:flex-start;justify-content:center
       '<div class="field"><label class="lbl" for="p1">Kata laluan baharu</label><input id="p1" type="password" autocomplete="new-password" style="width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--rule-2);background:var(--card)"><p class="hint">Sekurang-kurangnya 10 aksara.</p></div>' +
       '<div class="field"><label class="lbl" for="p2">Ulang kata laluan</label><input id="p2" type="password" autocomplete="new-password" style="width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--rule-2);background:var(--card)"></div>' +
       '<button class="btn btn-ink btn-block" style="margin-top:18px" id="nx">Simpan</button>';
-    $('nx').addEventListener('click', notif);
+    $('nx').addEventListener('click', function(){if($('p1').value.length<10||$('p1').value!==$('p2').value){M.toast('Kata laluan mesti sekurang-kurangnya 10 aksara dan sepadan.');return;}notif();});
   }
   function notif() {
     var pub = M.role() !== 'staf';
@@ -82,7 +82,7 @@ body{display:flex;min-height:100vh;align-items:flex-start;justify-content:center
       '<label class="tg"><span>Ringkasan jadual minggu depan<small>Setiap Jumaat petang</small></span><input type="checkbox"></label>' +
       (pub ? '<label class="tg"><span>Permohonan terbit untuk disemak<small>Untuk penerbit sektor</small></span><input type="checkbox" checked></label>' : '') +
       '<button class="btn btn-ink btn-block" style="margin-top:22px" id="done">Mula guna</button>';
-    $('done').addEventListener('click', function () { location.href = 'hari-ini.html'; });
+    $('done').addEventListener('click', function () { sessionStorage.setItem('ppdk-demo-mula','1'); location.href = 'hari-ini.html'; });
   }
   document.addEventListener('rolechange', login);
   login();

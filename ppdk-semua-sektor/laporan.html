@@ -6,7 +6,7 @@
 <title>Laporan · PPDK.CH</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="base.css?v=9eee8c54">
-<link rel="stylesheet" href="gaya.css?v=4e92cfc8">
+<link rel="stylesheet" href="gaya.css?v=cc708408">
 <link rel="stylesheet" href="awam.css?v=03e55e6c">
 <style>
 .art{max-width:720px}
@@ -24,28 +24,29 @@
 </head>
 <body>
 <div id="content" class="pw"><div id="body"></div></div>
-<script src="shared.js?v=c2616f6b"></script>
-<script src="data.js?v=0ba6581e"></script>
-<script src="awam.js?v=7ba90fa8"></script>
+<script src="shared.js?v=7284f59d"></script>
+<script src="data.js?v=261f632f"></script>
+<script src="awam.js?v=584359da"></script>
 <script>
 (function () {
   M.mount({ bare: true, noRole: true });
   AW.header('aktiviti');
   var id = new URLSearchParams(location.search).get('id');
-  var r = AW.pub.filter(function (x) { return x.id === id; })[0] || AW.pub[0];
+  var r = AW.pub.filter(function (x) { return x.id === id; })[0];
+  if(!r){document.title='Laporan tidak ditemui';document.getElementById('body').innerHTML='<div class="ph1"><h1>Laporan tidak ditemui</h1><p>Pautan mungkin tidak sah atau laporan belum diterbitkan.</p><a class="btn btn-ink" href="portal.html">Kembali ke aktiviti</a></div>';return;}
   document.title = r.tajuk + ' · PPDK.CH';
   var more = AW.pub.filter(function (x) { return x.sek === r.sek && x.id !== r.id; }).slice(0, 3);
   document.getElementById('body').innerHTML = '<article class="art"><p style="margin-top:18px"><a class="text-btn" href="sektor.html?s=' + encodeURIComponent(r.sek) + '">' + M.sk(r.sek) + ' ' + M.esc(AW.short(r.sek)) + '</a></p>' +
     '<h1>' + M.esc(r.tajuk) + '</h1><div class="meta"><span>' + M.fmtDate(r.tarikh) + '</span><span>' + M.esc(AW.place(r)) + '</span></div>' +
     '<div class="ph hero">Gambar utama</div>' +
-    '<h2>Objektif</h2><p class="tx"><i>Objektif daripada laporan pegawai.</i></p>' +
-    '<h2>Rumusan</h2><p class="tx"><i>Rumusan dan dapatan daripada laporan pegawai.</i></p>' +
-    '<h2>Impak</h2><p class="tx"><i>Impak (jika diisi).</i></p>' +
+    '<h2>Objektif</h2><p class="tx">' + M.esc(r.obj||'Melaksanakan aktiviti mengikut perancangan sektor.') + '</p>' +
+    '<h2>Rumusan</h2><p class="tx">' + M.esc(r.rum||'Pelaksanaan aktiviti dibincangkan bersama pihak terlibat untuk rujukan sektor.') + '</p>' +
+    (r.imp?'<h2>Impak</h2><p class="tx">'+M.esc(r.imp)+'</p>':'') +
     '<h2>Galeri</h2><div class="gal"><div class="ph">1</div><div class="ph">2</div><div class="ph">3</div></div>' +
     '<p class="hash" style="margin-top:18px">#PPDKuching #' + r.sek + '</p>' +
     '<div class="share"><button class="btn btn-line btn-sm" id="cp">Salin pautan</button><span class="tiny">Hantaran Facebook PPD memaut ke halaman ini.</span></div></article>' +
     (more.length ? '<div class="h2p"><h2>Lagi daripada ' + M.esc(AW.short(r.sek)) + '</h2></div><div class="feed">' + more.map(AW.item).join('') + '</div>' : '');
-  document.getElementById('cp').addEventListener('click', function () { M.toast('Pautan disalin: ppdk.ch/a/' + r.id.toLowerCase()); });
+  document.getElementById('cp').addEventListener('click', function () { navigator.clipboard.writeText(location.href).then(function(){M.toast('Pautan disalin')},function(){M.toast('Salin pautan dari bar alamat pelayar')}); });
 })();
 </script>
 </body>

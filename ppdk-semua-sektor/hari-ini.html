@@ -7,7 +7,7 @@
 <title>Hari ini · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="base.css?v=9eee8c54">
-<link rel="stylesheet" href="gaya.css?v=4e92cfc8">
+<link rel="stylesheet" href="gaya.css?v=cc708408">
 <style>
 .blocks{display:flex;flex-direction:column}
 [data-role="kppd"] .b-mine{order:2}
@@ -26,7 +26,7 @@
     </section>
 
     <section class="b-board" aria-labelledby="h-rk">
-      <div class="sec-t"><h2 id="h-rk">Rakan sekerja</h2><span>Ikut rekod · bukan lokasi langsung</span></div>
+      <div class="sec-t"><h2 id="h-rk">Rakan sekerja</h2><span>Jadual direkodkan · bukan lokasi langsung</span></div>
       <div class="qbar">
         <label class="search"><span class="sr">Cari pegawai</span><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="q" type="search" placeholder="Cari nama"></label>
         <button class="btn btn-line" type="button" id="tapis">Tapis</button>
@@ -38,25 +38,25 @@
   </div>
 </div>
 
-<script src="shared.js?v=c2616f6b"></script>
-<script src="data.js?v=0ba6581e"></script>
+<script src="shared.js?v=7284f59d"></script>
+<script src="data.js?v=261f632f"></script>
 <script>
 (function () {
   M.mount({ page: 'hari' });
   var T = M.TODAY, NOW = '08:42', st = { sek: '', jen: '', all: false };
   var $ = function (id) { return document.getElementById(id); };
   function byId(id) { return D.REKOD.filter(function (x) { return x.id === id; })[0]; }
-  function place(r) { return D.where(r).t.replace('Tugas rasmi — ', ''); }
+  function place(r, n) { return D.where(r, n).t.replace('Tugas rasmi — ', ''); }
 
   function mine() {
     var m = M.me();
     var list = D.REKOD.filter(function (r) { return D.onDate(r, T) && D.involves(r, m.name) && r.status !== 'dibatalkan'; }).sort(function (a, b) { return a.mula < b.mula ? -1 : 1; });
-    var next = list.filter(function (r) { return r.akhir > NOW; })[0] || list[0];
+    var next = list.filter(function (r) { return r.sehari || r.akhir > NOW; })[0];
     var h = '';
-    if (!next) h = '<a class="next" href="rekod.html"><span><span class="k">Hari ini</span><span class="n" style="display:block">Tiada jadual direkodkan</span><span class="s" style="display:block">Ketik untuk merekod.</span></span><span class="go">' + M.icon('plus') + '</span></a>';
+    if (!next && list.length) h = '<div class="next"><span><span class="k">Jadual hari ini telah tamat</span><span class="s" style="display:block">Laporan boleh dilengkapkan melalui Rekod Aktiviti.</span></span></div>'; else if (!next) h = '<a class="next" href="rekod.html"><span><span class="k">Hari ini</span><span class="n" style="display:block">Tiada jadual direkodkan</span><span class="s" style="display:block">Ketik untuk merekod.</span></span><span class="go">' + M.icon('plus') + '</span></a>';
     else {
       var now = next.mula <= NOW && NOW < next.akhir;
-      h = '<button class="next" data-r="' + next.id + '"><span><span class="k">' + (now ? 'Sedang berlangsung' : 'Seterusnya') + '</span><span class="tm" style="display:block">' + next.mula + '–' + next.akhir + '</span><span class="n" style="display:block">' + M.esc(next.tajuk) + '</span><span class="s" style="display:block">' + M.esc(place(next)) + '</span></span><span class="go">' + M.icon('next') + '</span></button>';
+      h = '<button class="next" data-r="' + next.id + '"><span><span class="k">' + (now ? 'Dalam waktu jadual' : 'Jadual seterusnya') + '</span><span class="tm" style="display:block">' + D.timeLabel(next, T) + '</span><span class="n" style="display:block">' + M.esc(next.tajuk) + '</span><span class="s" style="display:block">' + M.esc(place(next)) + '</span></span><span class="go">' + M.icon('next') + '</span></button>';
       if (list.length > 1) h += '<p class="tiny" style="margin-top:8px"><a class="text-btn" href="jadual.html">+' + (list.length - 1) + ' lagi hari ini</a></p>';
     }
     $('mine').innerHTML = h;
@@ -72,28 +72,27 @@
     D.CUTI.forEach(function (c) { if (c.dari <= T && T <= c.hingga) (p[c.owner] = p[c.owner] || []).push({ c: c }); });
     return p;
   }
-  function entLabel(e) { return e.c ? { t: e.c.dari === e.c.hingga ? 'Sehari' : 'Hingga ' + Number(e.c.hingga.slice(8)) + '/10', s: 'Tidak di pejabat' } : { t: D.timeLabel(e.r, T), s: place(e.r) }; }
+  function entLabel(e, n) { return e.c ? { t: e.c.dari === e.c.hingga ? (e.c.bahagian==='pagi'?'Pagi':e.c.bahagian==='petang'?'Petang':'Sehari') : 'Hingga ' + Number(e.c.hingga.slice(8)) + '/10', s: 'Tidak di pejabat' } : { t: D.timeLabel(e.r, T), s: place(e.r, n) }; }
 
   function board() {
     var term = $('q').value.trim().toLowerCase(), p = people();
-    var names = Object.keys(p).sort(function (a, b) { return a === 'KPPD' ? 1 : b === 'KPPD' ? -1 : a < b ? -1 : 1; });
-    var rows = names.filter(function (n) {
-      if (st.sek && D.staf(n).sek !== st.sek) return false;
-      if (term && n.toLowerCase().indexOf(term) < 0) return false;
-      if (st.jen === 'away') return p[n].some(function (e) { return e.c; });
-      if (st.jen === 'out') return p[n].some(function (e) { return e.r && e.r.mod !== 'atas_talian'; });
-      if (st.jen === 'online') return p[n].some(function (e) { return e.r && e.r.mod !== 'fizikal'; });
-      return true;
-    });
+    function matching(e,n) {
+      if (!st.jen) return true;
+      if (st.jen === 'away') return !!e.c;
+      if (!e.r) return false;
+      return st.jen === 'online' ? D.online(e.r,n) : D.physical(e.r,n);
+    }
+    var names = D.STAF.map(function(s){return s.n}).sort(function(a,b){return a.localeCompare(b)});
+    var rows = names.filter(function(n){ return (!st.sek || D.staf(n).sek === st.sek) && (!term || n.toLowerCase().indexOf(term)>=0) && ((p[n]||[]).some(function(e){return matching(e,n)}) || (term && !st.jen)); });
     var shown = st.all || term ? rows : rows.slice(0, 8);
     var h = shown.map(function (n) {
-      var es = p[n].slice().sort(function (a, b) { return (a.r ? a.r.mula : '') < (b.r ? b.r.mula : '') ? -1 : 1; }), e = entLabel(es[0]);
+      var es = (p[n]||[]).filter(function(e){return matching(e,n)}).sort(function (a, b) { return (a.r ? a.r.mula : '') < (b.r ? b.r.mula : '') ? -1 : 1; }), e = es.length ? entLabel(es[0],n) : {t:'—',s:'Aucun'}; if(!es.length) e.s='Tiada jadual direkodkan';
       return '<button class="li" data-p="' + M.esc(n) + '"><span class="t">' + e.t + '</span><span><span class="n">' + M.esc(n) + ' ' + M.sk(D.staf(n).sek) + '</span><span class="s" style="display:block">' + M.esc(e.s) + '</span></span><span class="e">' + (es.length > 1 ? '+' + (es.length - 1) + ' lagi' : '') + '</span></button>';
     }).join('');
     if (!rows.length) h = term ? '<div class="empty">Tiada jadual direkodkan untuk “' + M.esc(term) + '” hari ini.</div>' : '<div class="empty">Tiada padanan.</div>';
     if (!st.all && !term && rows.length > 8) h += '<div class="more-row"><button class="text-btn" id="all">Tunjuk semua (' + rows.length + ')</button></div>';
-    $('board').innerHTML = h;
-    var ch = []; if (st.sek) ch.push(['sek', M.sekName(st.sek)]); if (st.jen) ch.push(['jen', { away: 'Tidak di pejabat', out: 'Di luar pejabat', online: 'Atas talian' }[st.jen]]);
+    $('board').innerHTML = h + '<p class="tiny" style="margin-top:12px">Kemas kini 08:42 · ' + rows.length + ' pegawai sepadan</p>';
+    var ch = []; if (st.sek) ch.push(['sek', M.sekName(st.sek)]); if (st.jen) ch.push(['jen', { away: 'Tidak di pejabat', out: 'Tugas fizikal', online: 'Atas talian' }[st.jen]]);
     $('fchips').innerHTML = ch.map(function (c) { return '<button class="chip" data-x="' + c[0] + '">' + c[1] + ' <span class="x">✕</span></button>'; }).join('');
   }
 
@@ -102,7 +101,7 @@
   }
   function tapis() {
     var d = M.drawer({ title: 'Tapis', body: '<div class="field"><label class="lbl" for="tsek">Sektor</label><select id="tsek"><option value="">Semua sektor</option>' + M.SEKTOR.map(function (s) { return '<option value="' + s.k + '"' + (s.k === st.sek ? ' selected' : '') + '>' + s.n + '</option>'; }).join('') + '</select></div>' +
-      '<div class="field"><span class="lbl">Jadual</span><div class="seg" id="tjen">' + [['', 'Semua'], ['out', 'Di luar pejabat'], ['online', 'Atas talian'], ['away', 'Tidak di pejabat']].map(function (x) { return '<button type="button" data-v="' + x[0] + '" aria-pressed="' + (st.jen === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div></div>',
+      '<div class="field"><span class="lbl">Jadual</span><div class="seg" id="tjen">' + [['', 'Semua'], ['out', 'Tugas fizikal'], ['online', 'Atas talian'], ['away', 'Tidak di pejabat']].map(function (x) { return '<button type="button" data-v="' + x[0] + '" aria-pressed="' + (st.jen === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div></div>',
       foot: '<button class="text-btn" data-act="reset">Set semula</button><button class="btn btn-ink" data-act="ok">Tunjuk hasil</button>' });
     var jen = st.jen;
     d.querySelector('#tjen').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; jen = b.getAttribute('data-v'); [].forEach.call(this.children, function (x) { x.setAttribute('aria-pressed', x === b); }); });

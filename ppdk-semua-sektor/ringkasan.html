@@ -7,7 +7,7 @@
 <title>Ringkasan Bulanan · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="base.css?v=9eee8c54">
-<link rel="stylesheet" href="gaya.css?v=4e92cfc8">
+<link rel="stylesheet" href="gaya.css?v=cc708408">
 <style>
 .nums{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--ink);border-bottom:1px solid var(--rule)}
 .nums div{padding:16px 14px 18px 0}
@@ -47,8 +47,8 @@
   <div style="margin-top:28px"><button class="btn btn-ink" type="button" id="pres"><svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Mod Pembentangan</button></div>
 </div>
 
-<script src="shared.js?v=c2616f6b"></script>
-<script src="data.js?v=0ba6581e"></script>
+<script src="shared.js?v=7284f59d"></script>
+<script src="data.js?v=261f632f"></script>
 <script>
 (function () {
   M.mount({ page: 'ringkasan' });
@@ -64,35 +64,33 @@
   };
   var JENIS = [['Lawatan pemantauan PdP', 14], ['Bimbingan guru', 13], ['Bengkel / kursus', 7], ['Mesyuarat', 6], ['Program murid', 4]];
   var MO = ['Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt'];
-  var st = { sek: '', ver: 'dalaman', i: 0 };
+  var st = { sek: '', ver: 'dalaman', i: 0, month:'2026-10' };
 
   function data() {
-    var keys = st.sek === 'ALL' ? Object.keys(NUM) : [st.sek];
-    if (st.ver === 'awam') keys = keys.filter(function (k) { return k !== 'SPsK' && k !== 'SPP'; });
-    var d = { a: 0, s: 0, p: 0, tr: [0, 0, 0, 0, 0, 0], x: null, blocked: !keys.length };
-    keys.forEach(function (k) { var n = NUM[k]; d.a += n.a; d.s += n.s; d.p += n.p; n.tr.forEach(function (v, i) { d.tr[i] += v; }); });
-    if (keys.length > 1) d.s = Math.round(d.s * .62);
-    if (keys.length === 1 && st.ver === 'dalaman') d.x = NUM[keys[0]].x;
-    return d;
+    var d=D.summary(st.sek,st.month,st.ver==='awam');d.x=null;d.blocked=st.ver==='awam'&&(st.sek==='SPsK'||st.sek==='SPP');
+    d.tr=MO.map(function(_,i){return i===5?d.a:null});return d;
   }
   function numsH(d) {
     return '<div class="nums"><div><b>' + d.a + '</b><span>Aktiviti selesai</span></div><div><b>' + d.s + '</b><span>Sekolah terlibat</span></div>' +
       (st.ver === 'awam' ? '' : '<div><b>' + d.p + '</b><span>Pegawai terlibat</span></div>') +
       (d.x ? '<div class="x"><b>' + d.x[1].toLocaleString('ms-MY') + '</b><span>' + d.x[0] + '</span></div>' : '') + '</div>';
   }
-  function liputH(d) { var f = d.a / 46; return [['Sekolah rendah', Math.round(21 * f), 118], ['Sekolah menengah', Math.round(10 * f), 44]].map(function (x) { return '<div class="bar-r"><span>' + x[0] + '</span><span class="bar"><i style="width:' + Math.min(100, x[1] / x[2] * 100) + '%"></i></span><b>' + x[1] + '/' + x[2] + '</b></div>'; }).join(''); }
-  function jenisH() { return JENIS.map(function (x) { return '<div class="bar-r"><span>' + x[0] + '</span><span class="bar"><i style="width:' + (x[1] / 14 * 100) + '%"></i></span><b>' + x[1] + '</b></div>'; }).join(''); }
-  function trendH(d) { var mx = Math.max.apply(null, d.tr); return '<div class="trend">' + d.tr.map(function (v) { return '<div>' + v + '<i style="height:' + (v / mx * 85) + '%"></i></div>'; }).join('') + '</div><div class="tl">' + MO.map(function (m) { return '<span>' + m + '</span>'; }).join('') + '</div>'; }
+  function liputH(d) {
+    var low=new Set(),high=new Set();d.list.forEach(function(r){r.sekolah.forEach(function(s){(/^SMK|^SM /i.test(s)?high:low).add(s)})});
+    return [['Sekolah rendah',low.size],['Sekolah menengah',high.size]].map(function(x){return '<div class="bar-r"><span>'+x[0]+'</span><span class="bar"><i style="width:'+(d.s?x[1]/d.s*100:0)+'%"></i></span><b>'+x[1]+'</b></div>'}).join('');
+  }
+  function jenisH(){var d=data();return Object.keys(d.jenis).map(function(k){return '<div class="bar-r"><span>'+M.esc(k)+'</span><span class="bar"><i style="width:'+(d.jenis[k]/Math.max(1,d.a)*100)+'%"></i></span><b>'+d.jenis[k]+'</b></div>'}).join('')||'<p class="tiny">Belum ada laporan lengkap.</p>';}
+  function trendH(d){return '<div class="trend">'+d.tr.map(function(v){return '<div>'+(v==null?'—':v)+'<i style="height:'+(v==null?0:Math.max(2,v/Math.max(1,d.a)*85))+'%"></i></div>'}).join('')+'</div><div class="tl">'+MO.map(function(m){return '<span>'+m+'</span>'}).join('')+'</div><p class="tiny" style="margin-top:12px">“—” bermaksud data belum tersedia.</p>';}
   function label() { return (st.sek === 'ALL' ? 'Semua sektor' : M.sekName(st.sek)) + ' · Oktober 2026' + (st.ver === 'awam' ? ' · versi awam' : ''); }
 
   function render() {
     var d = data();
     $('ctx').textContent = label();
     if (d.blocked) { $('body').innerHTML = '<div class="empty" style="border-top:1px solid var(--ink)">Sektor ini tiada versi awam sehingga sektor bersetuju.</div>'; return; }
-    $('body').innerHTML = numsH(d) +
+    $('body').innerHTML = '<p class="tiny" style="margin-bottom:14px">Laporan lengkap Dalaman + Umum · aktiviti unik dikira sekali</p>' + numsH(d) + '<details class="more"><summary>Lihat liputan, jenis dan trend</summary>' +
       '<div class="sec-t"><h2>Sekolah terlibat</h2></div>' + liputH(d) +
       (st.ver === 'awam' ? '' : '<div class="sec-t"><h2>Jenis aktiviti</h2><span>ikut katalog sektor</span></div>' + jenisH()) +
-      '<div class="sec-t"><h2>6 bulan</h2></div>' + trendH(d);
+      '<div class="sec-t"><h2>6 bulan</h2></div>' + trendH(d) + '</details>';
   }
   function slides() { return st.ver === 'awam' ? ['exec', 'lip', 'tr'] : ['exec', 'lip', 'jen', 'tr']; }
   function slide() {
@@ -115,7 +113,7 @@
   function paparan() {
     var d = M.drawer({ title: 'Paparan', body:
       '<div class="field"><label class="lbl" for="psek">Sektor</label><select id="psek"><option value="ALL">Semua sektor</option>' + M.SEKTOR.map(function (s) { return '<option value="' + s.k + '"' + (s.k === st.sek ? ' selected' : '') + '>' + s.n + '</option>'; }).join('') + '</select></div>' +
-      '<div class="field"><label class="lbl" for="pbln">Bulan</label><select id="pbln"><option>Oktober 2026</option><option>September 2026</option></select></div>' +
+      '<div class="field"><label class="lbl" for="pbln">Bulan</label><select id="pbln"><option>Oktober 2026</option><option disabled>September 2026 · belum tersedia</option></select></div>' +
       '<div class="field"><span class="lbl">Versi</span><div class="seg" id="pver"><button type="button" data-v="dalaman" aria-pressed="' + (st.ver === 'dalaman') + '">Dalaman</button><button type="button" data-v="awam" aria-pressed="' + (st.ver === 'awam') + '">Versi awam</button></div><p class="hint">Versi awam: agregat sahaja; SPsK &amp; SPP tidak termasuk.</p></div>',
       foot: '<button class="btn btn-ink" data-act="ok">Tunjuk</button>' });
     if (st.sek === 'ALL') d.querySelector('#psek').value = 'ALL';

@@ -81,7 +81,7 @@
   function esc(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 
   /* ---------- Peranan & tema ---------- */
-  function role() { var r = store.get('ppdk-demo-peranan', 'staf'); return ROLES[r] ? r : 'staf'; }
+  function role() { var r = new URLSearchParams(location.search).get('role') || store.get('ppdk-demo-peranan', 'staf'); return ROLES[r] ? r : 'staf'; }
   function me() { return ROLES[role()]; }
   function setRole(r) { store.set('ppdk-demo-peranan', r); document.documentElement.setAttribute('data-role', r); refreshBars(); document.dispatchEvent(new CustomEvent('rolechange', { detail: r })); }
   function theme() { var t = store.get('ppdk-demo-tema', '') || document.documentElement.getAttribute('data-theme') || ''; if (!t) t =(window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'; return t; }
@@ -103,7 +103,7 @@
     return '<div class="mpanel" id="mpanel" hidden><div class="mono">Demo · data ilustrasi</div>' +
       (opts.noRole ? '' : '<div class="mlbl">Lihat sebagai</div><div class="seg" data-mock="role">' + ['staf', 'ketua', 'kppd'].map(function (k) { return '<button type="button" data-v="' + k + '" aria-pressed="' + (r === k) + '">' + ROLES[k].label + '</button>'; }).join('') + '</div>') +
       '<div class="mlbl">Tema</div><div class="seg" data-mock="theme"><button type="button" data-v="light" aria-pressed="' + (t === 'light') + '">Cerah</button><button type="button" data-v="dark" aria-pressed="' + (t === 'dark') + '">Gelap</button></div>' +
-      '<div class="mlinks"><a href="index.html" target="_top">Halaman utama</a></div></div>' +
+      '<div class="mlinks"><a href="index.html" target="_top">Halaman utama</a> <a href="#" id="mreset">Set semula data</a></div></div>' +
       '<button type="button" class="mfab" id="mfab" aria-expanded="false" aria-controls="mpanel">Demo · ' + (opts.noRole ? 'Awam' : ROLES[r].label) + '</button>';
   }
   function refreshBars() {
@@ -117,8 +117,9 @@
     var body = document.body;
     var content = document.getElementById('content');
     var tool = document.createElement('div'); tool.id = 'mtool'; tool.className = 'mtool'; tool._opts = opts; tool.innerHTML = toolHtml(opts);
-    body.appendChild(tool);
+    if (window.self === window.top) body.appendChild(tool);
     tool.addEventListener('click', function (e) {
+      if (e.target.closest('#mreset')) { e.preventDefault(); sessionStorage.removeItem('ppdk-demo-data-v1'); sessionStorage.removeItem('ppdk-demo-mula'); location.reload(); return; }
       if (e.target.closest('#mfab')) { var p = document.getElementById('mpanel'); p.hidden = !p.hidden; e.target.closest('#mfab').setAttribute('aria-expanded', !p.hidden); return; }
       var b = e.target.closest('button[data-v]'); if (!b) return;
       var g = b.parentNode.getAttribute('data-mock');
@@ -160,7 +161,7 @@
     s.addEventListener('click', closeDrawer);
     d.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) closeDrawer(); });
     document.addEventListener('keydown', escClose);
-    var f = d.querySelector('[data-close]'); if (f) f.focus();
+    var f = d.querySelector('[data-close]'); if (f) f.focus(); d._returnFocus = document.activeElement;
     if (o.onOpen) o.onOpen(d);
     return d;
   }

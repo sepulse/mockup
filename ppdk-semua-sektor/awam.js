@@ -17,7 +17,7 @@
     { id: 'P3', tarikh: '2026-09-29', sek: 'SPr', tajuk: 'Taklimat Pengisian Data Murid 2027', sekolah: [], mod: 'atas_talian', lokasi: 'Google Meet', peserta: [] },
     { id: 'P4', tarikh: '2026-09-24', sek: 'SPS', tajuk: 'Audit Program Susu Sekolah (Siri 1/3)', sekolah: ['SK Bukit Indah'], mod: 'fizikal', lokasi: '', peserta: [] }
   ];
-  var pub = D.REKOD.filter(function (r) { return r.tahap === 'umum'; }).concat(EXTRA).sort(function (a, b) { return a.tarikh < b.tarikh ? 1 : -1; });
+  var pub = D.REKOD.filter(function (r) { return r.tahap === 'umum'; }).sort(function (a, b) { return a.tarikh < b.tarikh ? 1 : -1; });
   function place(r) { return r.mod === 'atas_talian' ? 'Atas talian' : r.sekolah.length ? r.sekolah.join(', ') : r.lokasi; }
   function short(k) { return M.sekName(k).replace('Sektor ', '').replace(' (termasuk Unit ICT)', ''); }
   function color(k) { return 'var(--s-' + (k === 'Pengurusan' ? 'PGR' : k) + ')'; }

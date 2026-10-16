@@ -77,6 +77,26 @@
     { id: 'L3', owner: 'Priya Nair', sek: 'SPP', dari: '2026-10-19', hingga: '2026-10-20', jenis: 'Cuti rehat' }
   ];
 
+  // Session-local state shared by the independent prototype screens.
+  var stateKey = 'ppdk-demo-data-v1';
+  REKOD.forEach(function(r) {
+    if (r.laporan === 'lengkap') {
+      r.rum = 'Pelaksanaan ' + r.jenis.toLowerCase() + ' dibincangkan bersama pihak terlibat. Dapatan dan cadangan penambahbaikan direkod untuk rujukan sektor.';
+      r.obj = 'Melaksanakan ' + r.jenis.toLowerCase() + ' mengikut perancangan sektor.';
+    }
+    if (r.mod === 'hibrid') r.penyertaan = { 'Lina Marlissa': 'atas_talian' };
+  });
+  try { var retained = JSON.parse(sessionStorage.getItem(stateKey)); if (retained) { REKOD = retained.rekod; CUTI = retained.cuti; } } catch(e) {}
+  function persist() { sessionStorage.setItem(stateKey, JSON.stringify({rekod:REKOD, cuti:CUTI})); }
+  function online(r, name) { return r.mod === 'atas_talian' || (r.mod === 'hibrid' && r.penyertaan && r.penyertaan[name || M.me().name] === 'atas_talian'); }
+  function physical(r,name){return r.mod==='fizikal'||(r.mod==='hibrid'&&r.penyertaan&&r.penyertaan[name||M.me().name]==='fizikal');}
+  function summary(sek, month, awam) {
+    var list = REKOD.filter(function(r) { return r.status === 'selesai' && r.laporan === 'lengkap' && r.tarikh.slice(0,7) === (month || '2026-10') && (!sek || sek === 'ALL' || r.sek === sek) && (!awam || (r.sek !== 'SPsK' && r.sek !== 'SPP' && r.tahap !== 'sulit')); });
+    var sch = new Set(), staff = new Set(), jenis = {};
+    list.forEach(function(r) { r.sekolah.forEach(function(s){sch.add(s)}); [r.owner].concat(r.peserta).forEach(function(n){staff.add(n)}); jenis[r.jenis]=(jenis[r.jenis]||0)+1; });
+    return {a:list.length,s:sch.size,p:staff.size,jenis:jenis,list:list};
+  }
+
   function onDate(r, iso) { return r.tarikh <= iso && iso <= r.tamat; }
   function involves(r, name) { return r.owner === name || r.peserta.indexOf(name) >= 0; }
   function staf(name) { for (var i = 0; i < STAF.length; i++) if (STAF[i].n === name) return STAF[i]; return { n: name, sek: '', jaw: '' }; }
@@ -93,9 +113,10 @@
     return false;
   }
   function modIcon(r) { return r.mod === 'atas_talian' ? 'online' : r.mod === 'hibrid' ? 'hybrid' : (r.sekolah.length ? 'pin' : 'office'); }
-  function where(r) {
+  function where(r, person) {
     if (r.tahap === 'sulit' && !canSulit(r)) return { t: 'Tugas rasmi — lokasi dirahsiakan', ic: 'lock', hidden: true };
-    if (r.mod === 'atas_talian') return { t: 'Tugas rasmi — Atas talian', ic: 'online' };
+    if (online(r, person)) return { t: 'Tugas rasmi — Atas talian', ic: 'online' };
+    if(r.mod==='hibrid'&&!physical(r,person))return {t:'Tugas rasmi — Hibrid · penyertaan belum dinyatakan',ic:'hybrid'};
     var place = r.sekolah.length ? (r.sekolah.length > 2 ? r.sekolah.length + ' sekolah' : r.sekolah.join(', ')) : r.lokasi;
     return { t: 'Tugas rasmi — ' + (r.mod === 'hibrid' ? 'Hibrid · ' : '') + place, ic: modIcon(r) };
   }
@@ -109,7 +130,7 @@
       var a = Number(r.tarikh.slice(8)), b = Number(r.tamat.slice(8));
       return iso && r.tarikh < iso ? 'Hari ' + (Number(iso.slice(8)) - a + 1) + '/' + (b - a + 1) : a + '–' + b + ' Okt';
     }
-    return r.mula + '–' + r.akhir;
+    return r.sehari ? 'Sehari' : r.mula + '–' + r.akhir;
   }
   function statusHtml(r, today) {
     if (r.status === 'dibatalkan') return '<span class="st cancel">' + M.icon('x') + 'Dibatalkan</span>';
@@ -137,8 +158,8 @@
       body = '<div class="kv2"><div>' + when + '</div><div>' + M.icon('lock') + ' Tugas rasmi — lokasi dirahsiakan</div><div>' + M.esc(r.owner) + ' ' + M.sk(r.sek) + '</div></div>' +
         '<p class="hint" style="margin-top:14px">Butiran hanya untuk ketua sektor ' + r.sek + ' dan KPPD.</p>';
     } else {
-      var place = r.mod === 'atas_talian' ? 'Atas talian' + (r.lokasi ? ' · ' + M.esc(r.lokasi) : '') : (r.sekolah.length ? r.sekolah.map(M.esc).join('<br>') : M.esc(r.lokasi || ''));
-      if (r.mod === 'hibrid') place = 'Hibrid · ' + place;
+      var place = online(r) ? 'Atas talian' + (r.lokasi ? ' · ' + M.esc(r.lokasi) : '') : (r.sekolah.length ? r.sekolah.map(M.esc).join('<br>') : M.esc(r.lokasi || ''));
+      if(r.mod==='hibrid')place='Hibrid · '+(online(r)?'penyertaan atas talian':place);
       var flag = '';
       if (r.status === 'dibatalkan') flag = '<p class="flag">Dibatalkan' + (r.batal ? ' — ' + M.esc(r.batal) : '') + '</p>';
       else if (past && r.laporan !== 'lengkap') flag = '<p class="flag warn">Laporan belum lengkap</p>';
@@ -150,6 +171,7 @@
         (r.siri ? '<dt>Siri</dt><dd>' + M.esc(r.siri) + '</dd>' : '') +
         '<dt>Akses</dt><dd>' + (r.tahap === 'umum' ? 'Umum' : r.tahap === 'sulit' ? 'Sulit' : 'Dalaman (staf sahaja)') + '</dd><dt>Rujukan</dt><dd>' + r.id + '</dd></dl></details>';
     }
+    if(!hid&&r.rum)body+='<details class="more" open><summary>Rumusan laporan</summary><p style="margin-top:12px;font-size:15px">'+M.esc(r.rum)+'</p></details>';
     var foot = '<button class="btn btn-line" data-close>Tutup</button>';
     if (!hid && mine && r.status !== 'dibatalkan') {
       if (!past) foot = '<span class="links"><button class="text-btn" data-act="batal">Batal</button><a class="text-btn" href="rekod.html?salin=' + r.id + '">Salin</a></span><a class="btn btn-ink" href="rekod.html?ubah=' + r.id + '">Ubah</a>';
@@ -164,21 +186,21 @@
       d.querySelector('.drawer-b').insertAdjacentHTML('beforeend', '<div class="restricted"><label class="lbl" for="sb">Sebab (pilihan)</label><input id="sb" type="text" placeholder="cth. Ditunda oleh sekolah"><div style="margin-top:10px"><button class="btn btn-dark btn-sm" data-act="sah">Sahkan batal</button></div></div>');
       b.disabled = true;
       d.querySelector('[data-act="sah"]').addEventListener('click', function () {
-        r.status = 'dibatalkan'; r.batal = d.querySelector('#sb').value || '';
+        r.status = 'dibatalkan'; r.batal = d.querySelector('#sb').value || ''; persist();
         M.closeDrawer(); M.toast('Rancangan dibatalkan'); document.dispatchEvent(new Event('datachange'));
       });
     });
   }
   function openCuti(c) {
     var allow = canCutiType(c), mine = c.owner === M.me().name;
-    var tempoh = c.dari === c.hingga ? M.fmtDate(c.dari) + ' · Sehari' : M.fmtDate(c.dari) + ' – ' + M.fmtDate(c.hingga);
+    var tempoh = c.dari === c.hingga ? M.fmtDate(c.dari) + ' · ' + (c.bahagian==='pagi'?'Pagi':c.bahagian==='petang'?'Petang':'Sehari') : M.fmtDate(c.dari) + ' – ' + M.fmtDate(c.hingga);
     var body = '<dl class="dl"><dt>Pegawai</dt><dd>' + M.esc(c.owner) + ' ' + M.sk(c.sek) + '</dd><dt>Tempoh</dt><dd>' + tempoh + '</dd><dt>Jadual</dt><dd>' + M.icon('away') + ' Tidak di pejabat</dd></dl>' +
       (allow ? '<div class="restricted" id="rst"><div class="mono muted">Butiran terhad</div><p class="hint" style="margin:6px 0 10px">Akses direkod.</p><button class="btn btn-dark btn-sm" data-act="open">' + M.icon('lock') + 'Buka butiran terhad</button></div>'
         : '<p class="note box" style="margin-top:16px">' + M.icon('info') + '<span>Makluman sahaja.</span></p>');
-    var d = M.drawer({ kicker: 'Ketidakhadiran', title: 'Tidak di pejabat', body: body, foot: mine ? '<a class="btn btn-ink" href="rekod.html?jenis=cuti">Ubah makluman</a>' : '<button class="btn btn-line" data-close>Tutup</button>' });
+    var d = M.drawer({ kicker: 'Ketidakhadiran', title: 'Tidak di pejabat', body: body, foot: mine ? '<a class="btn btn-ink" href="rekod.html?jenis=cuti&cuti=' + c.id + '">Ubah makluman</a>' : '<button class="btn btn-line" data-close>Tutup</button>' });
     var b = d.querySelector('[data-act="open"]');
     if (b) b.addEventListener('click', function () {
-      d.querySelector('#rst').innerHTML = '<div class="mono muted">Butiran terhad</div><dl class="dl" style="margin-top:10px"><dt>Jenis</dt><dd><b>' + c.jenis + '</b></dd><dt>Sumber</dt><dd>Makluman pegawai · disahkan HR</dd></dl><p class="hint" style="margin-top:10px">Tiada diagnosis, destinasi atau lampiran disimpan. Panel ditutup bila anda tukar rekod.</p>';
+      d.querySelector('#rst').innerHTML = '<div class="mono muted">Butiran terhad</div><dl class="dl" style="margin-top:10px"><dt>Jenis</dt><dd><b>' + c.jenis + '</b></dd><dt>Sumber</dt><dd>Makluman pegawai</dd></dl><p class="hint" style="margin-top:10px">Tiada diagnosis, destinasi atau lampiran disimpan. Panel ditutup bila anda tukar rekod.</p>';
     });
   }
 
@@ -191,8 +213,8 @@
     CUTI.forEach(function (c) { if (c.dari <= T && T <= c.hingga && c.owner === n) es.push({ c: c }); });
     es.sort(function (a, b) { return (a.r ? a.r.mula : '') < (b.r ? b.r.mula : '') ? -1 : 1; });
     var list = es.map(function (e) {
-      if (e.c) return '<button class="li" data-c="' + e.c.id + '"><span class="t">Sehari</span><span><span class="n">Tidak di pejabat</span></span><span></span></button>';
-      var w = where(e.r);
+      if (e.c) return '<button class="li" data-c="' + e.c.id + '"><span class="t">' + (e.c.bahagian==='pagi'?'Pagi':e.c.bahagian==='petang'?'Petang':'Sehari') + '</span><span><span class="n">Tidak di pejabat</span></span><span></span></button>';
+      var w = where(e.r, n);
       return '<button class="li" data-r="' + e.r.id + '"><span class="t">' + timeLabel(e.r, T) + '</span><span><span class="n">' + M.esc(w.t.replace('Tugas rasmi — ', '')) + '</span>' + (w.hidden ? '' : '<span class="s" style="display:block">' + M.esc(e.r.tajuk) + '</span>') + '</span><span></span></button>';
     }).join('') || '<div class="empty">Tiada jadual direkodkan hari ini.</div>';
     var d = M.drawer({ title: 'Pegawai', body: '<div class="kad-h"><span class="avatar lg">' + ini(n) + '</span><div><b>' + M.esc(n) + '</b><span>' + M.esc(s.jaw) + '</span><span>' + M.sk(s.sek) + ' ' + M.esc(M.sekName(s.sek)) + '</span></div></div>' +
@@ -205,7 +227,7 @@
     });
   }
 
-  window.D = { STAF: STAF, ini: ini, emel: emel, openKad: openKad, tarikhLabel: tarikhLabel, openRecord: openRecord, openCuti: openCuti, REKOD: REKOD, CUTI: CUTI, onDate: onDate, involves: involves, staf: staf,
+  window.D = { persist: persist, online: online, physical: physical, summary: summary, STAF: STAF, ini: ini, emel: emel, openKad: openKad, tarikhLabel: tarikhLabel, openRecord: openRecord, openCuti: openCuti, REKOD: REKOD, CUTI: CUTI, onDate: onDate, involves: involves, staf: staf,
     canSulit: canSulit, canCutiType: canCutiType, where: where, zones: zones, zoneBadges: zoneBadges,
     timeLabel: timeLabel, statusHtml: statusHtml, lvlHtml: lvlHtml, modIcon: modIcon };
 })();

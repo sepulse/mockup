@@ -6,7 +6,7 @@
 <title>PPDK.CH · PPD Kuching</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="base.css?v=9eee8c54">
-<link rel="stylesheet" href="gaya.css?v=4e92cfc8">
+<link rel="stylesheet" href="gaya.css?v=cc708408">
 <link rel="stylesheet" href="awam.css?v=03e55e6c">
 </head>
 <body>
@@ -19,16 +19,12 @@
   <div class="feed" id="feed"></div>
 
   <div class="h2p"><h2>Oktober dalam angka</h2><span>agregat · tiada nama sekolah atau pegawai</span></div>
-  <div class="agg"><div><b>148</b><span>Aktiviti direkodkan</span></div><div><b>74</b><span>Sekolah terlibat</span></div><div><b>36</b><span>Laporan diterbitkan</span></div></div>
-  <div style="margin-top:18px;border-top:1px solid var(--rule)">
-    <div class="bar-r"><span>Sekolah rendah</span><span class="bar"><i style="width:44%"></i></span><b>52/118</b></div>
-    <div class="bar-r"><span>Sekolah menengah</span><span class="bar"><i style="width:50%"></i></span><b>22/44</b></div>
-  </div>
+  <div class="agg" id="agg"></div>
   <p class="tiny" style="margin-top:10px">Tidak termasuk Sektor Psikologi &amp; Kaunseling dan Sektor Pentaksiran &amp; Peperiksaan.</p>
 </div>
-<script src="shared.js?v=c2616f6b"></script>
-<script src="data.js?v=0ba6581e"></script>
-<script src="awam.js?v=7ba90fa8"></script>
+<script src="shared.js?v=7284f59d"></script>
+<script src="data.js?v=261f632f"></script>
+<script src="awam.js?v=584359da"></script>
 <script>
 (function () {
   M.mount({ bare: true, noRole: true });
@@ -42,6 +38,8 @@
     document.getElementById('feed').innerHTML = l.map(AW.item).join('') || '<div class="empty">Belum ada aktiviti diterbitkan untuk sektor ini.</div>';
   }
   document.getElementById('schips').addEventListener('click', function (e) { var b = e.target.closest('[data-s]'); if (b) { sel = b.getAttribute('data-s'); chips(); feed(); } });
+  var totals=D.summary('ALL','2026-10',true);
+  document.getElementById('agg').innerHTML='<div><b>'+totals.a+'</b><span>Aktiviti selesai</span></div><div><b>'+totals.s+'</b><span>Sekolah terlibat</span></div><div><b>'+AW.pub.length+'</b><span>Laporan diterbitkan</span></div>';
   chips(); feed();
 })();
 </script>

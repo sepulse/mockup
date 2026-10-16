@@ -101,3 +101,6 @@ a.who[aria-current="page"] div span{color:var(--mint)}
 .avatar.lg{width:56px;height:56px;font-size:18px}
 .kad-h b{display:block;font:700 19px/1.25 var(--display)}
 .kad-h span{display:block;font-size:13.5px;color:var(--ink-2);margin-top:3px}
+
+/* Pembetulan kecil tanpa menukar sistem visual. */
+.lbl{display:block;font-size:13px;font-weight:600;margin-bottom:6px}.sec-t{flex-wrap:wrap}.mfab{display:none}#tjen{flex-wrap:wrap}#tjen button{min-height:44px}.addrow button{min-height:44px}.li .t{overflow-wrap:normal}.inline .tm{flex:1 1 120px}@media(max-width:780px){.next .tm{font-size:22px}.bnav a{font-size:12px}.li{padding-top:16px;padding-bottom:16px}.tiny{font-size:13px}.fg .inline>.tm{flex-basis:120px}}

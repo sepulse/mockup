@@ -7,7 +7,7 @@
 <title>Jadual · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
 <link rel="stylesheet" href="base.css?v=9eee8c54">
-<link rel="stylesheet" href="gaya.css?v=4e92cfc8">
+<link rel="stylesheet" href="gaya.css?v=cc708408">
 <style>
 .wk{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px}
 .wk b{font:700 15px/1 var(--display)}
@@ -28,8 +28,8 @@
   <div id="out"></div>
 </div>
 
-<script src="shared.js?v=c2616f6b"></script>
-<script src="data.js?v=0ba6581e"></script>
+<script src="shared.js?v=7284f59d"></script>
+<script src="data.js?v=261f632f"></script>
 <script>
 (function () {
   M.mount({ page: 'jadual' });
@@ -61,7 +61,7 @@
       h += '<div class="dh">' + M.fmtDate(d).replace(/ \d{4}$/, '').replace(' Oktober', ' Okt') + (d === M.TODAY ? '<span>Hari ini</span>' : '') + '</div>';
       if (!rs.length && !cs.length) { h += '<div class="none">Tiada jadual</div>'; continue; }
       h += '<div class="list">' + cs.map(function (c) {
-        return '<button class="li" data-c="' + c.id + '"><span class="t">Sehari</span><span><span class="n">' + (others ? M.esc(c.owner) + ' ' + M.sk(c.sek) : 'Tidak di pejabat') + '</span>' + (others ? '<span class="s" style="display:block">Tidak di pejabat</span>' : '') + '</span><span></span></button>';
+        return '<button class="li" data-c="' + c.id + '"><span class="t">' + (c.bahagian==='pagi'?'Pagi':c.bahagian==='petang'?'Petang':'Sehari') + '</span><span><span class="n">' + (others ? M.esc(c.owner) + ' ' + M.sk(c.sek) : 'Tidak di pejabat') + '</span>' + (others ? '<span class="s" style="display:block">Tidak di pejabat</span>' : '') + '</span><span></span></button>';
       }).join('') + rs.map(function (r) {
         var w = D.where(r), need = r.owner === M.me().name && r.status !== 'dibatalkan' && r.tamat < M.TODAY && r.laporan !== 'lengkap';
         var title = w.hidden ? 'Tugas rasmi' : M.esc(r.tajuk);
