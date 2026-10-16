@@ -122,18 +122,18 @@
   function p2() {
     return '<div class="field"><label class="lbl" for="obj">Objektif <span class="muted" style="font-weight:400">— pilihan</span></label><textarea id="obj" rows="2" placeholder="Tujuan lawatan / aktiviti.">' + M.esc(r.obj || '') + '</textarea></div>' +
       '<div class="aibox"><label class="lbl" for="cat">Catatan ringkas</label><textarea id="cat" rows="4" placeholder="Tulis ringkas, satu perkara satu baris. Contoh:\nguru guna bahan konkrit untuk pecahan\n3 kelas dipantau\nperlu bimbingan susulan PBD">' + M.esc(r.cat || '') + '</textarea>' +
-      '<div class="row"><button class="btn btn-line" type="button" id="ai">Susun draf daripada catatan</button><span class="tiny" id="ais">Draf disusun daripada catatan anda sahaja. Semak sebelum simpan.</span></div></div>' +
-      '<div class="field" style="margin-top:20px"><div class="lblrow"><label class="lbl" for="rum">Rumusan <span style="color:var(--isd)">*</span></label><span id="tag-rum">' + (r.ai ? '<span class="aitag">Draf · semak fakta</span>' : '') + '</span></div><textarea id="rum" rows="5" placeholder="Apa yang berlaku dan dapatan utama.">' + M.esc(r.rum || '') + '</textarea></div>' +
+      '<div class="row"><button class="btn btn-line" type="button" id="ai">Jana draf AI</button><span class="tiny" id="ais">Enjin AI yang sama dengan borang ICT. Dijana daripada maklumat rekod + catatan anda sahaja.</span></div></div>' +
+      '<div class="field" style="margin-top:20px"><div class="lblrow"><label class="lbl" for="rum">Rumusan <span style="color:var(--isd)">*</span></label><span id="tag-rum">' + (r.ai ? '<span class="aitag">Draf dibantu AI · semak fakta</span>' : '') + '</span></div><textarea id="rum" rows="5" placeholder="Apa yang berlaku dan dapatan utama.">' + M.esc(r.rum || '') + '</textarea></div>' +
       '<div class="addrow" id="ladd" style="margin-top:6px">' + (r.imp ? '' : '<button type="button" data-add="imp">+ Impak</button>') + (r.ts ? '' : '<button type="button" data-add="ts">+ Tindak susul</button>') + (r.bil ? '' : '<button type="button" data-add="bil">+ Bilangan peserta</button>') + '</div>' +
       '<div class="field" id="x-imp"' + (r.imp ? '' : ' hidden') + '><label class="lbl" for="imp">Impak <span class="muted" style="font-weight:400">— senarai bernombor</span></label><textarea id="imp" rows="3">' + M.esc(r.imp || '') + '</textarea></div>' +
       '<div class="field" id="x-ts"' + (r.ts ? '' : ' hidden') + '><label class="lbl" for="ts">Tindak susul <span class="muted" style="font-weight:400">— teks laporan sahaja</span></label><textarea id="ts" rows="3">' + M.esc(r.ts || '') + '</textarea></div>' +
       '<div class="field" id="x-bil"' + (r.bil ? '' : ' hidden') + '><span class="lbl">Bilangan peserta (tiada nama)</span><div class="num3">' + ['Guru', 'Murid', 'Pihak luar'].map(function (k, i) { return '<input type="number" min="0" class="bil" placeholder="' + k + '" aria-label="' + k + '" value="' + ((r.bil || [])[i] || '') + '">'; }).join('') + '</div></div>';
   }
-  /* Simulasi pembantu: menyusun semula catatan pegawai. Tiada fakta baharu ditambah. */
+  /* Simulasi draf AI (enjin sama dengan borang ICT): input = maklumat rekod + catatan pegawai sahaja; tiada fakta baharu. */
   function draft() {
     var c = lines($('cat').value);
     if (!c.length) { $('cat').focus(); M.toast('Tulis catatan dahulu'); return; }
-    var b = $('ai'); b.disabled = true; b.textContent = 'Menyusun…';
+    var b = $('ai'); b.disabled = true; b.textContent = 'Menjana draf…'; $('ais').textContent = 'Sedang menjana · anggaran 30–50 s (demo: segera). Kekalkan halaman ini terbuka.';
     setTimeout(function () {
       var head = r.jenis + ' di ' + place + ' pada ' + dateTxt() + ' melibatkan ' + team().length + ' pegawai.';
       $('rum').value = head + ' ' + c.map(function (x) { return x.charAt(0).toUpperCase() + x.slice(1).replace(/\.?$/, '.'); }).join(' ');
@@ -141,10 +141,10 @@
       if (imp.length) { $('imp').value = numbered(imp.join('\n')); $('x-imp').hidden = false; }
       if (ts.length) { $('ts').value = numbered(ts.join('\n')); $('x-ts').hidden = false; }
       [].forEach.call(document.querySelectorAll('#ladd [data-add]'), function (x) { if (!document.getElementById('x-' + x.getAttribute('data-add')).hidden) x.hidden = true; });
-      r.ai = true; $('tag-rum').innerHTML = '<span class="aitag">Draf · semak fakta</span>';
-      b.disabled = false; b.textContent = 'Susun semula';
+      r.ai = true; $('tag-rum').innerHTML = '<span class="aitag">Draf dibantu AI · semak fakta</span>';
+      b.disabled = false; b.textContent = 'Jana semula';
       $('ais').textContent = 'Draf siap. Betulkan apa-apa yang tidak tepat.';
-    }, 900);
+    }, 1400);
   }
 
   /* ---------- Langkah 3: Bukti, pratonton, semak ---------- */
