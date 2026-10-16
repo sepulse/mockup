@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PPDK.CH · PPD Kuching</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css?v=9eee8c54">
+<link rel="stylesheet" href="gaya.css?v=09cf459e">
+<link rel="stylesheet" href="awam.css?v=03e55e6c">
+</head>
+<body>
+<div id="content" class="pw">
+  <div class="ph1">
+    <h1>Aktiviti PPD Kuching</h1>
+    <p>Laporan pegawai Pejabat Pendidikan Daerah Kuching yang telah disemak dan diterbitkan.</p>
+  </div>
+  <nav class="schips" id="schips" aria-label="Sektor"></nav>
+  <div class="feed" id="feed"></div>
+
+  <div class="h2p"><h2>Oktober dalam angka</h2><span>agregat · tiada nama sekolah atau pegawai</span></div>
+  <div class="agg" id="agg"></div>
+  <p class="tiny" style="margin-top:10px">Tidak termasuk Sektor Psikologi &amp; Kaunseling dan Sektor Pentaksiran &amp; Peperiksaan.</p>
+</div>
+<script src="shared.js?v=dc3b2c54"></script>
+<script src="data.js?v=9cdc9840"></script>
+<script src="awam.js?v=d902e79b"></script>
+<script>
+(function () {
+  M.mount({ bare: true, noRole: true });
+  AW.header('aktiviti');
+  var sel = '';
+  function chips() {
+    document.getElementById('schips').innerHTML = '<button type="button" data-s="" aria-pressed="' + (sel === '') + '">Semua</button>' + M.SEKTOR.map(function (s) { return '<button type="button" data-s="' + s.k + '" aria-pressed="' + (sel === s.k) + '" style="--sc:' + AW.color(s.k) + '"><i></i>' + AW.short(s.k) + '</button>'; }).join('');
+  }
+  function feed() {
+    var l = AW.pub.filter(function (r) { return !sel || r.sek === sel; });
+    document.getElementById('feed').innerHTML = l.map(AW.item).join('') || '<div class="empty">Belum ada aktiviti diterbitkan untuk sektor ini.</div>';
+  }
+  document.getElementById('schips').addEventListener('click', function (e) { var b = e.target.closest('[data-s]'); if (b) { sel = b.getAttribute('data-s'); chips(); feed(); } });
+  var totals=D.summary('ALL','2026-10',true);
+  document.getElementById('agg').innerHTML='<div><b>'+totals.a+'</b><span>Aktiviti selesai</span></div><div><b>'+totals.s+'</b><span>Sekolah terlibat</span></div><div><b>'+AW.pub.length+'</b><span>Laporan diterbitkan</span></div>';
+  chips(); feed();
+})();
+</script>
+</body>
+</html>

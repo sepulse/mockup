@@ -1,0 +1,129 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Jadual · Staf</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css?v=9eee8c54">
+<link rel="stylesheet" href="gaya.css?v=09cf459e">
+<style>
+.wk{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px}
+.wk b{font:700 15px/1 var(--display)}
+.wk .iconbtn{width:36px;height:36px}
+.dh{display:flex;align-items:baseline;gap:8px;margin:24px 0 0;padding-bottom:6px;font:700 14px/1.2 var(--display)}
+.dh span{font:600 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--petrol)}
+.none{padding:10px 2px;border-top:1px solid var(--ink);color:var(--muted);font-size:13.5px}
+/* Jalur minggu: satu pandangan ringkas, warna = sektor pemilik tugas */
+.wstrip{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin-top:14px}
+.wd{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:10px 10px 9px;border:1px solid var(--rule);background:var(--paper);text-align:left;min-height:44px}
+.wd:hover{border-color:var(--ink-2)}
+.wd .k{font:600 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.wd .d{font:700 22px/1 var(--display)}
+.wd .dots{display:flex;flex-wrap:wrap;gap:3px;min-height:7px}
+.wd .dots i{width:7px;height:7px;background:var(--sc)}
+.wd .dots i.o{background:none;box-shadow:inset 0 0 0 1px var(--muted)}
+.wd .dots em{font:500 10px/7px var(--mono);font-style:normal;color:var(--muted)}
+.wd.past .d{color:var(--muted)}
+.wd.today{background:var(--petrol);border-color:var(--petrol);color:#fff}
+.wd.today .k,.wd.today .dots em{color:rgba(255,255,255,.75)}
+.wd.today .dots i{box-shadow:0 0 0 1px rgba(255,255,255,.55)}
+.wd.today .dots i.o{box-shadow:inset 0 0 0 1px #fff}
+.dh{scroll-margin-top:80px}
+.dh.past{color:var(--muted)}
+.dh.today{color:var(--petrol)}
+.dh.today span{background:var(--petrol);color:#fff;padding:3px 6px}
+/* Jalur sektor di kiri setiap tugas */
+#out .li{box-shadow:inset 3px 0 0 var(--sc,var(--rule));padding-left:14px}
+#out .li.cuti{box-shadow:inset 3px 0 0 var(--rule)}
+#out .li.cx{box-shadow:inset 3px 0 0 var(--rule)}
+@media(max-width:780px){.wstrip{gap:4px}.wd{padding:8px 7px}.wd .d{font-size:19px}#out .li{padding-left:12px}}
+:root[data-theme="dark"] #out .li{box-shadow:inset 3px 0 0 color-mix(in srgb,var(--sc) 65%,#fff)}:root[data-theme="dark"] #out .li.cuti,:root[data-theme="dark"] #out .li.cx{box-shadow:inset 3px 0 0 var(--rule)}:root[data-theme="dark"] .wd .dots i{background:color-mix(in srgb,var(--sc) 65%,#fff)}
+</style>
+</head>
+<body>
+<div id="content" class="wrap-n">
+  <div class="page-h"><div><h1>Jadual</h1><div class="sub" id="ctx"></div></div><button class="btn btn-line" type="button" id="pap">Paparan</button></div>
+  <div class="wk">
+    <button class="iconbtn" type="button" id="prev" aria-label="Minggu sebelum"><svg class="i" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button>
+    <b id="range"></b>
+    <button class="iconbtn" type="button" id="next" aria-label="Minggu seterusnya"><svg class="i" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button>
+  </div>
+  <div class="wstrip" id="strip" aria-label="Ringkasan minggu"></div>
+  <div id="out"></div>
+</div>
+
+<script src="shared.js?v=dc3b2c54"></script>
+<script src="data.js?v=9cdc9840"></script>
+<script>
+(function () {
+  M.mount({ page: 'jadual' });
+  var $ = function (id) { return document.getElementById(id); };
+  var BASE = new Date(2026, 9, 12), st = { scope: null, wk: 0, cx: false, sek: '' };
+  var SC = { saya: 'Jadual saya', sektor: 'Sektor saya', semua: 'Semua pegawai' };
+  function iso(d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); }
+  function add(d, n) { var x = new Date(d); x.setDate(x.getDate() + n); return x; }
+  function def() { var p = new URLSearchParams(location.search).get('v'); return p || (M.role() === 'kppd' ? 'semua' : M.role() === 'ketua' ? 'sektor' : 'saya'); }
+  function vis(r) {
+    var m = M.me();
+    if (r.status === 'dibatalkan' && !st.cx) return false;
+    if (st.scope === 'saya') return D.involves(r, m.name);
+    if (st.scope === 'sektor') return r.sek === m.sek || D.involves(r, m.name);
+    return !st.sek || r.sek === st.sek;
+  }
+  function scv(k) { return 'var(--s-' + (k === 'Pengurusan' ? 'PGR' : k) + ')'; }
+  function visC(c) { var m = M.me(); return st.scope === 'saya' ? c.owner === m.name : st.scope === 'sektor' ? c.sek === m.sek : (!st.sek || c.sek === st.sek); }
+
+  function render() {
+    var s = add(BASE, st.wk * 7), e = add(s, 4), h = '', sh = '', others = st.scope !== 'saya';
+    $('range').textContent = s.getDate() + '–' + e.getDate() + ' ' + M.BULAN[e.getMonth()];
+    $('ctx').textContent = SC[st.scope] + (st.sek ? ' · ' + st.sek : '');
+    $('prev').disabled = st.wk <= -1; $('next').disabled = st.wk >= 2;
+    for (var i = 0; i < 7; i++) {
+      var d = iso(add(s, i));
+      var rs = D.REKOD.filter(function (r) { return D.onDate(r, d) && vis(r); }).sort(function (a, b) { return a.mula < b.mula ? -1 : 1; });
+      var cs = D.CUTI.filter(function (c) { return c.dari <= d && d <= c.hingga && visC(c); });
+      var tense = d === M.TODAY ? ' today' : d < M.TODAY ? ' past' : '';
+      if (i < 5) {
+        var dots = rs.filter(function (r) { return r.status !== 'dibatalkan'; }).map(function (r) { return '<i style="--sc:' + scv(r.sek) + '"></i>'; }).concat(cs.map(function () { return '<i class="o"></i>'; }));
+        sh += '<button type="button" class="wd' + tense + '" data-go="d' + d + '" aria-label="' + M.fmtDate(d) + ', ' + (rs.length + cs.length) + ' item"><span class="k">' + M.dayName(d).slice(0, 3) + '</span><span class="d">' + Number(d.slice(8)) + '</span><span class="dots">' + (dots.length > 6 ? dots.slice(0, 5).join('') + '<em>+' + (dots.length - 5) + '</em>' : dots.join('')) + '</span></button>';
+      }
+      if (i >= 5 && !rs.length && !cs.length) continue;
+      h += '<div class="dh' + tense + '" id="d' + d + '">' + M.fmtDate(d).replace(/ \d{4}$/, '').replace(' Oktober', ' Okt') + (d === M.TODAY ? '<span>Hari ini</span>' : '') + '</div>';
+      if (!rs.length && !cs.length) { h += '<div class="none">Tiada jadual</div>'; continue; }
+      h += '<div class="list">' + cs.map(function (c) {
+        return '<button class="li cuti" data-c="' + c.id + '"><span class="t">' + (c.bahagian==='pagi'?'Pagi':c.bahagian==='petang'?'Petang':'Sehari') + '</span><span><span class="n">' + (others ? M.esc(c.owner) + ' ' + M.sk(c.sek) : 'Tidak di pejabat') + '</span>' + (others ? '<span class="s" style="display:block">Tidak di pejabat</span>' : '') + '</span><span></span></button>';
+      }).join('') + rs.map(function (r) {
+        var w = D.where(r), need = r.owner === M.me().name && r.status !== 'dibatalkan' && r.tamat < M.TODAY && r.laporan !== 'lengkap';
+        var title = w.hidden ? 'Tugas rasmi' : M.esc(r.tajuk);
+        return '<button class="li' + (r.status === 'dibatalkan' ? ' cx' : '') + '" style="--sc:' + scv(r.sek) + '" data-r="' + r.id + '"><span class="t">' + D.timeLabel(r, d) + '</span><span><span class="n">' + (others ? M.esc(r.owner) + ' ' + M.sk(r.sek) : title) + '</span><span class="s" style="display:block">' + (others && !w.hidden ? title + ' · ' : '') + M.esc(w.t.replace('Tugas rasmi — ', '')) + (w.hidden ? '' : D.ictTag(r)) + '</span></span><span class="e' + (need ? ' warn' : '') + '">' + (need ? 'Belum lapor' : r.status === 'dibatalkan' ? 'Dibatalkan' : '') + '</span></button>';
+      }).join('') + '</div>';
+    }
+    $('out').innerHTML = h; $('strip').innerHTML = sh;
+  }
+  function paparan() {
+    var d = M.drawer({ title: 'Paparan', body: '<div class="field"><span class="lbl">Tunjuk</span><div class="seg" id="psc">' + ['saya', 'sektor', 'semua'].map(function (k) { return '<button type="button" data-v="' + k + '" aria-pressed="' + (st.scope === k) + '">' + SC[k] + '</button>'; }).join('') + '</div></div>' +
+      '<div class="field" id="psekw"' + (st.scope === 'semua' ? '' : ' hidden') + '><label class="lbl" for="psek">Sektor</label><select id="psek"><option value="">Semua sektor</option>' + M.SEKTOR.map(function (s) { return '<option value="' + s.k + '"' + (s.k === st.sek ? ' selected' : '') + '>' + s.n + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label class="check"><input type="checkbox" id="pcx"' + (st.cx ? ' checked' : '') + '> Tunjuk rancangan dibatalkan</label></div>',
+      foot: '<button class="btn btn-ink" data-act="ok">Tunjuk</button>' });
+    var sc = st.scope;
+    d.querySelector('#psc').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; sc = b.getAttribute('data-v'); [].forEach.call(this.children, function (x) { x.setAttribute('aria-pressed', x === b); }); d.querySelector('#psekw').hidden = sc !== 'semua'; });
+    d.querySelector('[data-act="ok"]').addEventListener('click', function () { st.scope = sc; st.sek = sc === 'semua' ? d.querySelector('#psek').value : ''; st.cx = d.querySelector('#pcx').checked; M.closeDrawer(); render(); });
+  }
+  $('pap').addEventListener('click', paparan);
+  $('prev').addEventListener('click', function () { st.wk--; render(); });
+  $('next').addEventListener('click', function () { st.wk++; render(); });
+  document.addEventListener('click', function (e) {
+    var t;
+    if ((t = e.target.closest('[data-go]'))) { var g = document.getElementById(t.getAttribute('data-go')); if (g) g.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
+    else if ((t = e.target.closest('[data-r]'))) D.openRecord(D.REKOD.filter(function (x) { return x.id === t.getAttribute('data-r'); })[0]);
+    else if ((t = e.target.closest('[data-c]'))) D.openCuti(D.CUTI.filter(function (x) { return x.id === t.getAttribute('data-c'); })[0]);
+  });
+  document.addEventListener('rolechange', function () { st.scope = def(); st.sek = ''; render(); });
+  document.addEventListener('datachange', render);
+  st.scope = def(); render();
+})();
+</script>
+</body>
+</html>

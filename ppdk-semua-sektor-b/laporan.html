@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Laporan · PPDK.CH</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css?v=9eee8c54">
+<link rel="stylesheet" href="gaya.css?v=09cf459e">
+<link rel="stylesheet" href="awam.css?v=03e55e6c">
+<style>
+.art{max-width:720px}
+.art h1{font:800 clamp(26px,4vw,38px)/1.12 var(--display);letter-spacing:-.02em;margin-top:12px}
+.art .meta{margin-top:10px;font-size:14.5px;color:var(--ink-2);display:flex;flex-direction:column;gap:3px}
+.art .hero{aspect-ratio:16/9;margin-top:22px}
+.art h2{font:600 12px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:26px 0 8px}
+.art p.tx{font-size:16px;line-height:1.65}
+.art p.tx i{color:var(--muted)}
+.gal{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.gal .ph{aspect-ratio:4/3}
+.share{display:flex;gap:10px;align-items:center;margin-top:26px;padding-top:16px;border-top:1px solid var(--rule)}
+.hash{font:500 13px/1.6 var(--mono);color:var(--petrol)}
+</style>
+</head>
+<body>
+<div id="content" class="pw"><div id="body"></div></div>
+<script src="shared.js?v=dc3b2c54"></script>
+<script src="data.js?v=9cdc9840"></script>
+<script src="awam.js?v=d902e79b"></script>
+<script>
+(function () {
+  M.mount({ bare: true, noRole: true });
+  AW.header('aktiviti');
+  var id = new URLSearchParams(location.search).get('id');
+  var r = AW.pub.filter(function (x) { return x.id === id; })[0];
+  if(!r){document.title='Laporan tidak ditemui';document.getElementById('body').innerHTML='<div class="ph1"><h1>Laporan tidak ditemui</h1><p>Pautan mungkin tidak sah atau laporan belum diterbitkan.</p><a class="btn btn-ink" href="portal.html">Kembali ke aktiviti</a></div>';return;}
+  document.title = r.tajuk + ' · PPDK.CH';
+  var more = AW.pub.filter(function (x) { return x.sek === r.sek && x.id !== r.id; }).slice(0, 3);
+  document.getElementById('body').innerHTML = '<article class="art"><p style="margin-top:18px"><a class="text-btn" href="sektor.html?s=' + encodeURIComponent(r.sek) + '">' + M.sk(r.sek) + ' ' + M.esc(AW.short(r.sek)) + '</a></p>' +
+    '<h1>' + M.esc(r.tajuk) + '</h1><div class="meta"><span>' + M.fmtDate(r.tarikh) + '</span><span>' + M.esc(AW.place(r)) + '</span></div>' +
+    ((r.photos || []).length ? '<img class="hero" style="width:100%;object-fit:cover" alt="Bukti aktiviti" src="' + M.esc(r.photos[0].src) + '">' : '') +
+    '<h2>Objektif</h2><p class="tx" style="white-space:pre-line">' + M.esc(r.obj||'Melaksanakan aktiviti mengikut perancangan sektor.') + '</p>' +
+    '<h2>Rumusan</h2><p class="tx">' + M.esc(r.rum||'Pelaksanaan aktiviti dibincangkan bersama pihak terlibat untuk rujukan sektor.') + '</p>' +
+    (r.imp?'<h2>Impak</h2><p class="tx">'+M.esc(r.imp)+'</p>':'') +
+    ((r.photos || []).length > 1 ? '<h2>Galeri</h2><div class="gal">' + r.photos.slice(1).map(function(p,i){return '<img style="width:100%;aspect-ratio:4/3;object-fit:cover" alt="Bukti aktiviti ' + (i+2) + '" src="' + M.esc(p.src) + '">'}).join('') + '</div>' : '') +
+    '<p class="hash" style="margin-top:18px">#PPDKuching #' + r.sek + '</p>' +
+    '<div class="share"><button class="btn btn-line btn-sm" id="cp">Salin pautan</button><span class="tiny">Hantaran Facebook PPD memaut ke halaman ini.</span></div></article>' +
+    (more.length ? '<div class="h2p"><h2>Lagi daripada ' + M.esc(AW.short(r.sek)) + '</h2></div><div class="feed">' + more.map(AW.item).join('') + '</div>' : '');
+  document.getElementById('cp').addEventListener('click', function () { navigator.clipboard.writeText(location.href).then(function(){M.toast('Pautan disalin')},function(){M.toast('Salin pautan dari bar alamat pelayar')}); });
+})();
+</script>
+</body>
+</html>

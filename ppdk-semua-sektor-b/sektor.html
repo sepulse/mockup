@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sektor · PPDK.CH</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css?v=9eee8c54">
+<link rel="stylesheet" href="gaya.css?v=09cf459e">
+<link rel="stylesheet" href="awam.css?v=03e55e6c">
+<style>
+.sl{border-top:1px solid var(--ink)}
+.sl a{display:grid;grid-template-columns:6px minmax(0,1fr) auto;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid var(--rule)}
+.sl a:hover b{text-decoration:underline}
+.sl i{align-self:stretch;background:var(--sc)}
+.sl b{display:block;font:700 18px/1.25 var(--display)}
+.sl span.d{display:block;font-size:14px;color:var(--ink-2);margin-top:3px}
+.sl span.k{display:block;font-size:13px;color:var(--muted);margin-top:4px}
+.shead{margin-top:30px;padding:22px 22px 24px;background:var(--sc);color:#fff}
+.shead .mono{color:rgba(255,255,255,.75)}
+.shead h1{font:800 clamp(26px,4vw,38px)/1.1 var(--display);margin-top:8px}
+.shead p{margin-top:8px;font-size:15px;color:rgba(255,255,255,.88);max-width:60ch}
+.shead .kt{margin-top:14px;font-size:14px}
+.shead .kt b{font-weight:600}
+</style>
+</head>
+<body>
+<div id="content" class="pw"><div id="body"></div></div>
+<script src="shared.js?v=dc3b2c54"></script>
+<script src="data.js?v=9cdc9840"></script>
+<script src="awam.js?v=d902e79b"></script>
+<script>
+(function () {
+  M.mount({ bare: true, noRole: true });
+  AW.header('sektor');
+  var k = new URLSearchParams(location.search).get('s'), b = document.getElementById('body');
+  var s = M.SEKTOR.filter(function (x) { return x.k === k; })[0];
+  if (!s) {
+    document.title = 'Sektor · PPDK.CH';
+    b.innerHTML = '<div class="ph1"><h1>Sektor PPD Kuching</h1><p>Tujuh sektor, satu pejabat. Pilih sektor untuk melihat fungsi dan aktiviti yang diterbitkan.</p></div><div class="sl">' +
+      M.SEKTOR.map(function (x) { return '<a href="sektor.html?s=' + encodeURIComponent(x.k) + '" style="--sc:' + AW.color(x.k) + '"><i></i><span><b>' + M.esc(x.n.replace(' (termasuk Unit ICT)', '')) + '</b><span class="d">' + AW.DESC[x.k] + '</span><span class="k">Ketua: ' + AW.KETUA[x.k] + '</span></span>' + M.icon('next') + '</a>'; }).join('') + '</div>';
+    return;
+  }
+  var name = s.n.replace(' (termasuk Unit ICT)', ''), list = AW.pub.filter(function (r) { return r.sek === k; }), closed = k === 'SPsK' || k === 'SPP';
+  document.title = name + ' · PPDK.CH';
+  b.innerHTML = '<p style="margin-top:18px"><a class="text-btn" href="sektor.html">← Semua sektor</a></p>' +
+    '<div class="shead" style="--sc:' + AW.color(k) + '"><div class="mono">' + M.esc(k) + ' · PPD Kuching</div><h1>' + M.esc(name) + '</h1><p>' + AW.DESC[k] + '</p><div class="kt">Ketua sektor: <b>' + AW.KETUA[k] + '</b></div></div>' +
+    '<div class="h2p"><h2>Aktiviti diterbitkan</h2><span>' + list.length + ' laporan</span></div><div class="feed">' + (list.map(AW.item).join('') || '<div class="empty">Belum ada aktiviti diterbitkan.</div>') + '</div>' +
+    '<div class="h2p"><h2>Oktober dalam angka</h2></div>' +
+    (closed ? '<p class="tiny">Ringkasan sektor ini belum dipaparkan kepada awam.</p>' : '<div class="agg"><div><b>' + D.summary(k,'2026-10',true).a + '</b><span>Aktiviti selesai</span></div><div><b>' + D.summary(k,'2026-10',true).s + '</b><span>Sekolah terlibat</span></div><div><b>' + list.length + '</b><span>Laporan diterbitkan</span></div></div>');
+})();
+</script>
+</body>
+</html>

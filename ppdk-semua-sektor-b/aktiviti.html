@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Rekod Aktiviti · Staf</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css?v=9eee8c54">
+<link rel="stylesheet" href="gaya.css?v=09cf459e">
+<style>
+.sum{font-size:14px;color:var(--ink-2);margin-bottom:16px}
+.gal{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.gal .ph{aspect-ratio:4/3}
+.num3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pcard{border:1px solid var(--rule);background:var(--paper)}
+.pcard .ph{aspect-ratio:16/8;border:0;border-bottom:1px solid var(--rule)}
+.pcard .b{padding:14px}
+.pcard h4{font:700 17px/1.3 var(--display);margin:6px 0 4px}
+.pcard p{font-size:13.5px;color:var(--ink-2)}
+.pcard i{color:var(--muted)}
+.chk{display:flex;flex-direction:column;gap:9px;margin-top:8px}
+.chk label{display:flex;gap:9px;align-items:flex-start;font-size:14px;cursor:pointer}
+.chk input{width:17px;height:17px;accent-color:var(--petrol);margin-top:2px}
+.fbcap{white-space:pre-line;font-size:13.5px;line-height:1.55;padding:12px;border:1px solid var(--rule);background:var(--card);margin-top:10px}
+.li .e svg{width:14px;height:14px;vertical-align:-2px}
+/* Kiraan status: ringkas, juga penapis pantas */
+.tally{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}
+.tl{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:10px 10px 9px;border:1px solid var(--rule);border-top:3px solid var(--tc);background:var(--paper);text-align:left;min-height:44px}
+.tl:hover{border-color:var(--ink-2);border-top-color:var(--tc)}
+.tl b{font:700 22px/1 var(--display);color:var(--tc)}
+.tl span{font-size:12.5px;color:var(--ink-2);line-height:1.25}
+.tl[aria-pressed="true"]{background:var(--tc);border-color:var(--tc)}
+.tl[aria-pressed="true"] b,.tl[aria-pressed="true"] span{color:#fff}
+.tl.z b{color:var(--muted)}
+.t-need{--tc:var(--warn)}.t-mohon{--tc:var(--ink-2)}.t-pub{--tc:var(--petrol)}.t-plan{--tc:var(--muted)}
+#list .li{box-shadow:inset 3px 0 0 var(--sc,var(--rule));padding-left:14px}
+#list .li.cx{box-shadow:inset 3px 0 0 var(--rule)}
+.li .e.pub{color:var(--petrol);font-weight:600}
+.li .e.mohon{color:var(--ink-2);font-weight:600}
+.li .e.mohon::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--warn);margin-right:6px;vertical-align:1px}
+@media(max-width:780px){.tally{gap:4px}.tl{padding:8px 7px}.tl b{font-size:19px}.tl span{font-size:11.5px}#list .li{padding-left:12px}}
+:root[data-theme="dark"] #list .li{box-shadow:inset 3px 0 0 color-mix(in srgb,var(--sc) 65%,#fff)}:root[data-theme="dark"] #list .li.cx{box-shadow:inset 3px 0 0 var(--rule)}
+</style>
+</head>
+<body>
+<div id="content" class="wrap-n">
+  <div class="page-h"><div><h1>Rekod Aktiviti</h1><div class="sub" id="ctx"></div></div></div>
+  <div class="qbar">
+    <label class="search"><span class="sr">Cari</span><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="q" type="search" placeholder="Cari tajuk, sekolah, pegawai"></label>
+    <button class="btn btn-line" type="button" id="tapis">Tapis</button>
+  </div>
+  <div class="tally" id="tally" aria-label="Status laporan"></div>
+  <div class="fchips" id="fchips"></div>
+  <div class="list" id="list" style="margin-top:14px"></div>
+</div>
+
+<script src="shared.js?v=dc3b2c54"></script>
+<script src="data.js?v=9cdc9840"></script>
+<script>
+(function () {
+  M.mount({ page: 'aktiviti' });
+  var $ = function (id) { return document.getElementById(id); };
+  var params = new URLSearchParams(location.search);
+  var SC = { saya: 'Rekod saya', sektor: 'Sektor saya', semua: 'Semua dibenarkan' };
+  var STL = { need: 'Perlu laporan', mohon: 'Menunggu penerbit', pub: 'Diterbitkan', plan: 'Dirancang', cx: 'Dibatalkan' };
+  var st = { scope: null, sek: '', stat: params.get('f') || '' };
+  function byId(id) { return D.REKOD.filter(function (r) { return r.id === id; })[0]; }
+  function key(r) {
+    if (r.status === 'dibatalkan') return 'cx';
+    if (r.status === 'selesai' || r.tamat < M.TODAY) return r.laporan !== 'lengkap' ? 'need' : r.tahap === 'umum' ? 'pub' : r.mohon ? 'mohon' : 'done';
+    return 'plan';
+  }
+  function def() { return M.role() === 'kppd' ? 'semua' : M.role() === 'ketua' ? 'sektor' : 'saya'; }
+
+  function list() {
+    var m = M.me(), t = $('q').value.trim().toLowerCase();
+    var rows = D.REKOD.filter(function (r) {
+      if (st.scope === 'saya' && !D.involves(r, m.name)) return false;
+      if (st.scope === 'sektor' && r.sek !== m.sek) return false;
+      if (st.sek && r.sek !== st.sek) return false;
+      var hid = r.tahap === 'sulit' && !D.canSulit(r);
+      if (t && (r.owner + ' ' + (hid ? '' : r.tajuk + ' ' + r.sekolah.join(' ') + ' ' + (r.lokasi || ''))).toLowerCase().indexOf(t) < 0) return false;
+      return true;
+    }).sort(function (a, b) { return a.tarikh < b.tarikh ? 1 : a.tarikh > b.tarikh ? -1 : a.mula < b.mula ? -1 : 1; });
+    var cnt = {}; rows.forEach(function (r) { var k = key(r); cnt[k] = (cnt[k] || 0) + 1; });
+    $('tally').innerHTML = [['need', 'Perlu laporan'], ['mohon', 'Menunggu penerbit'], ['pub', 'Diterbitkan'], ['plan', 'Dirancang']].map(function (x) {
+      var n = cnt[x[0]] || 0; return '<button type="button" class="tl t-' + x[0] + (n ? '' : ' z') + '" data-st="' + x[0] + '" aria-pressed="' + (st.stat === x[0]) + '"><b>' + n + '</b><span>' + x[1] + '</span></button>';
+    }).join('');
+    if (st.stat) rows = rows.filter(function (r) { return key(r) === st.stat; });
+    $('ctx').textContent = SC[st.scope] + ' · Oktober 2026';
+    $('list').innerHTML = rows.map(function (r) {
+      var w = D.where(r), k = key(r), mine = r.owner === m.name;
+      var end = k === 'need' && mine ? '<span class="e warn">Perlu laporan</span>' : k === 'pub' ? '<span class="e pub">' + M.icon('globe') + ' Umum</span>' : k === 'mohon' ? '<span class="e mohon">Menunggu penerbit</span>' : k === 'cx' ? '<span class="e">Dibatalkan</span>' : r.tahap === 'sulit' ? '<span class="e">' + M.icon('lock') + '</span>' : '<span class="e"></span>';
+      return '<button class="li' + (k === 'cx' ? ' cx' : '') + '" style="--sc:var(--s-' + (r.sek === 'Pengurusan' ? 'PGR' : r.sek) + ')" data-r="' + r.id + '"><span class="t">' + Number(r.tarikh.slice(8)) + ' Okt</span><span><span class="n">' + (w.hidden ? 'Tugas rasmi' : M.esc(r.tajuk)) + '</span><span class="s" style="display:block">' + M.esc(w.t.replace('Tugas rasmi — ', '')) + (mine ? '' : ' · ' + M.esc(r.owner)) + '</span></span>' + end + '</button>';
+    }).join('') || '<div class="empty">Tiada rekod.</div>';
+    var ch = []; if (st.sek) ch.push(['sek', st.sek]); if (st.stat) ch.push(['stat', STL[st.stat] || 'Laporan lengkap']);
+    $('fchips').innerHTML = ch.map(function (c) { return '<button class="chip" data-x="' + c[0] + '">' + c[1] + ' <span class="x">✕</span></button>'; }).join('');
+  }
+
+  function tapis() {
+    var d = M.drawer({ title: 'Tapis', body:
+      '<div class="field"><span class="lbl">Tunjuk</span><div class="seg" id="tsc">' + ['saya', 'sektor', 'semua'].map(function (k) { return '<button type="button" data-v="' + k + '" aria-pressed="' + (st.scope === k) + '">' + SC[k] + '</button>'; }).join('') + '</div></div>' +
+      '<div class="field"><label class="lbl" for="tsek">Sektor</label><select id="tsek"><option value="">Semua sektor</option>' + M.SEKTOR.map(function (s) { return '<option value="' + s.k + '"' + (s.k === st.sek ? ' selected' : '') + '>' + s.n + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><label class="lbl" for="tst">Status</label><select id="tst"><option value="">Semua</option>' + ['plan', 'need', 'done', 'mohon', 'pub', 'cx'].map(function (k) { return '<option value="' + k + '"' + (k === st.stat ? ' selected' : '') + '>' + (STL[k] || 'Laporan lengkap') + '</option>'; }).join('') + '</select></div>',
+      foot: '<button class="text-btn" data-act="reset">Set semula</button><button class="btn btn-ink" data-act="ok">Tunjuk hasil</button>' });
+    var sc = st.scope;
+    d.querySelector('#tsc').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; sc = b.getAttribute('data-v'); [].forEach.call(this.children, function (x) { x.setAttribute('aria-pressed', x === b); }); });
+    d.querySelector('[data-act="ok"]').addEventListener('click', function () { st.scope = sc; st.sek = d.querySelector('#tsek').value; st.stat = d.querySelector('#tst').value; M.closeDrawer(); list(); });
+    d.querySelector('[data-act="reset"]').addEventListener('click', function () { st.scope = def(); st.sek = ''; st.stat = ''; M.closeDrawer(); list(); });
+  }
+
+  /* Lengkapkan laporan: halaman penuh 3 langkah (lapor.html). */
+  function lapor(r) {
+    if (r.owner !== M.me().name) { D.openRecord(r); return; }
+    location.href = 'lapor.html?id=' + encodeURIComponent(r.id);
+  }
+
+  /* Terbit: satu pratonton kad portal; kapsyen FB dilipat; semakan penerbit. */
+  function terbit(r) {
+    var m = M.me(), isPub = (M.role() === 'ketua' && r.sek === m.sek) || M.role() === 'kppd';
+    if (r.status !== 'selesai' || r.laporan !== 'lengkap' || !r.rum || r.tahap !== 'dalaman' || (!isPub && r.owner !== m.name) || (isPub && !r.mohon)) {
+      M.toast('Permohonan terbit memerlukan laporan dalaman yang lengkap dan akses yang dibenarkan.'); D.openRecord(r); return;
+    }
+    var sens = r.sek === 'SPsK' || r.sek === 'SPP';
+    var place = (r.sekolah || []).join(', ') || r.lokasi || 'Atas talian';
+    var caption = '📌 ' + r.tajuk.toUpperCase() + '\n🗓 ' + D.tarikhLabel(r) + '\n📍 ' + place + '\n\n' + r.rum + (r.imp ? '\n\nImpak\n' + r.imp : '') + '\n\n#PPDKuching #' + r.sek;
+    if (r.tahap === 'umum') caption += '\n' + new URL('laporan.html?id=' + encodeURIComponent(r.id),location.href).href;
+    var images = r.photos || [];
+    var body = (sens ? '<p class="flag warn">Sektor ' + r.sek + ': penerbitan awam belum dibuka.</p>' : '') +
+      '<div class="pcard">' + (images.length ? '<img alt="Gambar utama aktiviti" style="width:100%;max-height:240px;object-fit:cover" src="' + M.esc(images[0].src) + '">' : '') + '<div class="b">' + M.sk(r.sek) + '<h4>' + M.esc(r.tajuk) + '</h4><p>' + D.tarikhLabel(r) + ' · ' + M.esc(place) + '</p><p style="margin-top:8px;white-space:pre-line">' + M.esc(r.rum) + '</p>' + (r.imp ? '<p style="margin-top:8px;white-space:pre-line"><b>Impak</b><br>' + M.esc(r.imp) + '</p>' : '') + '</div></div>' +
+      '<p class="tiny" style="margin-top:10px">Paparan awam hanya menggunakan kandungan di atas' + (images.length ? ' dan gambar yang dilampirkan.' : '. Laporan ini tiada gambar.') + '</p>' +
+      '<details class="more"><summary>Lihat kapsyen Facebook</summary><div class="fbcap" id="fbcap">' + M.esc(caption) + '</div><p class="tiny" style="margin-top:8px">Kapsyen untuk disalin selepas laporan diterbitkan. Penerbitan Facebook disimulasikan.</p></details>' +
+      (isPub ? '<div class="section-t">Semakan penerbit</div><div class="chk"><label><input type="checkbox" class="ck"> Tiada nama murid, data kes atau peperiksaan</label><label><input type="checkbox" class="ck"> Gambar sesuai untuk awam, atau tiada gambar dilampirkan</label><label><input type="checkbox" class="ck"> Fakta dan nama sekolah betul</label></div>' : '<p class="tiny" style="margin-top:14px">Penerbit sektor ' + r.sek + ' akan menyemak sebelum laporan diterbitkan kepada orang awam.</p>');
+    var foot = isPub ? '<button class="text-btn" data-act="back">Pulangkan</button><button class="btn btn-ink" data-act="pub" disabled>Terbit di portal</button>'
+      : r.mohon ? '<button class="btn btn-line" data-close>Tutup</button>' : '<button class="btn btn-ink" data-act="mohon"' + (sens ? ' disabled' : '') + '>Hantar kepada penerbit</button>';
+    var d = M.drawer({ title: isPub ? 'Semak & terbit' : 'Mohon terbit', body: body, foot: foot });
+    var cks = d.querySelectorAll('.ck'), pb = d.querySelector('[data-act="pub"]');
+    [].forEach.call(cks,function (c) { c.addEventListener('change',function () { pb.disabled = sens || [].some.call(cks,function (x) { return !x.checked; }); }); });
+    if (pb) pb.addEventListener('click',function () {
+      if (sens || [].some.call(cks,function (x) { return !x.checked; })) return;
+      r.tahap = 'umum'; r.mohon = false;
+      if (!D.persist()) { r.tahap = 'dalaman'; r.mohon = true; return; }
+      M.closeDrawer(); list();
+      var link = new URL('laporan.html?id=' + encodeURIComponent(r.id),location.href).href;
+      var published = M.drawer({title:'Laporan diterbitkan',body:'<p>Laporan kini dipaparkan di portal contoh. Hantaran Facebook boleh menggunakan kapsyen dan pautan laporan ini.</p><details class="more" open><summary>Kapsyen Facebook</summary><div class="fbcap">' + M.esc(caption + '\n\n' + link) + '</div></details><p id="copy-result" class="tiny" role="status"></p>',foot:'<button type="button" class="btn btn-line" id="copy-fb">Salin Facebook</button><a class="btn btn-ink" href="laporan.html?id=' + encodeURIComponent(r.id) + '">Lihat di portal →</a>'});
+      published.querySelector('#copy-fb').addEventListener('click',function () {
+        function manual() { published.querySelector('#copy-result').textContent = 'Salinan automatik tidak tersedia. Pilih dan salin kapsyen di atas.'; }
+        if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(caption+'\n\n'+link).then(function () { published.querySelector('#copy-result').textContent = 'Kapsyen Facebook disalin.'; },manual); else manual();
+      });
+    });
+    var mo = d.querySelector('[data-act="mohon"]'); if (mo) mo.addEventListener('click',function () { if(sens)return; r.mohon = true; if(!D.persist()){r.mohon=false;return;} M.closeDrawer(); list(); M.toast('Dihantar kepada penerbit ' + r.sek); });
+    var bk = d.querySelector('[data-act="back"]'); if (bk) bk.addEventListener('click',function () { r.mohon = false; if(!D.persist()){r.mohon=true;return;} M.closeDrawer(); list(); M.toast('Dipulangkan kepada pegawai'); });
+  }
+
+
+  $('tapis').addEventListener('click', tapis);
+  $('q').addEventListener('input', list);
+  $('tally').addEventListener('click', function (e) { var b = e.target.closest('[data-st]'); if (!b) return; var v = b.getAttribute('data-st'); st.stat = st.stat === v ? '' : v; list(); });
+  document.addEventListener('click', function (e) {
+    var x = e.target.closest('[data-x]'); if (x) { st[x.getAttribute('data-x')] = ''; list(); return; }
+    var row = e.target.closest('#list [data-r]'); if (!row) return;
+    var r = byId(row.getAttribute('data-r')), k = key(r), m = M.me();
+    if (k === 'need' && r.owner === m.name) lapor(r);
+    else if (k === 'mohon' && M.role() !== 'staf' && (M.role() === 'kppd' || r.sek === m.sek)) terbit(r);
+    else D.openRecord(r);
+  });
+  document.addEventListener('rolechange', function () { st.scope = def(); list(); });
+  document.addEventListener('datachange', list);
+  st.scope = def(); if (st.stat === 'mohon' && M.role() === 'ketua') st.scope = 'sektor'; list();
+  var lp = byId(params.get('lapor') || ''), tb = byId(params.get('terbit') || '');
+  if (lp) lapor(lp); else if (tb) terbit(tb);
+})();
+</script>
+</body>
+</html>

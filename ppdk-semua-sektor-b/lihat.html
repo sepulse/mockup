@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PPDK.CH · Lihat Paparan</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans:wght@500;600&display=swap">
+<style>
+:root{--bar:#1d2526;--bar-2:#2a3435;--fg:#E9E6DE;--fg-2:rgba(233,230,222,.62);--acc:#8FE0D3;--acc-ink:#0A2B2F;--line:rgba(255,255,255,.16)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bar);color:var(--fg);font:500 13px/1.3 "IBM Plex Sans",system-ui,sans-serif;display:flex;flex-direction:column}
+a,button{color:inherit;font:inherit;text-decoration:none;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.bar{flex:none;padding:10px 16px 0;padding-top:calc(10px + env(safe-area-inset-top,0px));border-bottom:1px solid var(--line)}
+.r1{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.home{font:600 12px/1 "IBM Plex Mono",monospace;letter-spacing:.06em;text-transform:uppercase;color:var(--acc)}
+.mode{display:inline-flex;border:1px solid var(--line);margin-left:auto}
+.mode a{padding:6px 10px;font:600 11.5px/1 "IBM Plex Mono",monospace;letter-spacing:.05em;text-transform:uppercase}
+.mode a[aria-current="true"]{background:var(--acc);color:var(--acc-ink)}
+.pn{display:inline-flex;gap:6px}
+.pn a{padding:6px 10px;border:1px solid var(--line);font-weight:600}
+.pn a[aria-disabled="true"]{opacity:.3;pointer-events:none}
+.now{font-size:14px;font-weight:600}
+.now span{color:var(--fg-2);font:500 12px/1 "IBM Plex Mono",monospace;margin-right:8px}
+.steps{display:flex;gap:18px;overflow-x:auto;padding:10px 0 0;scrollbar-width:thin}
+.grp{display:flex;align-items:stretch;gap:2px;flex:none}
+.grp b{align-self:center;font:600 10.5px/1 "IBM Plex Mono",monospace;letter-spacing:.08em;text-transform:uppercase;color:var(--fg-2);margin-right:6px;white-space:nowrap}
+.grp a{display:flex;gap:6px;align-items:center;padding:8px 10px 10px;white-space:nowrap;color:var(--fg-2);border-bottom:2px solid transparent}
+.grp a i{font:600 11px/1 "IBM Plex Mono",monospace;font-style:normal}
+.grp a:hover{color:var(--fg)}
+.grp a[aria-current="page"]{color:var(--fg);border-bottom-color:var(--acc)}
+.stage{flex:1;min-height:0;display:flex;justify-content:center;align-items:flex-start;overflow:auto}
+.stage.desk iframe{width:100%;height:100%;border:0;background:#F2F0EA;display:block}
+.stage.phone{padding:16px}
+.phone-f{width:390px;max-width:100%;height:844px;border:10px solid #0b0f0f;outline:1px solid #3a4341;box-shadow:0 30px 80px rgba(0,0,0,.45);flex:none}
+.phone-f iframe{width:100%;height:100%;border:0;display:block;background:#F2F0EA}
+.note{padding:6px 0 0;color:var(--fg-2);font-size:12.5px}
+</style>
+</head>
+<body>
+<div class="bar">
+  <div class="r1">
+    <a class="home" href="index.html">← Halaman utama</a>
+    <div class="now" id="now"></div>
+    <div class="mode" id="mode"></div>
+    <div class="pn"><a id="prev" href="#">← Sebelum</a><a id="next" href="#">Seterusnya →</a></div>
+  </div>
+  <nav class="steps" id="steps" aria-label="Urutan paparan"></nav>
+</div>
+<div class="stage" id="stage"></div>
+<script>
+(function () {
+  'use strict';
+  /* Urutan cerita: pegawai log masuk → rekod → lapor → terbit → muncul di portal awam. */
+  var PAGES = [
+    { g: 'Mula di sini', p: 'aliran.html', t: 'Aliran penuh' },
+    { g: 'Ruang staf', p: 'log-masuk.html', t: 'Log masuk' },
+    { g: 'Ruang staf', p: 'hari-ini.html', t: 'Hari ini' },
+    { g: 'Ruang staf', p: 'rekod.html', t: 'Rekod' },
+    { g: 'Ruang staf', p: 'jadual.html', t: 'Jadual' },
+    { g: 'Ruang staf', p: 'aktiviti.html', t: 'Rekod Aktiviti' },
+    { g: 'Ruang staf', p: 'lapor.html?id=A102', t: 'Lengkapkan laporan' },
+    { g: 'Ruang staf', p: 'aktiviti.html?terbit=A103&role=ketua', t: 'Semakan penerbit' },
+    { g: 'Ruang staf', p: 'ringkasan.html', t: 'Ringkasan Bulanan' },
+    { g: 'Ruang staf', p: 'profil.html', t: 'Profil' },
+    { g: 'Portal awam', p: 'portal.html', t: 'Utama' },
+    { g: 'Portal awam', p: 'sektor.html?s=SPb', t: 'Sektor' },
+    { g: 'Portal awam', p: 'laporan.html?id=A101', t: 'Laporan' },
+    { g: 'Portal awam', p: 'tentang.html', t: 'Tentang' }
+  ];
+  var q = new URLSearchParams(location.search);
+  var mode = q.get('m') === 'telefon' ? 'telefon' : 'komputer';
+  var p = q.get('p') || PAGES[0].p;
+  if (!/^[a-z-]+\.html(\?[\w=&-]*)?$/.test(p)) p = PAGES[0].p;
+  function idxOf(path) { var f = path.split('?')[0], review = new URLSearchParams(path.split('?')[1] || '').has('terbit'); for (var i=0;i<PAGES.length;i++) if (PAGES[i].p.split('?')[0] === f && (f !== 'aktiviti.html' || PAGES[i].p.includes('terbit=') === review)) return i; return -1; }
+  function url(page, m) { return 'lihat.html?p=' + encodeURIComponent(page) + '&m=' + m; }
+  var stage = document.getElementById('stage'), frame = document.createElement('iframe');
+  frame.title = 'Paparan';
+  if (mode === 'telefon') { stage.className = 'stage phone'; var f = document.createElement('div'); f.className = 'phone-f'; f.appendChild(frame); stage.appendChild(f); }
+  else { stage.className = 'stage desk'; stage.appendChild(frame); }
+  frame.src = p;
+
+  function render(cur) {
+    var i = idxOf(cur);
+    var groups = [];
+    PAGES.forEach(function (x, n) { var g = groups[groups.length - 1]; if (!g || g.name !== x.g) { g = { name: x.g, items: [] }; groups.push(g); } g.items.push([x, n]); });
+    document.getElementById('steps').innerHTML = groups.map(function (g) {
+      return '<div class="grp"><b>' + g.name + '</b>' + g.items.map(function (it) { return '<a href="' + url(it[0].p, mode) + '"' + (it[1] === i ? ' aria-current="page"' : '') + '><i>' + (it[1] + 1) + '</i>' + it[0].t + '</a>'; }).join('') + '</div>';
+    }).join('');
+    document.getElementById('now').innerHTML = i >= 0 ? '<span>' + (i + 1) + ' / ' + PAGES.length + '</span>' + PAGES[i].t : '';
+    document.getElementById('mode').innerHTML = ['komputer', 'telefon'].map(function (m) { return '<a href="' + url(cur, m) + '" aria-current="' + (m === mode) + '">' + (m === 'komputer' ? 'Komputer' : 'Telefon') + '</a>'; }).join('');
+    var pv = document.getElementById('prev'), nx = document.getElementById('next');
+    pv.href = i > 0 ? url(PAGES[i - 1].p, mode) : '#'; pv.setAttribute('aria-disabled', !(i > 0));
+    nx.href = i >= 0 && i < PAGES.length - 1 ? url(PAGES[i + 1].p, mode) : '#'; nx.setAttribute('aria-disabled', !(i >= 0 && i < PAGES.length - 1));
+    var on = document.querySelector('.grp a[aria-current="page"]'); if (on) on.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }
+  /* Ikut navigasi di dalam paparan (menu sisi, pautan) supaya bar sentiasa tepat. */
+  frame.addEventListener('load', function () {
+    try {
+      var loc = frame.contentWindow.location, cur = loc.pathname.split('/').pop() + loc.search;
+      if (idxOf(cur) >= 0) { render(cur); history.replaceState(null, '', url(cur, mode)); }
+    } catch (e) {}
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.target.closest && e.target.closest('input,textarea,select')) return;
+    if (e.key === 'ArrowRight') { var n = document.getElementById('next'); if (n.getAttribute('aria-disabled') !== 'true') location.href = n.href; }
+    if (e.key === 'ArrowLeft') { var v = document.getElementById('prev'); if (v.getAttribute('aria-disabled') !== 'true') location.href = v.href; }
+  });
+  render(p);
+})();
+</script>
+</body>
+</html>

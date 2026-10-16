@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Tentang · PPDK.CH</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css?v=9eee8c54">
+<link rel="stylesheet" href="gaya.css?v=09cf459e">
+<link rel="stylesheet" href="awam.css?v=03e55e6c">
+<style>
+.top-o{display:grid;grid-template-columns:56px minmax(0,1fr);gap:14px;align-items:center;padding:8px 0 18px;border-bottom:1px solid var(--rule)}
+.top-o b{display:block;font:700 18px/1.25 var(--display)}
+.top-o > div span{font-size:13.5px;color:var(--ink-2)}
+details.org{border-bottom:1px solid var(--rule)}
+details.org summary{display:grid;grid-template-columns:6px minmax(0,1fr) auto;gap:14px;align-items:center;padding:14px 0;cursor:pointer;list-style:none}
+details.org summary::-webkit-details-marker{display:none}
+details.org summary i{align-self:stretch;background:var(--sc)}
+details.org summary b{display:block;font-size:15.5px}
+details.org summary span.k{display:block;font-size:13.5px;color:var(--ink-2);margin-top:2px}
+details.org summary .c{font:500 12px/1 var(--mono);color:var(--muted)}
+details.org[open] summary .c::after{content:" ▴"}
+details.org:not([open]) summary .c::after{content:" ▾"}
+.mem{padding:0 0 12px 20px}
+.mem div{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:12px;padding:8px 0;border-top:1px dashed var(--rule);font-size:14px}
+.mem div span{color:var(--muted)}
+.hub{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:24px}
+.hub dl{display:grid;grid-template-columns:110px minmax(0,1fr);gap:10px 14px;font-size:14.5px}
+.hub dt{color:var(--muted);font-size:13px}
+.hub .map{aspect-ratio:4/3}
+@media (max-width:700px){.hub{grid-template-columns:1fr}.mem{padding-left:0}.mem div{grid-template-columns:1fr;gap:0}}
+</style>
+</head>
+<body>
+<div id="content" class="pw">
+  <div class="ph1">
+    <h1>Pejabat Pendidikan Daerah Kuching</h1>
+    <p>Menyelaras dan menyokong sekolah rendah dan menengah di daerah Kuching di bawah Jabatan Pendidikan Negeri Sarawak.</p>
+  </div>
+
+  <div class="h2p"><h2>Carta organisasi</h2><span id="upd"></span></div>
+  <div id="org"></div>
+
+  <div class="h2p" id="hubungi"><h2>Hubungi</h2></div>
+  <div class="hub">
+    <dl><dt>Alamat</dt><dd>Alamat pejabat (contoh)<br>Kuching, Sarawak</dd><dt>Telefon</dt><dd>082-XXX XXX (contoh)</dd><dt>E-mel</dt><dd>ppdkuching@moe.gov.my (contoh)</dd><dt>Waktu pejabat</dt><dd>Isnin–Jumaat, 8.00 pagi – 5.00 petang</dd></dl>
+    <div class="ph map">Peta lokasi</div>
+  </div>
+</div>
+<script src="shared.js?v=dc3b2c54"></script>
+<script src="data.js?v=9cdc9840"></script>
+<script src="awam.js?v=d902e79b"></script>
+<script>
+(function () {
+  M.mount({ bare: true, noRole: true });
+  AW.header('tentang');
+  document.getElementById('upd').textContent = 'dijana daripada senarai staf · ' + M.fmtDate(M.TODAY, false);
+  var org = '<div class="top-o"><span class="avatar lg">KP</span><div><b>Ketua Pegawai Pendidikan Daerah</b><span>Nama KPPD (daripada senarai staf)</span></div></div>';
+  org += M.SEKTOR.map(function (s) {
+    var k = AW.KETUA[s.k];
+    var mem = D.STAF.filter(function (x) { return x.sek === s.k && x.n !== 'KPPD' && x.n !== k; });
+    return '<details class="org"><summary style="--sc:' + AW.color(s.k) + '"><i></i><span><b>' + M.esc(s.n.replace(' (termasuk Unit ICT)', '')) + '</b><span class="k">Ketua: ' + M.esc(k) + '</span></span><span class="c">' + (mem.length + 1) + ' pegawai</span></summary>' +
+      '<div class="mem">' + mem.map(function (x) { return '<div><b>' + M.esc(x.n) + '</b><span>' + M.esc(x.jaw) + '</span></div>'; }).join('') + '</div></details>';
+  }).join('');
+  document.getElementById('org').innerHTML = org;
+})();
+</script>
+</body>
+</html>
