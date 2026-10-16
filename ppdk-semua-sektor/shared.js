@@ -119,7 +119,7 @@
     var tool = document.createElement('div'); tool.id = 'mtool'; tool.className = 'mtool'; tool._opts = opts; tool.innerHTML = toolHtml(opts);
     if (window.self === window.top) body.appendChild(tool);
     tool.addEventListener('click', function (e) {
-      if (e.target.closest('#mreset')) { e.preventDefault(); sessionStorage.removeItem('ppdk-demo-data-v1'); sessionStorage.removeItem('ppdk-demo-mula'); location.reload(); return; }
+      if (e.target.closest('#mreset')) { e.preventDefault(); sessionStorage.removeItem('ppdk-demo-data-v2'); sessionStorage.removeItem('ppdk-demo-mula'); location.reload(); return; }
       if (e.target.closest('#mfab')) { var p = document.getElementById('mpanel'); p.hidden = !p.hidden; e.target.closest('#mfab').setAttribute('aria-expanded', !p.hidden); return; }
       var b = e.target.closest('button[data-v]'); if (!b) return;
       var g = b.parentNode.getAttribute('data-mock');

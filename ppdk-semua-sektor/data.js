@@ -52,7 +52,7 @@
     R({ id: 'B206', tarikh: '2026-10-15', mula: '09:00', akhir: '12:00', owner: 'Dayang Norhayati', sek: 'SPsK', jenis: 'Lawatan sekolah', tajuk: 'Lawatan kes kaunseling', mod: 'fizikal', sekolah: ['SK Lembah Hijau'], tahap: 'sulit' }),
     R({ id: 'B207', tarikh: '2026-10-15', mula: '07:30', akhir: '13:00', owner: 'Farah Wahida', sek: 'SPbM', jenis: 'Program', tajuk: 'Karnival Sukan Murid Daerah', mod: 'fizikal', sekolah: ['SK Pantai Damai'] }),
     R({ id: 'B208', tarikh: '2026-10-15', mula: '10:00', akhir: '12:00', owner: 'Gerald Ujih', sek: 'SPr', jenis: 'Mesyuarat', tajuk: 'Semakan Data EMIS Suku 3', mod: 'atas_talian', lokasi: 'Microsoft Teams' }),
-    R({ id: 'B209', tarikh: '2026-10-15', mula: '08:30', akhir: '16:30', owner: 'Hafizah Osman', sek: 'Pengurusan', jenis: 'Lawatan sekolah', tajuk: 'Sokongan Teknikal ICT', mod: 'fizikal', sekolah: ['SK Tanjung Mawar', 'SK Puncak Batu'] }),
+    R({ id: 'B209', tarikh: '2026-10-15', mula: '08:30', akhir: '16:30', owner: 'Hafizah Osman', sek: 'Pengurusan', jenis: 'Lawatan sekolah', tajuk: 'Sokongan Teknikal ICT', mod: 'fizikal', sekolah: ['SK Tanjung Mawar', 'SK Puncak Batu'], sumber: 'ict' }),
     R({ id: 'B210', tarikh: '2026-10-14', tamat: '2026-10-16', mula: '08:00', akhir: '17:00', owner: 'Irwan Sulaiman', sek: 'SPb', jenis: 'Bengkel / kursus', tajuk: 'Bengkel Penulisan Modul Literasi', mod: 'fizikal', lokasi: 'Auditorium JPN Sarawak' }),
     R({ id: 'B211', tarikh: '2026-10-15', mula: '08:00', akhir: '10:00', owner: 'Kong Wei Jie', sek: 'SPP', jenis: 'Audit / pemeriksaan', tajuk: 'Pemantauan Peperiksaan Percubaan', mod: 'fizikal', sekolah: ['SMK Teluk Bayu'] }),
     R({ id: 'B212', tarikh: '2026-10-15', mula: '14:00', akhir: '17:00', owner: 'Lina Marlissa', sek: 'SPbM', jenis: 'Program', tajuk: 'Taklimat Kokurikulum 2027', mod: 'hibrid', sekolah: ['SK Sri Kenyalang'], lokasi: 'Dewan sekolah + Google Meet' }),
@@ -64,10 +64,14 @@
     R({ id: 'C302', tarikh: '2026-10-08', mula: '09:00', akhir: '12:30', owner: 'Quek Siew Ling', sek: 'SPr', jenis: 'Mesyuarat', tajuk: 'Taklimat Perancangan Enrolmen 2027', mod: 'fizikal', lokasi: 'Dewan Seminar PPD Kuching', status: 'selesai', laporan: 'lengkap', tahap: 'umum' }),
     R({ id: 'C303', tarikh: '2026-10-07', mula: '08:30', akhir: '13:00', owner: 'Chong Mei Ling', sek: 'SPP', jenis: 'Mesyuarat', tajuk: 'Taklimat Pengurusan Peperiksaan SPM 2026', mod: 'fizikal', lokasi: 'Auditorium JPN Sarawak', status: 'selesai', laporan: 'lengkap' }),
     R({ id: 'C304', tarikh: '2026-10-13', mula: '20:00', akhir: '21:30', owner: 'Ahmad Faizal Rosli', sek: 'SPb', jenis: 'Program murid', tajuk: 'ChemEasy SPM — Sesi 12', mod: 'atas_talian', lokasi: 'Google Meet', status: 'selesai', laporan: 'lengkap', tahap: 'umum', siri: 'ChemEasy SPM' }),
-    R({ id: 'C305', tarikh: '2026-10-09', mula: '08:30', akhir: '16:00', owner: 'Tan Boon Hock', sek: 'Pengurusan', jenis: 'Lawatan sekolah', tajuk: 'Sokongan Teknikal ICT', mod: 'fizikal', sekolah: ['SK Lembah Hijau'], status: 'selesai', laporan: 'lengkap', tahap: 'umum' }),
+    R({ id: 'C305', tarikh: '2026-10-09', mula: '08:30', akhir: '16:00', owner: 'Tan Boon Hock', sek: 'Pengurusan', jenis: 'Lawatan sekolah', tajuk: 'Sokongan Teknikal ICT', mod: 'fizikal', sekolah: ['SK Lembah Hijau'], status: 'selesai', laporan: 'lengkap', tahap: 'umum', sumber: 'ict' }),
     R({ id: 'C306', tarikh: '2026-10-08', mula: '08:00', akhir: '12:00', owner: 'Rosnah Ali', sek: 'SPbM', jenis: 'Program', tajuk: 'Program Murid Sihat', mod: 'fizikal', sekolah: ['SMK Seri Matang Baru', 'SK Lembah Hijau'], status: 'selesai', laporan: 'lengkap', tahap: 'umum' }),
     R({ id: 'C307', tarikh: '2026-10-01', mula: '08:00', akhir: '13:00', owner: 'Umi Kalsom', sek: 'SPsK', jenis: 'Program', tajuk: 'Program Kesejahteraan Psikososial Murid', mod: 'fizikal', sekolah: ['SMK Seri Matang Baru'], status: 'selesai', laporan: 'lengkap' }),
-    R({ id: 'C308', tarikh: '2026-10-06', mula: '08:00', akhir: '12:00', owner: 'Rahman Jali', sek: 'SPb', jenis: 'Lawatan pemantauan PdP', tajuk: 'Pemantauan Program Literasi', mod: 'fizikal', sekolah: ['SK Sri Kenyalang', 'SMK Bandar Baru Kenari'], status: 'selesai', laporan: 'lengkap', tahap: 'umum' })
+    R({ id: 'C308', tarikh: '2026-10-06', mula: '08:00', akhir: '12:00', owner: 'Rahman Jali', sek: 'SPb', jenis: 'Lawatan pemantauan PdP', tajuk: 'Pemantauan Program Literasi', mod: 'fizikal', sekolah: ['SK Sri Kenyalang', 'SMK Bandar Baru Kenari'], status: 'selesai', laporan: 'lengkap', tahap: 'umum' }),
+
+    /* --- Unit ICT (Pengurusan): direkod sekali di dashboard ICT, dipapar di sini. Tiada rekod kedua. --- */
+    R({ id: 'C309', tarikh: '2026-10-12', mula: '08:30', akhir: '12:30', owner: 'Hafizah Osman', sek: 'Pengurusan', jenis: 'Lawatan sekolah', tajuk: 'Penyelenggaraan Makmal Komputer', mod: 'fizikal', sekolah: ['SK Pantai Damai'], status: 'selesai', laporan: 'lengkap', sumber: 'ict' }),
+    R({ id: 'D401', tarikh: '2026-10-19', mula: '08:30', akhir: '15:00', owner: 'Tan Boon Hock', sek: 'Pengurusan', jenis: 'Lawatan sekolah', tajuk: 'Sokongan Teknikal ICT', mod: 'fizikal', sekolah: ['SMK Teluk Bayu'], sumber: 'ict' })
   ];
 
   /* Ketidakhadiran: makluman sahaja (bukan kelulusan HRMIS). Jenis hanya dalam butiran terhad. */
@@ -78,7 +82,7 @@
   ];
 
   // Session-local state shared by the independent prototype screens.
-  var stateKey = 'ppdk-demo-data-v1';
+  var stateKey = 'ppdk-demo-data-v2';
   REKOD.forEach(function(r) {
     if (r.laporan === 'lengkap') {
       r.rum = 'Pelaksanaan ' + r.jenis.toLowerCase() + ' dibincangkan bersama pihak terlibat. Dapatan dan cadangan penambahbaikan direkod untuk rujukan sektor.';
@@ -96,6 +100,10 @@
     list.forEach(function(r) { r.sekolah.forEach(function(s){sch.add(s)}); [r.owner].concat(r.peserta).forEach(function(n){staff.add(n)}); jenis[r.jenis]=(jenis[r.jenis]||0)+1; });
     return {a:list.length,s:sch.size,p:staff.size,jenis:jenis,list:list};
   }
+
+  /* Rekod lawatan Unit ICT: satu data, dua paparan. Petunjuk kecil sahaja. */
+  function ict(r) { return r.sumber === 'ict'; }
+  function ictTag(r) { return ict(r) ? ' · dari rekod ICT' : ''; }
 
   function onDate(r, iso) { return r.tarikh <= iso && iso <= r.tamat; }
   function involves(r, name) { return r.owner === name || r.peserta.indexOf(name) >= 0; }
@@ -165,15 +173,18 @@
       else if (past && r.laporan !== 'lengkap') flag = '<p class="flag warn">Laporan belum lengkap</p>';
       else if (r.tahap === 'umum') flag = '<p class="flag ok">Diterbitkan di ppdk.ch</p>';
       else if (r.mohon) flag = '<p class="flag">Menunggu penerbit ' + r.sek + '</p>';
+      if (ict(r)) flag += '<p class="hint" style="margin-bottom:12px">Dari rekod lawatan ICT. Direkod sekali; dipapar juga di dashboard ICT.</p>';
       body = flag + '<div class="kv2"><div>' + when + '</div><div>' + M.icon(w.ic) + '<span>' + place + '</span></div>' +
         '<div>' + M.icon('users') + '<span>' + M.esc(r.owner) + ' ' + M.sk(r.sek) + (r.peserta.length ? '<br>' + r.peserta.map(M.esc).join(', ') : '') + '</span></div></div>' +
         '<details class="more"><summary>Butiran lain</summary><dl class="dl" style="margin-top:10px"><dt>Jenis</dt><dd>' + M.esc(r.jenis) + '</dd>' +
         (r.siri ? '<dt>Siri</dt><dd>' + M.esc(r.siri) + '</dd>' : '') +
+        (ict(r) ? '<dt>Sumber</dt><dd>Rekod lawatan ICT</dd>' : '') +
         '<dt>Akses</dt><dd>' + (r.tahap === 'umum' ? 'Umum' : r.tahap === 'sulit' ? 'Sulit' : 'Dalaman (staf sahaja)') + '</dd><dt>Rujukan</dt><dd>' + r.id + '</dd></dl></details>';
     }
     if(!hid&&r.rum)body+='<details class="more" open><summary>Rumusan laporan</summary><p style="margin-top:12px;font-size:15px">'+M.esc(r.rum)+'</p></details>';
     var foot = '<button class="btn btn-line" data-close>Tutup</button>';
-    if (!hid && mine && r.status !== 'dibatalkan') {
+    if (!hid && mine && ict(r)) foot = '<span class="tiny">Ubah melalui rekod ICT</span><button class="btn btn-line" data-close>Tutup</button>';
+    else if (!hid && mine && r.status !== 'dibatalkan') {
       if (!past) foot = '<span class="links"><button class="text-btn" data-act="batal">Batal</button><a class="text-btn" href="rekod.html?salin=' + r.id + '">Salin</a></span><a class="btn btn-ink" href="rekod.html?ubah=' + r.id + '">Ubah</a>';
       else if (r.laporan !== 'lengkap') foot = '<span class="links"><a class="text-btn" href="rekod.html?salin=' + r.id + '">Salin</a></span><a class="btn btn-ink" href="aktiviti.html?lapor=' + r.id + '">Lengkapkan laporan</a>';
       else if (r.tahap === 'dalaman' && !r.mohon) foot = '<span class="links"><a class="text-btn" href="rekod.html?salin=' + r.id + '">Salin</a></span><a class="btn btn-ink" href="aktiviti.html?terbit=' + r.id + '">Mohon terbit</a>';
@@ -215,7 +226,7 @@
     var list = es.map(function (e) {
       if (e.c) return '<button class="li" data-c="' + e.c.id + '"><span class="t">' + (e.c.bahagian==='pagi'?'Pagi':e.c.bahagian==='petang'?'Petang':'Sehari') + '</span><span><span class="n">Tidak di pejabat</span></span><span></span></button>';
       var w = where(e.r, n);
-      return '<button class="li" data-r="' + e.r.id + '"><span class="t">' + timeLabel(e.r, T) + '</span><span><span class="n">' + M.esc(w.t.replace('Tugas rasmi — ', '')) + '</span>' + (w.hidden ? '' : '<span class="s" style="display:block">' + M.esc(e.r.tajuk) + '</span>') + '</span><span></span></button>';
+      return '<button class="li" data-r="' + e.r.id + '"><span class="t">' + timeLabel(e.r, T) + '</span><span><span class="n">' + M.esc(w.t.replace('Tugas rasmi — ', '')) + '</span>' + (w.hidden ? '' : '<span class="s" style="display:block">' + M.esc(e.r.tajuk) + ictTag(e.r) + '</span>') + '</span><span></span></button>';
     }).join('') || '<div class="empty">Tiada jadual direkodkan hari ini.</div>';
     var d = M.drawer({ title: 'Pegawai', body: '<div class="kad-h"><span class="avatar lg">' + ini(n) + '</span><div><b>' + M.esc(n) + '</b><span>' + M.esc(s.jaw) + '</span><span>' + M.sk(s.sek) + ' ' + M.esc(M.sekName(s.sek)) + '</span></div></div>' +
       '<dl class="dl"><dt>E-mel rasmi</dt><dd><a class="text-btn" href="mailto:' + emel(n) + '" onclick="return false">' + emel(n) + '</a></dd></dl>' +
@@ -227,7 +238,7 @@
     });
   }
 
-  window.D = { persist: persist, online: online, physical: physical, summary: summary, STAF: STAF, ini: ini, emel: emel, openKad: openKad, tarikhLabel: tarikhLabel, openRecord: openRecord, openCuti: openCuti, REKOD: REKOD, CUTI: CUTI, onDate: onDate, involves: involves, staf: staf,
+  window.D = { persist: persist, ict: ict, ictTag: ictTag, online: online, physical: physical, summary: summary, STAF: STAF, ini: ini, emel: emel, openKad: openKad, tarikhLabel: tarikhLabel, openRecord: openRecord, openCuti: openCuti, REKOD: REKOD, CUTI: CUTI, onDate: onDate, involves: involves, staf: staf,
     canSulit: canSulit, canCutiType: canCutiType, where: where, zones: zones, zoneBadges: zoneBadges,
     timeLabel: timeLabel, statusHtml: statusHtml, lvlHtml: lvlHtml, modIcon: modIcon };
 })();

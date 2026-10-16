@@ -47,8 +47,8 @@
   <div style="margin-top:28px"><button class="btn btn-ink" type="button" id="pres"><svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Mod Pembentangan</button></div>
 </div>
 
-<script src="shared.js?v=7284f59d"></script>
-<script src="data.js?v=261f632f"></script>
+<script src="shared.js?v=8a697040"></script>
+<script src="data.js?v=02a65e26"></script>
 <script>
 (function () {
   M.mount({ page: 'ringkasan' });
@@ -66,6 +66,7 @@
   var MO = ['Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt'];
   var st = { sek: '', ver: 'dalaman', i: 0, month:'2026-10' };
 
+  function ictN(d) { var n = d.list.filter(D.ict).length; return n ? ' · ' + n + ' dari rekod ICT, tidak direkod semula' : ''; }
   function data() {
     var d=D.summary(st.sek,st.month,st.ver==='awam');d.x=null;d.blocked=st.ver==='awam'&&(st.sek==='SPsK'||st.sek==='SPP');
     d.tr=MO.map(function(_,i){return i===5?d.a:null});return d;
@@ -87,7 +88,7 @@
     var d = data();
     $('ctx').textContent = label();
     if (d.blocked) { $('body').innerHTML = '<div class="empty" style="border-top:1px solid var(--ink)">Sektor ini tiada versi awam sehingga sektor bersetuju.</div>'; return; }
-    $('body').innerHTML = '<p class="tiny" style="margin-bottom:14px">Laporan lengkap Dalaman + Umum · aktiviti unik dikira sekali</p>' + numsH(d) + '<details class="more"><summary>Lihat liputan, jenis dan trend</summary>' +
+    $('body').innerHTML = '<p class="tiny" style="margin-bottom:14px">Laporan lengkap Dalaman + Umum · aktiviti unik dikira sekali' + (st.ver === 'awam' ? '' : ictN(d)) + '</p>' + numsH(d) + '<details class="more"><summary>Lihat liputan, jenis dan trend</summary>' +
       '<div class="sec-t"><h2>Sekolah terlibat</h2></div>' + liputH(d) +
       (st.ver === 'awam' ? '' : '<div class="sec-t"><h2>Jenis aktiviti</h2><span>ikut katalog sektor</span></div>' + jenisH()) +
       '<div class="sec-t"><h2>6 bulan</h2></div>' + trendH(d) + '</details>';

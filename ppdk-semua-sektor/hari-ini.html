@@ -38,8 +38,8 @@
   </div>
 </div>
 
-<script src="shared.js?v=7284f59d"></script>
-<script src="data.js?v=261f632f"></script>
+<script src="shared.js?v=8a697040"></script>
+<script src="data.js?v=02a65e26"></script>
 <script>
 (function () {
   M.mount({ page: 'hari' });
@@ -72,7 +72,7 @@
     D.CUTI.forEach(function (c) { if (c.dari <= T && T <= c.hingga) (p[c.owner] = p[c.owner] || []).push({ c: c }); });
     return p;
   }
-  function entLabel(e, n) { return e.c ? { t: e.c.dari === e.c.hingga ? (e.c.bahagian==='pagi'?'Pagi':e.c.bahagian==='petang'?'Petang':'Sehari') : 'Hingga ' + Number(e.c.hingga.slice(8)) + '/10', s: 'Tidak di pejabat' } : { t: D.timeLabel(e.r, T), s: place(e.r, n) }; }
+  function entLabel(e, n) { return e.c ? { t: e.c.dari === e.c.hingga ? (e.c.bahagian==='pagi'?'Pagi':e.c.bahagian==='petang'?'Petang':'Sehari') : 'Hingga ' + Number(e.c.hingga.slice(8)) + '/10', s: 'Tidak di pejabat' } : { t: D.timeLabel(e.r, T), s: place(e.r, n) + D.ictTag(e.r) }; }
 
   function board() {
     var term = $('q').value.trim().toLowerCase(), p = people();
