@@ -9,26 +9,37 @@
 <link rel="stylesheet" href="base.css?v=9eee8c54">
 <link rel="stylesheet" href="gaya.css?v=cc708408">
 <style>
-.nums{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--ink);border-bottom:1px solid var(--rule)}
+:root{--ac:var(--petrol)}
+.nums{display:grid;grid-template-columns:repeat(4,1fr);border-top:3px solid var(--ac);border-bottom:1px solid var(--rule)}
+.nums div:first-child b{color:var(--ac)}
 .nums div{padding:16px 14px 18px 0}
 .nums b{display:block;font:800 40px/1 var(--display);font-stretch:85%}
 .nums span{font-size:13px;color:var(--muted)}
-.nums .x b{color:var(--petrol)}
+.nums .x b{color:var(--ac)}
+/* Komposisi sektor (Semua sektor sahaja) */
+.mix{margin-top:18px}
+.mix .stk{display:flex;height:12px;gap:2px}
+.mix .stk i{background:var(--sc);min-width:3px}
+.mix .lg{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:10px;font-size:13px;color:var(--ink-2)}
+.mix .lg span{display:inline-flex;align-items:center;gap:6px}
+.mix .lg b{font:600 12.5px/1 var(--mono);color:var(--ink)}
+.ctxk{display:inline-block;width:10px;height:10px;background:var(--ac);margin-right:7px;vertical-align:0}
 .bar-r{display:grid;grid-template-columns:140px 1fr 56px;gap:12px;align-items:center;padding:9px 0;font-size:14px;border-bottom:1px solid var(--rule)}
 .bar-r .bar{height:8px;background:var(--paper-2);position:relative}
-.bar-r .bar i{position:absolute;inset:0 auto 0 0;background:var(--petrol)}
+.bar-r .bar i{position:absolute;inset:0 auto 0 0;background:var(--sc,var(--ac))}
 .bar-r b{font:600 13px/1 var(--mono);text-align:right}
 .trend{display:flex;align-items:flex-end;gap:10px;height:120px;border-bottom:1px solid var(--rule-2);padding-top:10px}
 .trend div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;font:500 11px/1 var(--mono);color:var(--muted)}
 .trend i{display:block;width:100%;max-width:46px;background:var(--rule-2)}
-.trend div:last-child i{background:var(--petrol)}
+.trend div:last-child i{background:var(--ac)}
 .trend div:last-child{color:var(--ink)}
 .tl{display:flex;gap:10px;margin-top:6px}
 .tl span{flex:1;text-align:center;font:500 11px/1 var(--mono);color:var(--muted)}
 /* Mod pembentangan 16:9 */
 .full{position:fixed;inset:0;z-index:80;background:var(--scrim);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
 .stage{width:min(1280px,94vw,calc((90vh - 60px) * 16 / 9));aspect-ratio:16/9;background:var(--card);border:1px solid var(--rule);padding:clamp(18px,3.5vw,48px);display:flex;flex-direction:column;container-type:inline-size}
-.stage .kk{font:500 clamp(10px,1.1cqi,13px)/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--petrol)}
+.stage .kk{font:500 clamp(10px,1.1cqi,13px)/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--ac)}
+.stage{border-top:6px solid var(--ac)}
 .stage h2{font:800 clamp(20px,3.6cqi,44px)/1.1 var(--display);margin:8px 0 auto}
 .stage .nums b{font-size:clamp(28px,6cqi,76px)}
 .stage .nums span{font-size:clamp(11px,1.3cqi,15px)}
@@ -38,6 +49,7 @@
 .fnav{display:flex;gap:10px;margin-top:12px;align-items:center}
 .fnav button{background:var(--card)}
 @media (max-width:780px){.nums{grid-template-columns:1fr 1fr}.nums b{font-size:34px}.bar-r{grid-template-columns:120px 1fr 48px}}
+:root[data-theme="dark"] .mix .stk i,:root[data-theme="dark"] .bar-r .bar i{background:color-mix(in srgb,var(--sc,var(--ac)) 65%,#fff)}:root[data-theme="dark"] .nums div:first-child b,:root[data-theme="dark"] .nums .x b,:root[data-theme="dark"] .stage .kk{color:color-mix(in srgb,var(--ac) 55%,#fff)}:root[data-theme="dark"] .nums,:root[data-theme="dark"] .stage{border-top-color:color-mix(in srgb,var(--ac) 65%,#fff)}:root[data-theme="dark"] .trend div:last-child i,:root[data-theme="dark"] .ctxk{background:color-mix(in srgb,var(--ac) 65%,#fff)}
 </style>
 </head>
 <body>
@@ -82,13 +94,23 @@
   }
   function jenisH(){var d=data();return Object.keys(d.jenis).map(function(k){return '<div class="bar-r"><span>'+M.esc(k)+'</span><span class="bar"><i style="width:'+(d.jenis[k]/Math.max(1,d.a)*100)+'%"></i></span><b>'+d.jenis[k]+'</b></div>'}).join('')||'<p class="tiny">Belum ada laporan lengkap.</p>';}
   function trendH(d){return '<div class="trend">'+d.tr.map(function(v){return '<div>'+(v==null?'—':v)+'<i style="height:'+(v==null?0:Math.max(2,v/Math.max(1,d.a)*85))+'%"></i></div>'}).join('')+'</div><div class="tl">'+MO.map(function(m){return '<span>'+m+'</span>'}).join('')+'</div><p class="tiny" style="margin-top:12px">“—” bermaksud data belum tersedia.</p>';}
+  function acc() { return st.sek === 'ALL' ? 'var(--petrol)' : 'var(--s-' + (st.sek === 'Pengurusan' ? 'PGR' : st.sek) + ')'; }
+  function mixH() {
+    if (st.sek !== 'ALL') return '';
+    var rows = M.SEKTOR.map(function (x) { return [x.k, D.summary(x.k, st.month, st.ver === 'awam').a]; }).filter(function (x) { return x[1] > 0; });
+    var tot = rows.reduce(function (a, x) { return a + x[1]; }, 0); if (!tot) return '';
+    var c = function (k) { return 'var(--s-' + (k === 'Pengurusan' ? 'PGR' : k) + ')'; };
+    return '<div class="mix"><div class="stk" role="img" aria-label="Aktiviti ikut sektor">' + rows.map(function (x) { return '<i style="--sc:' + c(x[0]) + ';flex:' + x[1] + '" title="' + x[0] + ': ' + x[1] + '"></i>'; }).join('') + '</div>' +
+      '<div class="lg">' + rows.map(function (x) { return '<span>' + M.sk(x[0]) + '<b>' + x[1] + '</b></span>'; }).join('') + '</div></div>';
+  }
   function label() { return (st.sek === 'ALL' ? 'Semua sektor' : M.sekName(st.sek)) + ' · Oktober 2026' + (st.ver === 'awam' ? ' · versi awam' : ''); }
 
   function render() {
     var d = data();
-    $('ctx').textContent = label();
+    document.documentElement.style.setProperty('--ac', acc());
+    $('ctx').innerHTML = '<span class="ctxk"></span>' + M.esc(label());
     if (d.blocked) { $('body').innerHTML = '<div class="empty" style="border-top:1px solid var(--ink)">Sektor ini tiada versi awam sehingga sektor bersetuju.</div>'; return; }
-    $('body').innerHTML = '<p class="tiny" style="margin-bottom:14px">Laporan lengkap Dalaman + Umum · aktiviti unik dikira sekali' + (st.ver === 'awam' ? '' : ictN(d)) + '</p>' + numsH(d) + '<details class="more"><summary>Lihat liputan, jenis dan trend</summary>' +
+    $('body').innerHTML = '<p class="tiny" style="margin-bottom:14px">Laporan lengkap Dalaman + Umum · aktiviti unik dikira sekali' + (st.ver === 'awam' ? '' : ictN(d)) + '</p>' + numsH(d) + mixH() + '<details class="more"><summary>Lihat liputan, jenis dan trend</summary>' +
       '<div class="sec-t"><h2>Sekolah terlibat</h2></div>' + liputH(d) +
       (st.ver === 'awam' ? '' : '<div class="sec-t"><h2>Jenis aktiviti</h2><span>ikut katalog sektor</span></div>' + jenisH()) +
       '<div class="sec-t"><h2>6 bulan</h2></div>' + trendH(d) + '</details>';
@@ -96,7 +118,7 @@
   function slides() { return st.ver === 'awam' ? ['exec', 'lip', 'tr'] : ['exec', 'lip', 'jen', 'tr']; }
   function slide() {
     var d = data(), s = slides(), k = s[st.i];
-    var T = { exec: ['Laporan eksekutif', label().split(' · ')[0], numsH(d)], lip: ['Liputan', 'Sekolah terlibat', liputH(d)], jen: ['Tujuan', 'Jenis aktiviti', jenisH()], tr: ['Trend', 'Aktiviti selesai, 6 bulan', trendH(d)] }[k];
+    var T = { exec: ['Laporan eksekutif', label().split(' · ')[0], numsH(d) + mixH()], lip: ['Liputan', 'Sekolah terlibat', liputH(d)], jen: ['Tujuan', 'Jenis aktiviti', jenisH()], tr: ['Trend', 'Aktiviti selesai, 6 bulan', trendH(d)] }[k];
     return '<div class="stage"><div class="kk">' + T[0] + ' · Oktober 2026</div><h2>' + T[1] + '</h2><div>' + T[2] + '</div><div class="ft"><span>PPDK.CH · Ringkasan Bulanan</span><span>' + (st.i + 1) + ' / ' + s.length + '</span></div></div>' +
       '<div class="fnav"><button class="btn btn-line btn-sm" data-n="-1"' + (st.i ? '' : ' disabled') + '>← Sebelum</button><button class="btn btn-line btn-sm" data-n="1"' + (st.i < s.length - 1 ? '' : ' disabled') + '>Seterusnya →</button><button class="btn btn-line btn-sm" data-n="x">Tutup</button></div>';
   }

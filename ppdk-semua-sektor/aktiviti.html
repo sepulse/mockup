@@ -24,6 +24,23 @@
 .chk input{width:17px;height:17px;accent-color:var(--petrol);margin-top:2px}
 .fbcap{white-space:pre-line;font-size:13.5px;line-height:1.55;padding:12px;border:1px solid var(--rule);background:var(--card);margin-top:10px}
 .li .e svg{width:14px;height:14px;vertical-align:-2px}
+/* Kiraan status: ringkas, juga penapis pantas */
+.tally{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-top:14px}
+.tl{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:10px 10px 9px;border:1px solid var(--rule);border-top:3px solid var(--tc);background:var(--paper);text-align:left;min-height:44px}
+.tl:hover{border-color:var(--ink-2);border-top-color:var(--tc)}
+.tl b{font:700 22px/1 var(--display);color:var(--tc)}
+.tl span{font-size:12.5px;color:var(--ink-2);line-height:1.25}
+.tl[aria-pressed="true"]{background:var(--tc);border-color:var(--tc)}
+.tl[aria-pressed="true"] b,.tl[aria-pressed="true"] span{color:#fff}
+.tl.z b{color:var(--muted)}
+.t-need{--tc:var(--warn)}.t-mohon{--tc:var(--ink-2)}.t-pub{--tc:var(--petrol)}.t-plan{--tc:var(--muted)}
+#list .li{box-shadow:inset 3px 0 0 var(--sc,var(--rule));padding-left:14px}
+#list .li.cx{box-shadow:inset 3px 0 0 var(--rule)}
+.li .e.pub{color:var(--petrol);font-weight:600}
+.li .e.mohon{color:var(--ink-2);font-weight:600}
+.li .e.mohon::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--warn);margin-right:6px;vertical-align:1px}
+@media(max-width:780px){.tally{gap:4px}.tl{padding:8px 7px}.tl b{font-size:19px}.tl span{font-size:11.5px}#list .li{padding-left:12px}}
+:root[data-theme="dark"] #list .li{box-shadow:inset 3px 0 0 color-mix(in srgb,var(--sc) 65%,#fff)}:root[data-theme="dark"] #list .li.cx{box-shadow:inset 3px 0 0 var(--rule)}
 </style>
 </head>
 <body>
@@ -33,6 +50,7 @@
     <label class="search"><span class="sr">Cari</span><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="q" type="search" placeholder="Cari tajuk, sekolah, pegawai"></label>
     <button class="btn btn-line" type="button" id="tapis">Tapis</button>
   </div>
+  <div class="tally" id="tally" aria-label="Status laporan"></div>
   <div class="fchips" id="fchips"></div>
   <div class="list" id="list" style="margin-top:14px"></div>
 </div>
@@ -61,16 +79,20 @@
       if (st.scope === 'saya' && !D.involves(r, m.name)) return false;
       if (st.scope === 'sektor' && r.sek !== m.sek) return false;
       if (st.sek && r.sek !== st.sek) return false;
-      if (st.stat && key(r) !== st.stat) return false;
       var hid = r.tahap === 'sulit' && !D.canSulit(r);
       if (t && (r.owner + ' ' + (hid ? '' : r.tajuk + ' ' + r.sekolah.join(' ') + ' ' + (r.lokasi || ''))).toLowerCase().indexOf(t) < 0) return false;
       return true;
     }).sort(function (a, b) { return a.tarikh < b.tarikh ? 1 : a.tarikh > b.tarikh ? -1 : a.mula < b.mula ? -1 : 1; });
+    var cnt = {}; rows.forEach(function (r) { var k = key(r); cnt[k] = (cnt[k] || 0) + 1; });
+    $('tally').innerHTML = [['need', 'Perlu laporan'], ['mohon', 'Menunggu penerbit'], ['pub', 'Diterbitkan'], ['plan', 'Dirancang']].map(function (x) {
+      var n = cnt[x[0]] || 0; return '<button type="button" class="tl t-' + x[0] + (n ? '' : ' z') + '" data-st="' + x[0] + '" aria-pressed="' + (st.stat === x[0]) + '"><b>' + n + '</b><span>' + x[1] + '</span></button>';
+    }).join('');
+    if (st.stat) rows = rows.filter(function (r) { return key(r) === st.stat; });
     $('ctx').textContent = SC[st.scope] + ' · Oktober 2026';
     $('list').innerHTML = rows.map(function (r) {
       var w = D.where(r), k = key(r), mine = r.owner === m.name;
-      var end = k === 'need' && mine ? '<span class="e warn">Perlu laporan</span>' : k === 'pub' ? '<span class="e">' + M.icon('globe') + ' Umum</span>' : k === 'mohon' ? '<span class="e">Menunggu penerbit</span>' : k === 'cx' ? '<span class="e">Dibatalkan</span>' : r.tahap === 'sulit' ? '<span class="e">' + M.icon('lock') + '</span>' : '<span class="e"></span>';
-      return '<button class="li' + (k === 'cx' ? ' cx' : '') + '" data-r="' + r.id + '"><span class="t">' + Number(r.tarikh.slice(8)) + ' Okt</span><span><span class="n">' + (w.hidden ? 'Tugas rasmi' : M.esc(r.tajuk)) + '</span><span class="s" style="display:block">' + M.esc(w.t.replace('Tugas rasmi — ', '')) + (mine ? '' : ' · ' + M.esc(r.owner)) + '</span></span>' + end + '</button>';
+      var end = k === 'need' && mine ? '<span class="e warn">Perlu laporan</span>' : k === 'pub' ? '<span class="e pub">' + M.icon('globe') + ' Umum</span>' : k === 'mohon' ? '<span class="e mohon">Menunggu penerbit</span>' : k === 'cx' ? '<span class="e">Dibatalkan</span>' : r.tahap === 'sulit' ? '<span class="e">' + M.icon('lock') + '</span>' : '<span class="e"></span>';
+      return '<button class="li' + (k === 'cx' ? ' cx' : '') + '" style="--sc:var(--s-' + (r.sek === 'Pengurusan' ? 'PGR' : r.sek) + ')" data-r="' + r.id + '"><span class="t">' + Number(r.tarikh.slice(8)) + ' Okt</span><span><span class="n">' + (w.hidden ? 'Tugas rasmi' : M.esc(r.tajuk)) + '</span><span class="s" style="display:block">' + M.esc(w.t.replace('Tugas rasmi — ', '')) + (mine ? '' : ' · ' + M.esc(r.owner)) + '</span></span>' + end + '</button>';
     }).join('') || '<div class="empty">Tiada rekod.</div>';
     var ch = []; if (st.sek) ch.push(['sek', st.sek]); if (st.stat) ch.push(['stat', STL[st.stat] || 'Laporan lengkap']);
     $('fchips').innerHTML = ch.map(function (c) { return '<button class="chip" data-x="' + c[0] + '">' + c[1] + ' <span class="x">✕</span></button>'; }).join('');
@@ -129,6 +151,7 @@
 
   $('tapis').addEventListener('click', tapis);
   $('q').addEventListener('input', list);
+  $('tally').addEventListener('click', function (e) { var b = e.target.closest('[data-st]'); if (!b) return; var v = b.getAttribute('data-st'); st.stat = st.stat === v ? '' : v; list(); });
   document.addEventListener('click', function (e) {
     var x = e.target.closest('[data-x]'); if (x) { st[x.getAttribute('data-x')] = ''; list(); return; }
     var row = e.target.closest('#list [data-r]'); if (!row) return;
