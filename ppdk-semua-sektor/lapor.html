@@ -46,6 +46,12 @@
 .doc p,.doc li{white-space:pre-line}
 .doc .imgs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px}
 .doc .imgs i{aspect-ratio:4/3;background:repeating-linear-gradient(135deg,#eee 0 8px,#f7f7f7 8px 16px);border:1px solid #ddd}
+.doc .pa{font:600 12px/1.5 var(--mono);color:#333}
+.doc .pt{font:800 16px/1.3 var(--display);margin:8px 0 6px}
+.doc .ph2{font-weight:700;margin-top:10px}
+.doc .ps{margin-top:12px;font-style:italic}
+.doc .hs{color:#1d4ed8}
+.doc > div{white-space:pre-wrap}
 .doc .ft{margin-top:18px;border-top:1px solid #ccc;padding-top:8px;font:500 10.5px/1.4 var(--mono);color:#666}
 .share{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
 .chk{display:flex;flex-direction:column;gap:9px;margin-top:8px}
@@ -73,7 +79,7 @@
 </div>
 
 <script src="shared.js?v=8a697040"></script>
-<script src="data.js?v=e7619fca"></script>
+<script src="data.js?v=221f8e00"></script>
 <script>
 (function () {
   M.mount({ page: 'aktiviti' });
@@ -97,16 +103,20 @@
   function numbered(t) { return lines(t).map(function (x, i) { return (i + 1) + '. ' + x.charAt(0).toUpperCase() + x.slice(1); }).join('\n'); }
   function dateTxt() { return M.fmtDate(r.tarikh) + (r.tamat && r.tamat !== r.tarikh ? ' – ' + M.fmtDate(r.tamat) : ''); }
 
-  /* ---------- Langkah 1: Maklumat (daripada rekod) ---------- */
+  /* ---------- Langkah 1: Maklumat (daripada rekod + konfigurasi sektor) ---------- */
   function p1() {
+    var A = D.aka(r.sek);
     return '<div class="auto"><dl class="dl">' +
+      '<dt>Akauntabiliti</dt><dd>' + M.esc(A[0]) + '</dd>' +
+      '<dt>Tugas utama</dt><dd>' + M.esc(A[1]) + '</dd>' +
+      '<dt>Tajuk</dt><dd>' + M.esc(r.tajuk.toUpperCase()) + '</dd>' +
       '<dt>Tarikh</dt><dd>' + dateTxt() + '</dd>' +
       '<dt>Masa</dt><dd>' + r.mula + '–' + r.akhir + '</dd>' +
-      '<dt>Tempat</dt><dd>' + M.esc(place) + '</dd>' +
-      '<dt>Jenis aktiviti</dt><dd>' + M.esc(r.jenis) + '</dd></dl>' +
-      '<p class="tiny">Diambil daripada rekod. <a class="text-btn" href="rekod.html?ubah=' + r.id + '">Ubah rekod</a></p></div>' +
-      '<div class="field" style="margin-top:20px"><span class="lbl">Pegawai terlibat</span><div class="team" id="tim">' + whoH() + '</div></div>' +
-      '<div class="field"><label class="lbl" for="ruj">No. rujukan <span class="muted" style="font-weight:400">— pilihan</span></label><input id="ruj" type="text" placeholder="Contoh: surat panggilan, no. tiket" value="' + M.esc(r.ruj || '') + '"></div>';
+      '<dt>Tempat</dt><dd>' + M.esc(place) + '</dd></dl>' +
+      '<p class="tiny">Diambil daripada rekod dan tetapan sektor — tiada taip semula. Hari dikira automatik. <a class="text-btn" href="rekod.html?ubah=' + r.id + '">Ubah rekod</a></p></div>' +
+      '<div class="field" style="margin-top:20px"><span class="lbl">Penglibatan</span><div class="team" id="tim">' + whoH() + '</div></div>' +
+      '<div class="field"><label class="lbl" for="ruj">No. rujukan <span class="muted" style="font-weight:400">— pilihan</span></label><input id="ruj" type="text" placeholder="Contoh: surat panggilan, no. tiket" value="' + M.esc(r.ruj || '') + '"></div>' +
+      '<p class="tiny" style="margin-top:6px">Seterusnya: tulis catatan ringkas, AI sediakan Objektif, Rumusan, Impak dan Tindak Susul.</p>';
   }
   function whoH() {
     return team().map(function (n, i) { return '<span>' + M.esc(n) + (i ? ' <button type="button" data-rm="' + (i - 1) + '" aria-label="Buang ' + M.esc(n) + '" style="border:0;padding:0 2px;min-height:0">✕</button>' : ' <em class="muted" style="font-style:normal;font-size:12px">pemilik</em>') + '</span>'; }).join('') +
@@ -118,73 +128,79 @@
     d.querySelector('[data-act="ok"]').onclick = function () { r.peserta.push(d.querySelector('#pp').value); D.persist(); M.closeDrawer(); $('tim').innerHTML = whoH(); };
   }
 
-  /* ---------- Langkah 2: Kandungan ---------- */
+  /* ---------- Langkah 2: Kandungan — draf AI ialah tindakan utama ---------- */
+  function ta(id, label, hint, rows, val) {
+    return '<div class="field"><div class="lblrow"><label class="lbl" for="' + id + '">' + label + (hint ? ' <span class="muted" style="font-weight:400">— ' + hint + '</span>' : '') + '</label><span class="tagai">' + (r.ai ? '<span class="aitag">AI · semak</span>' : '') + '</span></div><textarea id="' + id + '" rows="' + rows + '">' + M.esc(val || '') + '</textarea></div>';
+  }
   function p2() {
-    return '<div class="field"><label class="lbl" for="obj">Objektif <span class="muted" style="font-weight:400">— pilihan</span></label><textarea id="obj" rows="2" placeholder="Tujuan lawatan / aktiviti.">' + M.esc(r.obj || '') + '</textarea></div>' +
-      '<div class="aibox"><label class="lbl" for="cat">Catatan ringkas</label><textarea id="cat" rows="4" placeholder="Tulis ringkas, satu perkara satu baris. Contoh:\nguru guna bahan konkrit untuk pecahan\n3 kelas dipantau\nperlu bimbingan susulan PBD">' + M.esc(r.cat || '') + '</textarea>' +
-      '<div class="row"><button class="btn btn-line" type="button" id="ai">Jana draf AI</button><span class="tiny" id="ais">Enjin AI yang sama dengan borang ICT. Dijana daripada maklumat rekod + catatan anda sahaja.</span></div></div>' +
-      '<div class="field" style="margin-top:20px"><div class="lblrow"><label class="lbl" for="rum">Rumusan <span style="color:var(--isd)">*</span></label><span id="tag-rum">' + (r.ai ? '<span class="aitag">Draf dibantu AI · semak fakta</span>' : '') + '</span></div><textarea id="rum" rows="5" placeholder="Apa yang berlaku dan dapatan utama.">' + M.esc(r.rum || '') + '</textarea></div>' +
-      '<div class="addrow" id="ladd" style="margin-top:6px">' + (r.imp ? '' : '<button type="button" data-add="imp">+ Impak</button>') + (r.ts ? '' : '<button type="button" data-add="ts">+ Tindak susul</button>') + (r.bil ? '' : '<button type="button" data-add="bil">+ Bilangan peserta</button>') + '</div>' +
-      '<div class="field" id="x-imp"' + (r.imp ? '' : ' hidden') + '><label class="lbl" for="imp">Impak <span class="muted" style="font-weight:400">— senarai bernombor</span></label><textarea id="imp" rows="3">' + M.esc(r.imp || '') + '</textarea></div>' +
-      '<div class="field" id="x-ts"' + (r.ts ? '' : ' hidden') + '><label class="lbl" for="ts">Tindak susul <span class="muted" style="font-weight:400">— teks laporan sahaja</span></label><textarea id="ts" rows="3">' + M.esc(r.ts || '') + '</textarea></div>' +
+    var K = D.KHAS[r.sek];
+    return '<div class="aibox"><div class="lblrow"><label class="lbl" for="cat" style="font-size:15px">1 · Catatan ringkas anda</label><span class="aitag" style="color:var(--petrol);background:var(--card)">✦ Draf AI</span></div>' +
+      '<textarea id="cat" rows="5" placeholder="Tulis ringkas, satu perkara satu baris. Contoh:\n3 kelas Tahun 4 dipantau\nguru guna bahan konkrit untuk pecahan\nmurid aktif dalam kumpulan\nperlu bimbingan susulan PBD">' + M.esc(r.cat || '') + '</textarea>' +
+      '<div class="row"><button class="btn btn-ink" type="button" id="ai">✦ Jana draf AI</button><span class="tiny" id="ais">Enjin AI yang sama dengan borang ICT. Hanya guna maklumat rekod + catatan anda; tiada fakta ditambah.</span></div></div>' +
+      '<div class="lblrow" style="margin:22px 0 8px"><span class="lbl" style="font-size:15px;margin:0">2 · Semak &amp; betulkan draf</span><span id="tag-rum" class="tiny">' + (r.ai ? 'Draf dibantu AI · semak fakta' : 'Atau tulis sendiri') + '</span></div>' +
+      ta('obj', 'Objektif', 'bernombor', 3, r.obj) +
+      ta('rum', 'Rumusan <span style="color:var(--isd)">*</span>', 'satu perenggan', 5, r.rum) +
+      ta('imp', 'Impak', 'bernombor', 3, r.imp) +
+      ta('ts', 'Tindak susul', 'bernombor · teks laporan sahaja', 3, r.ts) +
+      (K ? ta('khas', K.charAt(0) + K.slice(1).toLowerCase(), 'bahagian khas sektor', 2, r.khas) : '') +
+      '<div class="addrow" id="ladd" style="margin-top:6px">' + (r.bil ? '' : '<button type="button" data-add="bil">+ Bilangan peserta</button>') + '</div>' +
       '<div class="field" id="x-bil"' + (r.bil ? '' : ' hidden') + '><span class="lbl">Bilangan peserta (tiada nama)</span><div class="num3">' + ['Guru', 'Murid', 'Pihak luar'].map(function (k, i) { return '<input type="number" min="0" class="bil" placeholder="' + k + '" aria-label="' + k + '" value="' + ((r.bil || [])[i] || '') + '">'; }).join('') + '</div></div>';
   }
-  /* Simulasi draf AI (enjin sama dengan borang ICT): input = maklumat rekod + catatan pegawai sahaja; tiada fakta baharu. */
+  /* Simulasi draf AI (enjin sama dengan borang ICT): input = maklumat rekod + catatan pegawai sahaja; tiada fakta baharu.
+     Enjin sebenar: prompt sektor (Objektif / Rumusan / Impak / Tindak Susul; bilangan poin ikut input). */
   function draft() {
     var c = lines($('cat').value);
     if (!c.length) { $('cat').focus(); M.toast('Tulis catatan dahulu'); return; }
     var b = $('ai'); b.disabled = true; b.textContent = 'Menjana draf…'; $('ais').textContent = 'Sedang menjana · anggaran 30–50 s (demo: segera). Kekalkan halaman ini terbuka.';
     setTimeout(function () {
-      var head = r.jenis + ' di ' + place + ' pada ' + dateTxt() + ' melibatkan ' + team().length + ' pegawai.';
-      $('rum').value = head + ' ' + c.map(function (x) { return x.charAt(0).toUpperCase() + x.slice(1).replace(/\.?$/, '.'); }).join(' ');
-      var imp = c.filter(function (x) { return !/perlu|susul|cadang|akan/i.test(x); }), ts = c.filter(function (x) { return /perlu|susul|cadang|akan/i.test(x); });
-      if (imp.length) { $('imp').value = numbered(imp.join('\n')); $('x-imp').hidden = false; }
-      if (ts.length) { $('ts').value = numbered(ts.join('\n')); $('x-ts').hidden = false; }
-      [].forEach.call(document.querySelectorAll('#ladd [data-add]'), function (x) { if (!document.getElementById('x-' + x.getAttribute('data-add')).hidden) x.hidden = true; });
-      r.ai = true; $('tag-rum').innerHTML = '<span class="aitag">Draf dibantu AI · semak fakta</span>';
-      b.disabled = false; b.textContent = 'Jana semula';
-      $('ais').textContent = 'Draf siap. Betulkan apa-apa yang tidak tepat.';
+      var cap = function (x) { return x.charAt(0).toUpperCase() + x.slice(1).replace(/\.?$/, '.'); };
+      var fu = c.filter(function (x) { return /perlu|susul|cadang|akan/i.test(x); }), fa = c.filter(function (x) { return fu.indexOf(x) < 0; });
+      if (!$('obj').value.trim()) $('obj').value = '1. Melaksanakan ' + r.tajuk.charAt(0).toLowerCase() + r.tajuk.slice(1) + ' di ' + place + '.';
+      $('rum').value = r.tajuk + ' telah dilaksanakan di ' + place + ' pada ' + dateTxt() + ' dengan penglibatan ' + team().length + ' pegawai PPD Kuching. ' + fa.map(cap).join(' ');
+      $('imp').value = numbered(fa.map(cap).join('\n'));
+      $('ts').value = fu.length ? numbered(fu.map(cap).join('\n')) : '';
+      r.ai = true; $('tag-rum').textContent = 'Draf dibantu AI · semak fakta';
+      [].forEach.call(document.querySelectorAll('.tagai'), function (x) { x.innerHTML = '<span class="aitag">AI · semak</span>'; });
+      b.disabled = false; b.textContent = '✦ Jana semula';
+      $('ais').textContent = 'Draf siap di bawah. Betulkan apa-apa yang tidak tepat.' + (fu.length ? '' : ' Tiada tindak susul dalam catatan — tambah sendiri jika perlu.');
+      $('rum').scrollIntoView({ behavior: 'smooth', block: 'center' });
     }, 1400);
   }
 
-  /* ---------- Langkah 3: Bukti, pratonton, semak ---------- */
+  /* ---------- Langkah 3: Bukti, pratonton format wajib, semak ---------- */
   function p3() {
     var g = r.gam || 0;
     return '<div class="field"><div class="lblrow"><span class="lbl">Gambar</span><span class="tiny">' + g + ' / 4 disyorkan · wajib jika mahu terbit</span></div><div class="gal4" id="gal">' +
       [0, 1, 2, 3].map(function (i) { return i < g ? '<button type="button" class="on" data-g="' + i + '">GAMBAR ' + (i + 1) + '</button>' : '<button type="button" data-g="' + i + '" aria-label="Tambah gambar">+</button>'; }).join('') + '</div></div>' +
-      '<div class="section-t" style="margin-top:22px">Pratonton format rasmi</div>' + docH() +
+      '<div class="section-t" style="margin-top:22px">Pratonton — format laporan PPD Kuching</div>' + docH() +
       '<div class="share"><button class="btn btn-line btn-sm" type="button" id="pdf">Cetak PDF</button><button class="btn btn-line btn-sm" type="button" id="wa">Salin WhatsApp</button></div>' +
+      '<p class="tiny" style="margin-top:8px">Format sama digunakan untuk PDF, WhatsApp dan Facebook (jika diterbitkan).</p>' +
       '<div class="section-t" style="margin-top:22px">Sebelum simpan</div><div class="chk">' +
-      (r.ai ? '<label><input type="checkbox" class="ck"> Draf telah disemak — semua fakta betul</label>' : '') +
+      (r.ai ? '<label><input type="checkbox" class="ck"> Draf AI telah disemak — semua fakta betul</label>' : '') +
       '<label><input type="checkbox" class="ck"> Semua pegawai terlibat disenaraikan</label>' +
       '<label><input type="checkbox" class="ck"> Tiada nama murid, data kes atau peperiksaan</label></div>';
   }
-  function list(t) { var l = lines(t); return l.length ? '<ol style="padding-left:18px">' + l.map(function (x) { return '<li>' + M.esc(x.charAt(0).toUpperCase() + x.slice(1)) + '</li>'; }).join('') + '</ol>' : '<p>—</p>'; }
   function docH() {
-    var bil = r.bil || [], tot = bil.filter(Boolean).length ? 'Guru ' + (bil[0] || 0) + ' · Murid ' + (bil[1] || 0) + ' · Pihak luar ' + (bil[2] || 0) : '—';
-    return '<div class="doc" id="doc"><div class="hd"><b>PEJABAT PENDIDIKAN DAERAH KUCHING</b><span>' + M.esc(M.sekName(r.sek)) + '<br>Laporan aktiviti</span></div>' +
-      '<h3>' + M.esc(r.tajuk) + '</h3><table>' +
-      '<tr><td>Tarikh / masa</td><td>' + dateTxt() + ' · ' + r.mula + '–' + r.akhir + '</td></tr>' +
-      '<tr><td>Tempat</td><td>' + M.esc(place) + '</td></tr>' +
-      '<tr><td>Jenis aktiviti</td><td>' + M.esc(r.jenis) + '</td></tr>' +
-      '<tr><td>Pegawai terlibat</td><td>' + team().map(M.esc).join(', ') + '</td></tr>' +
-      (r.ruj ? '<tr><td>No. rujukan</td><td>' + M.esc(r.ruj) + '</td></tr>' : '') +
-      '<tr><td>Bilangan peserta</td><td>' + tot + '</td></tr></table>' +
-      (r.obj ? '<h4>Objektif</h4><p>' + M.esc(r.obj) + '</p>' : '') +
-      '<h4>Rumusan</h4><p>' + (M.esc(r.rum) || '<span style="color:#999">Belum diisi.</span>') + '</p>' +
-      (r.imp ? '<h4>Impak</h4>' + list(r.imp) : '') + (r.ts ? '<h4>Tindak susul</h4>' + list(r.ts) : '') +
-      ((r.gam || 0) ? '<h4>Gambar</h4><div class="imgs">' + new Array(r.gam + 1).join('<i></i>') + '</div>' : '') +
+    var H = /^(PENGLIBATAN|OBJEKTIF|RUMUSAN|IMPAK|TINDAK SUSUL|AMALAN TERBAIK SEKOLAH):$/;
+    var body = D.post(r, 'teks').split('\n').map(function (l, i) {
+      var e = M.esc(l);
+      if (i < 2) return '<div class="pa">' + e + '</div>';
+      if (i === 2) return '<div class="pt">' + e + '</div>';
+      if (H.test(l)) return '<div class="ph2">' + e + '</div>';
+      if (/^"/.test(l)) return '<div class="ps">' + e + '</div>';
+      if (/^#/.test(l)) return '<div class="hs">' + e + '</div>';
+      return '<div>' + e + '</div>';
+    }).join('');
+    return '<div class="doc" id="doc"><div class="hd"><b>PEJABAT PENDIDIKAN DAERAH KUCHING</b><span>' + M.esc(M.sekName(r.sek)) + '</span></div>' + body +
+      ((r.gam || 0) ? '<div class="imgs">' + new Array(r.gam + 1).join('<i></i>') + '</div>' : '') +
       '<div class="ft">Disediakan oleh ' + M.esc(r.owner) + ' · ' + M.esc(me.jaw) + '</div></div>';
   }
-  function waText() {
-    return '*' + r.tajuk.toUpperCase() + '*\n🗓 ' + dateTxt() + '\n📍 ' + place + '\n👥 ' + team().join(', ') + '\n\n' + (r.rum || '') +
-      (r.imp ? '\n\n*Impak*\n' + numbered(r.imp) : '') + (r.ts ? '\n\n*Tindak susul*\n' + numbered(r.ts) : '');
-  }
+  function waText() { return D.post(r, 'wa'); }
 
   /* ---------- Kawalan ---------- */
   function collect() {
     if ($('ruj')) r.ruj = $('ruj').value.trim();
-    if ($('rum')) { r.obj = $('obj').value.trim(); r.cat = $('cat').value.trim(); r.rum = $('rum').value.trim(); r.imp = $('imp').value.trim(); r.ts = $('ts').value.trim();
+    if ($('rum')) { r.obj = $('obj').value.trim(); r.cat = $('cat').value.trim(); r.rum = $('rum').value.trim(); r.imp = $('imp').value.trim(); r.ts = $('ts').value.trim(); if ($('khas')) r.khas = $('khas').value.trim();
       var b = [].map.call(document.querySelectorAll('.bil'), function (x) { return x.value ? Number(x.value) : 0; }); r.bil = b.some(Boolean) ? b : null; }
     D.persist();
   }

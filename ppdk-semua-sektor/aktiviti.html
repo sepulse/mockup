@@ -56,7 +56,7 @@
 </div>
 
 <script src="shared.js?v=8a697040"></script>
-<script src="data.js?v=e7619fca"></script>
+<script src="data.js?v=221f8e00"></script>
 <script>
 (function () {
   M.mount({ page: 'aktiviti' });
@@ -124,7 +124,7 @@
     var place = D.where(r).t.replace('Tugas rasmi — ', '');
     var body = (sens ? '<p class="flag warn">Sektor ' + r.sek + ': penerbitan awam belum dibuka.</p>' : '') +
       '<div class="pcard"><div class="ph">Gambar utama</div><div class="b">' + M.sk(r.sek) + '<h4>' + M.esc(r.tajuk) + '</h4><p>' + M.fmtDate(r.tarikh) + ' · ' + M.esc(place) + '</p><p style="margin-top:8px">' + M.esc(r.rum||'Rumusan belum diisi.') + '</p></div></div>' +
-      '<details class="more"><summary>Lihat kapsyen Facebook</summary><div class="fbcap">📌 ' + M.esc(r.tajuk.toUpperCase()) + '\n🗓 ' + M.fmtDate(r.tarikh) + '\n📍 ' + M.esc(place) + '\n\n' + M.esc(r.rum||'') + '\n\n#PPDKuching #' + r.sek + '</div></details>' +
+      '<details class="more"><summary>Lihat kapsyen Facebook</summary><div class="fbcap">' + M.esc(D.post(r, 'fb')) + '</div></details>' +
       (isPub ? '<div class="section-t">Semakan penerbit</div><div class="chk"><label><input type="checkbox" class="ck"> Tiada nama murid, data kes atau peperiksaan</label><label><input type="checkbox" class="ck"> Gambar sesuai untuk awam</label><label><input type="checkbox" class="ck"> Fakta dan nama sekolah betul</label></div>' : '<p class="tiny" style="margin-top:14px">Penerbit sektor ' + r.sek + ' akan menyemak sebelum diterbitkan di ppdk.ch dan Facebook.</p>');
     var foot = isPub ? '<button class="text-btn" data-act="back">Pulangkan</button><button class="btn btn-ink" data-act="pub" disabled>Terbit</button>'
       : r.mohon ? '<button class="btn btn-line" data-close>Tutup</button>' : '<button class="btn btn-ink" data-act="mohon"' + (sens ? ' disabled' : '') + '>Hantar kepada penerbit</button>';

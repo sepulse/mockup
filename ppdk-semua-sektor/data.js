@@ -238,7 +238,45 @@
     });
   }
 
-  window.D = { persist: persist, ict: ict, ictTag: ictTag, online: online, physical: physical, summary: summary, STAF: STAF, ini: ini, emel: emel, openKad: openKad, tarikhLabel: tarikhLabel, openRecord: openRecord, openCuti: openCuti, REKOD: REKOD, CUTI: CUTI, onDate: onDate, involves: involves, staf: staf,
+  /* Format laporan wajib (seperti hantaran Facebook sedia ada). Akauntabiliti, Tugas Utama dan hashtag = konfigurasi
+     sektor (ILUSTRASI — senarai rasmi daripada sektor). Hari dikira daripada tarikh, bukan ditaip. */
+  var AKA = {
+    SPr: ['PERANCANGAN', 'Merancang, meneliti dan menetapkan keperluan dan agihan kewangan kepada PPD dan sekolah', '#SPr'],
+    SPb: ['PEMBELAJARAN', 'Menyelaras dan melaksanakan aktiviti pembangunan pembelajaran', '#SPb'],
+    SPS: ['PENGURUSAN SEKOLAH', 'Membimbing pengurusan dan pentadbiran sekolah', '#SPS'],
+    SPbM: ['PEMBANGUNAN MURID', 'Melaksanakan pemantauan bersepadu pelaksanaan program murid di sekolah', '#SPbM'],
+    SPsK: ['PSIKOLOGI DAN KAUNSELING', 'Memantau pelaksanaan perkhidmatan psikologi dan kaunseling di peringkat daerah', '#SPsK'],
+    SPP: ['PENTAKSIRAN DAN PEPERIKSAAN', 'Mengawal selia pengurusan pentaksiran dan peperiksaan serta penilaian antara sekolah-sekolah', '#SPP'],
+    Pengurusan: ['PENGURUSAN', 'Mengurus pentadbiran dan perkhidmatan sokongan PPD', '#pengurusan']
+  };
+  var KHAS = { SPbM: 'AMALAN TERBAIK SEKOLAH' };
+  function aka(sek) { return AKA[sek] || AKA.Pengurusan; }
+  function jam(t) { var p = t.split(':').map(Number), h = p[0], m = String(p[1]).padStart(2, '0'); var w = h < 12 ? 'pagi' : h < 14 ? 'tengah hari' : h < 19 ? 'petang' : 'malam'; return (h > 12 ? h - 12 : h) + '.' + m + ' ' + w; }
+  function tarikhPos(r) {
+    var B = M.BULAN, f = function (iso) { var p = iso.split('-').map(Number); return p[2] + ' ' + B[p[1] - 1] + ' ' + p[0]; };
+    if (r.tamat && r.tamat !== r.tarikh) return Number(r.tarikh.slice(8)) + ' hingga ' + f(r.tamat) + ' (' + M.dayName(r.tarikh) + ' hingga ' + M.dayName(r.tamat) + ')';
+    return f(r.tarikh) + ' (' + M.dayName(r.tarikh) + ')';
+  }
+  function nums(t) { return (t || '').split(/\n+/).map(function (x) { return x.replace(/^\s*(\d+[.)]|[-•*])\s*/, '').trim(); }).filter(Boolean); }
+  /* gaya: 'teks' (simpan/PDF), 'wa' (*tebal*), 'fb' (tajuk tebal Unicode). */
+  function post(r, gaya) {
+    var A = aka(r.sek), on = r.mod === 'atas_talian', L = [];
+    var H = function (h) { return gaya === 'wa' ? '*' + h + ':*' : gaya === 'fb' ? bold(h) + ':' : h + ':'; };
+    var team = [r.owner].concat(r.peserta || []).map(function (n) { var s = staf(n); return n + (s.jaw ? ' (' + s.jaw + ')' : ''); });
+    if (r.bil && r.bil.some(Boolean)) team.push(['Guru', 'Murid', 'Pihak luar'].map(function (k, i) { return r.bil[i] ? r.bil[i] + ' ' + k.toLowerCase() : ''; }).filter(Boolean).join(', '));
+    L.push('[AKAUNTABILITI: ' + A[0] + ']', '[Tugas Utama: ' + A[1] + ']', (r.tajuk || '').toUpperCase());
+    L.push('Tarikh: ' + tarikhPos(r), 'Masa: ' + jam(r.mula) + ' – ' + jam(r.akhir));
+    if (on) L.push('Mod: Atas talian', 'Tempat: Lokasi masing-masing'); else L.push('Tempat: ' + (r.sekolah.length ? r.sekolah.join(', ') : r.lokasi || ''));
+    L.push(H('PENGLIBATAN')); team.forEach(function (t, i) { L.push((i + 1) + '. ' + t); });
+    var sec = function (h, t, para) { var l = nums(t); if (!l.length) return; L.push(H(h)); if (para) L.push(l.join(' ')); else l.forEach(function (x, i) { L.push((i + 1) + '. ' + x); }); };
+    sec('OBJEKTIF', r.obj); sec('RUMUSAN', r.rum, true); sec('IMPAK', r.imp); sec('TINDAK SUSUL', r.ts);
+    if (KHAS[r.sek] && r.khas) { L.push(H(KHAS[r.sek])); L.push(nums(r.khas).join(' ')); }
+    L.push('"' + (gaya === 'fb' ? bold('PPD Kita, Tanggungjawab Kita') : 'PPD Kita, Tanggungjawab Kita') + '"', '#ppdkuching', '#bitarasentiasa', A[2]);
+    return L.join('\n');
+  }
+  function bold(t) { return t.replace(/[A-Z]/g, function (c) { return String.fromCodePoint(0x1D400 + c.charCodeAt(0) - 65); }).replace(/[a-z]/g, function (c) { return String.fromCodePoint(0x1D41A + c.charCodeAt(0) - 97); }); }
+
+  window.D = { persist: persist, post: post, aka: aka, KHAS: KHAS, ict: ict, ictTag: ictTag, online: online, physical: physical, summary: summary, STAF: STAF, ini: ini, emel: emel, openKad: openKad, tarikhLabel: tarikhLabel, openRecord: openRecord, openCuti: openCuti, REKOD: REKOD, CUTI: CUTI, onDate: onDate, involves: involves, staf: staf,
     canSulit: canSulit, canCutiType: canCutiType, where: where, zones: zones, zoneBadges: zoneBadges,
     timeLabel: timeLabel, statusHtml: statusHtml, lvlHtml: lvlHtml, modIcon: modIcon };
 })();
