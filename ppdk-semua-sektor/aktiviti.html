@@ -56,7 +56,7 @@
 </div>
 
 <script src="shared.js?v=8a697040"></script>
-<script src="data.js?v=02a65e26"></script>
+<script src="data.js?v=e7619fca"></script>
 <script>
 (function () {
   M.mount({ page: 'aktiviti' });
@@ -110,23 +110,10 @@
     d.querySelector('[data-act="reset"]').addEventListener('click', function () { st.scope = def(); st.sek = ''; st.stat = ''; M.closeDrawer(); list(); });
   }
 
-  /* Lengkapkan laporan: Rumusan sahaja wajib. Tiada teks dijana sebagai fakta. */
+  /* Lengkapkan laporan: halaman penuh 3 langkah (lapor.html). */
   function lapor(r) {
     if (r.owner !== M.me().name) { D.openRecord(r); return; }
-    var body = '<p class="sum">' + M.fmtDate(r.tarikh) + ' · ' + r.mula + '–' + r.akhir + '<br>' + M.esc(D.where(r).t.replace('Tugas rasmi — ', '')) + '</p>' +
-      '<div class="field"><label class="lbl" for="rum">Rumusan / dapatan <span style="color:var(--isd)">*</span></label><textarea id="rum" rows="5" placeholder="Apa yang berlaku dan dapatan utama.">' + M.esc(r.rum||'') + '</textarea></div>' +
-      '<div class="field"><label class="lbl" for="obj">Objektif <span class="muted" style="font-weight:400">— pilihan</span></label><textarea id="obj" rows="2">' + M.esc(r.obj||'') + '</textarea></div>' +
-      '<div class="addrow" id="ladd" style="margin-top:14px"><button type="button" data-add="imp">+ Impak</button><button type="button" data-add="gam">+ Gambar</button><button type="button" data-add="bil">+ Bilangan peserta</button></div>' +
-      '<div class="field" id="x-imp" hidden><label class="lbl" for="imp">Impak</label><textarea id="imp" rows="3">' + M.esc(r.imp||'') + '</textarea></div>' +
-      '<div class="field" id="x-gam" hidden><span class="lbl">Gambar (maks. 10)</span><div class="gal"><button type="button" class="ph" style="border-style:dashed;font-size:20px" aria-label="Tambah gambar">+</button></div></div>' +
-      '<div class="field" id="x-bil" hidden><span class="lbl">Bilangan peserta (tiada nama)</span><div class="num3"><input type="number" min="0" placeholder="Guru" aria-label="Guru"><input type="number" min="0" placeholder="Murid" aria-label="Murid"><input type="number" min="0" placeholder="Pihak luar" aria-label="Pihak luar"></div></div>';
-    var d = M.drawer({ title: M.esc(r.tajuk), body: body, foot: '<button class="text-btn" data-act="draft">Simpan draf</button><button class="btn btn-ink" data-act="done">Simpan laporan</button>' });
-    function storeReport(){r.rum=d.querySelector('#rum').value.trim();r.obj=d.querySelector('#obj').value.trim();r.imp=d.querySelector('#imp').value.trim();D.persist();} d.querySelector('[data-act="draft"]').onclick=function(){storeReport();M.closeDrawer();M.toast('Draf disimpan · belum lengkap');};
-    d.querySelector('#ladd').addEventListener('click', function (e) { var b = e.target.closest('[data-add]'); if (!b) return; d.querySelector('#x-' + b.getAttribute('data-add')).hidden = false; b.hidden = true; });
-    d.querySelector('[data-act="done"]').addEventListener('click', function () {
-      if (!d.querySelector('#rum').value.trim()) { d.querySelector('#rum').focus(); M.toast('Isi rumusan dahulu'); return; }
-      storeReport(); r.status = 'selesai'; r.laporan = 'lengkap'; D.persist(); M.closeDrawer(); list(); M.toast('Laporan disimpan · kekal dalaman');
-    });
+    location.href = 'lapor.html?id=' + encodeURIComponent(r.id);
   }
 
   /* Terbit: satu pratonton kad portal; kapsyen FB dilipat; semakan penerbit. */

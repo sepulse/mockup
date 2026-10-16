@@ -186,7 +186,7 @@
     if (!hid && mine && ict(r)) foot = '<span class="tiny">Ubah melalui rekod ICT</span><button class="btn btn-line" data-close>Tutup</button>';
     else if (!hid && mine && r.status !== 'dibatalkan') {
       if (!past) foot = '<span class="links"><button class="text-btn" data-act="batal">Batal</button><a class="text-btn" href="rekod.html?salin=' + r.id + '">Salin</a></span><a class="btn btn-ink" href="rekod.html?ubah=' + r.id + '">Ubah</a>';
-      else if (r.laporan !== 'lengkap') foot = '<span class="links"><a class="text-btn" href="rekod.html?salin=' + r.id + '">Salin</a></span><a class="btn btn-ink" href="aktiviti.html?lapor=' + r.id + '">Lengkapkan laporan</a>';
+      else if (r.laporan !== 'lengkap') foot = '<span class="links"><a class="text-btn" href="rekod.html?salin=' + r.id + '">Salin</a></span><a class="btn btn-ink" href="lapor.html?id=' + r.id + '">Lengkapkan laporan</a>';
       else if (r.tahap === 'dalaman' && !r.mohon) foot = '<span class="links"><a class="text-btn" href="rekod.html?salin=' + r.id + '">Salin</a></span><a class="btn btn-ink" href="aktiviti.html?terbit=' + r.id + '">Mohon terbit</a>';
     }
     if (!hid && !mine && M.role() === 'ketua' && r.sek === m.sek && r.laporan === 'lengkap' && r.tahap === 'dalaman' && r.mohon)

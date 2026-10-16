@@ -72,7 +72,7 @@
 </div>
 
 <script src="shared.js?v=8a697040"></script>
-<script src="data.js?v=02a65e26"></script>
+<script src="data.js?v=e7619fca"></script>
 <script>
 (function () {
   M.mount({ page: 'rekod' });
@@ -144,7 +144,7 @@
     var r=old||{id:'N'+Date.now(),owner:m.name,sek:m.sek,status:'dirancang',laporan:'belum'};
     Object.assign(r,{jenis:$('jenis').value,tarikh:date,tamat:end,mula:$('mula').value,akhir:$('akhir').value,sehari:$('sehari').checked,mod:st.mod==='online'?'atas_talian':st.mod==='hibrid'?'hibrid':'fizikal',sekolah:['sekolah','hibrid'].includes(st.mod)?st.sekolah.slice():[],lokasi:st.mod==='lain'?$('lokasi').value.trim():st.mod==='online'||st.mod==='hibrid'?$('plat').value:'',peserta:st.peserta.slice(),tahap:$('sulit').checked?'sulit':'dalaman',catatan:$('catatan').value,kpi:$('kpi').value});
     r.tajuk=$('tajuk').value.trim()||r.jenis;r.penyertaan=r.penyertaan||{};if(r.mod==='hibrid')r.penyertaan[m.name]=$('joinmode').value;
-    if(!old)D.REKOD.push(r);D.persist();location.href=date<M.TODAY?'aktiviti.html?lapor='+r.id:'hari-ini.html';
+    if(!old)D.REKOD.push(r);D.persist();location.href=date<M.TODAY?'lapor.html?id='+r.id:'hari-ini.html';
   });
 
   function init() {
