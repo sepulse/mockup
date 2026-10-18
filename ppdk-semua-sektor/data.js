@@ -106,7 +106,7 @@
 
   /* Rekod lawatan Unit ICT: satu data, dua paparan. Petunjuk kecil sahaja. */
   function ict(r) { return r.sumber === 'ict'; }
-  function ictTag(r) { return ict(r) ? ' · dari rekod ICT' : ''; }
+  function ictTag(r) { return ict(r) ? ' · Pengurusan · Unit ICT' : ''; }
 
   function onDate(r, iso) { return r.tarikh <= iso && iso <= r.tamat; }
   function involves(r, name) { return r.owner === name || r.peserta.indexOf(name) >= 0; }
@@ -176,7 +176,7 @@
       else if (past && r.laporan !== 'lengkap') flag = '<p class="flag warn">Laporan belum lengkap</p>';
       else if (r.tahap === 'umum') flag = '<p class="flag ok">Diterbitkan di ppdk.ch</p>';
       else if (r.mohon) flag = '<p class="flag">Menunggu penerbit ' + r.sek + '</p>';
-      if (ict(r)) flag += '<p class="hint" style="margin-bottom:12px">Dari rekod lawatan ICT. Direkod sekali; dipapar juga di dashboard ICT.</p>';
+      if (ict(r)) flag += '<p class="hint" style="margin-bottom:12px">Pengurusan · Unit ICT. Direkod sekali; dipapar juga di dashboard ICT.</p>';
       body = flag + '<div class="kv2"><div>' + when + '</div><div>' + M.icon(w.ic) + '<span>' + place + '</span></div>' +
         '<div>' + M.icon('users') + '<span>' + M.esc(r.owner) + ' ' + M.sk(r.sek) + (r.peserta.length ? '<br>' + r.peserta.map(M.esc).join(', ') : '') + '</span></div></div>' +
         '<details class="more"><summary>Butiran lain</summary><dl class="dl" style="margin-top:10px"><dt>Jenis</dt><dd>' + M.esc(r.jenis) + '</dd>' +

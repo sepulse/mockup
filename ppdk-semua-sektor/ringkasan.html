@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Ringkasan Bulanan · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=9eee8c54">
+<link rel="stylesheet" href="base.css?v=95a3f3d8">
 <link rel="stylesheet" href="gaya.css?v=cc708408">
 <style>
 :root{--ac:var(--petrol)}
@@ -59,26 +59,16 @@
   <div style="margin-top:28px"><button class="btn btn-ink" type="button" id="pres"><svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Mod Pembentangan</button></div>
 </div>
 
-<script src="shared.js?v=8a697040"></script>
-<script src="data.js?v=2abbace7"></script>
+<script src="shared.js?v=47619351"></script>
+<script src="data.js?v=72056c03"></script>
 <script>
 (function () {
   M.mount({ page: 'ringkasan' });
   var $ = function (id) { return document.getElementById(id); };
-  var NUM = { /* ILUSTRASI */
-    SPr: { a: 22, s: 9, p: 8, x: ['Sesi data EMIS', 41], tr: [14, 18, 16, 21, 19, 22] },
-    SPb: { a: 46, s: 31, p: 17, x: ['Guru dibimbing', 212], tr: [29, 35, 38, 33, 41, 46] },
-    SPS: { a: 34, s: 27, p: 12, x: ['Audit selesai', 18], tr: [22, 25, 30, 28, 31, 34] },
-    SPbM: { a: 29, s: 24, p: 11, x: ['Murid terlibat', 1840], tr: [18, 26, 24, 30, 27, 29] },
-    SPsK: { a: 17, s: 13, p: 7, x: ['Sesi intervensi', 52], tr: [12, 14, 15, 13, 16, 17] },
-    SPP: { a: 21, s: 19, p: 9, x: ['Pusat peperiksaan disemak', 38], tr: [10, 12, 14, 17, 19, 21] },
-    Pengurusan: { a: 38, s: 26, p: 10, x: ['Tiket ISD ditutup', 64], tr: [30, 28, 34, 36, 35, 38] }
-  };
-  var JENIS = [['Lawatan pemantauan PdP', 14], ['Bimbingan guru', 13], ['Bengkel / kursus', 7], ['Mesyuarat', 6], ['Program murid', 4]];
   var MO = ['Mei', 'Jun', 'Jul', 'Ogo', 'Sep', 'Okt'];
   var st = { sek: '', ver: 'dalaman', i: 0, month:'2026-10' };
 
-  function ictN(d) { var n = d.list.filter(D.ict).length; return n ? ' · ' + n + ' dari rekod ICT, tidak direkod semula' : ''; }
+  function ictN(d) { var n = d.list.filter(D.ict).length; return n ? ' · Pengurusan · Unit ICT: ' + n + ' aktiviti, direkod sekali' : ''; }
   function data() {
     var d=D.summary(st.sek,st.month,st.ver==='awam');d.x=null;d.blocked=st.ver==='awam'&&(st.sek==='SPsK'||st.sek==='SPP');
     d.tr=MO.map(function(_,i){return i===5?d.a:null});return d;
@@ -110,7 +100,7 @@
     document.documentElement.style.setProperty('--ac', acc());
     $('ctx').innerHTML = '<span class="ctxk"></span>' + M.esc(label());
     if (d.blocked) { $('body').innerHTML = '<div class="empty" style="border-top:1px solid var(--ink)">Sektor ini tiada versi awam sehingga sektor bersetuju.</div>'; return; }
-    $('body').innerHTML = '<p class="tiny" style="margin-bottom:14px">Laporan lengkap Dalaman + Umum · aktiviti unik dikira sekali' + (st.ver === 'awam' ? '' : ictN(d)) + '</p>' + numsH(d) + mixH() + '<details class="more"><summary>Lihat liputan, jenis dan trend</summary>' +
+    $('body').innerHTML = '<p class="tiny" style="margin-bottom:14px">' + (st.ver === 'awam' ? 'Agregat laporan lengkap' : 'Laporan lengkap Dalaman + Umum') + ' · aktiviti unik dikira sekali' + (st.ver === 'awam' ? '' : ictN(d)) + '</p>' + numsH(d) + mixH() + '<details class="more"><summary>Lihat liputan, jenis dan trend</summary>' +
       '<div class="sec-t"><h2>Sekolah terlibat</h2></div>' + liputH(d) +
       (st.ver === 'awam' ? '' : '<div class="sec-t"><h2>Jenis aktiviti</h2><span>ikut katalog sektor</span></div>' + jenisH()) +
       '<div class="sec-t"><h2>6 bulan</h2></div>' + trendH(d) + '</details>';

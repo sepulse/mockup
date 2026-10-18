@@ -110,7 +110,7 @@ svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 
 /* Tag sektor neutral, lencana zon padu, status */
 /* Warna sektor: tona gelap/tanah, sengaja jauh daripada 8 warna zon ICT (terang). Zon kekal di ict.ppdk.ch sahaja. */
-:root{--s-SPr:#713F12;--s-SPb:#3F6212;--s-SPS:#312E81;--s-SPbM:#86198F;--s-SPsK:#9F1239;--s-SPP:#B42318;--s-PGR:#2B3436}
+:root{--s-SPr:#713F12;--s-SPb:#3F6212;--s-SPS:#312E81;--s-SPbM:#86198F;--s-SPsK:#0F766E;--s-SPP:#B42318;--s-PGR:#2B3436}
 .sk{display:inline-flex;align-items:center;height:22px;padding:0 7px;background:var(--sc,var(--s-PGR));color:#fff;font:700 11px/1 var(--mono);letter-spacing:.03em;white-space:nowrap}
 :root[data-theme="dark"] .sk{box-shadow:inset 0 0 0 1px rgba(255,255,255,.18)}
 .zb{display:inline-flex;align-items:center;justify-content:center;height:22px;padding:0 7px;font:700 11px/1 var(--sans);letter-spacing:.04em;color:#fff;background:var(--c);white-space:nowrap}
@@ -136,7 +136,7 @@ svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stro
 .search{position:relative;flex:1 1 240px;min-width:0}
 .search svg{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted)}
 label.search input{padding-left:38px}
-input[type=text],input[type=search],input[type=date],input[type=time],input[type=number],select,textarea{width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--rule-2);background:var(--card);border-radius:0;font-size:14.5px}
+input[type=text],input[type=email],input[type=search],input[type=date],input[type=time],input[type=number],select,textarea{width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--rule-2);background:var(--card);border-radius:0;font-size:14.5px}
 select{appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--muted) 50%),linear-gradient(135deg,var(--muted) 50%,transparent 50%);background-position:calc(100% - 17px) 18px,calc(100% - 12px) 18px;background-size:5px 5px;background-repeat:no-repeat;padding-right:32px}
 textarea{min-height:88px;resize:vertical;line-height:1.5}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--petrol);outline-offset:-1px}

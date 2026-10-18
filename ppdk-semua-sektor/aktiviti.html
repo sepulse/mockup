@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Rekod Aktiviti · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=9eee8c54">
+<link rel="stylesheet" href="base.css?v=95a3f3d8">
 <link rel="stylesheet" href="gaya.css?v=cc708408">
 <style>
 .sum{font-size:14px;color:var(--ink-2);margin-bottom:16px}
@@ -55,8 +55,8 @@
   <div class="list" id="list" style="margin-top:14px"></div>
 </div>
 
-<script src="shared.js?v=8a697040"></script>
-<script src="data.js?v=2abbace7"></script>
+<script src="shared.js?v=47619351"></script>
+<script src="data.js?v=72056c03"></script>
 <script>
 (function () {
   M.mount({ page: 'aktiviti' });
@@ -92,7 +92,7 @@
     $('list').innerHTML = rows.map(function (r) {
       var w = D.where(r), k = key(r), mine = r.owner === m.name;
       var end = k === 'need' && mine ? '<span class="e warn">Perlu laporan</span>' : k === 'pub' ? '<span class="e pub">' + M.icon('globe') + ' Umum</span>' : k === 'mohon' ? '<span class="e mohon">Menunggu penerbit</span>' : k === 'cx' ? '<span class="e">Dibatalkan</span>' : r.tahap === 'sulit' ? '<span class="e">' + M.icon('lock') + '</span>' : '<span class="e"></span>';
-      return '<button class="li' + (k === 'cx' ? ' cx' : '') + '" style="--sc:var(--s-' + (r.sek === 'Pengurusan' ? 'PGR' : r.sek) + ')" data-r="' + r.id + '"><span class="t">' + Number(r.tarikh.slice(8)) + ' Okt</span><span><span class="n">' + (w.hidden ? 'Tugas rasmi' : M.esc(r.tajuk)) + '</span><span class="s" style="display:block">' + M.esc(w.t.replace('Tugas rasmi — ', '')) + (mine ? '' : ' · ' + M.esc(r.owner)) + '</span></span>' + end + '</button>';
+      return '<button class="li' + (k === 'cx' ? ' cx' : '') + '" style="--sc:var(--s-' + (r.sek === 'Pengurusan' ? 'PGR' : r.sek) + ')" data-r="' + r.id + '"><span class="t">' + Number(r.tarikh.slice(8)) + ' Okt</span><span><span class="n">' + (w.hidden ? 'Tugas rasmi' : M.esc(r.tajuk)) + '</span><span class="s" style="display:block">' + M.esc(w.t.replace('Tugas rasmi — ', '')) + (mine ? '' : ' · ' + M.esc(r.owner)) + D.ictTag(r) + '</span></span>' + end + '</button>';
     }).join('') || '<div class="empty">Tiada rekod.</div>';
     var ch = []; if (st.sek) ch.push(['sek', st.sek]); if (st.stat) ch.push(['stat', STL[st.stat] || 'Laporan lengkap']);
     $('fchips').innerHTML = ch.map(function (c) { return '<button class="chip" data-x="' + c[0] + '">' + c[1] + ' <span class="x">✕</span></button>'; }).join('');

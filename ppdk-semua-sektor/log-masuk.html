@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Log Masuk · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=9eee8c54">
+<link rel="stylesheet" href="base.css?v=95a3f3d8">
 <link rel="stylesheet" href="gaya.css?v=cc708408">
 <style>
 body{display:flex;min-height:100vh;align-items:flex-start;justify-content:center}
@@ -15,8 +15,6 @@ body{display:flex;min-height:100vh;align-items:flex-start;justify-content:center
 .box .mono{color:var(--muted);margin-top:6px}
 .box h1{font:800 26px/1.15 var(--display);margin:34px 0 6px}
 .box .lead{color:var(--ink-2);font-size:14.5px;margin-bottom:20px}
-.or{display:flex;align-items:center;gap:12px;margin:18px 0;color:var(--muted);font-size:12.5px}
-.or::before,.or::after{content:"";flex:1;border-top:1px solid var(--rule)}
 .steps{display:flex;gap:6px;margin-top:30px}
 .steps i{flex:1;height:4px;background:var(--rule)}
 .steps i.on{background:var(--petrol)}
@@ -27,7 +25,6 @@ body{display:flex;min-height:100vh;align-items:flex-start;justify-content:center
 .tg{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 0;border-bottom:1px solid var(--rule);font-size:14.5px;cursor:pointer}
 .tg small{display:block;color:var(--muted);font-size:12.5px}
 .tg input{width:20px;height:20px;accent-color:var(--petrol);flex:none}
-.g{display:inline-grid;place-items:center;width:20px;height:20px;background:#fff;color:#4285F4;font:700 13px/1 var(--sans);border:1px solid var(--rule)}
 </style>
 </head>
 <body>
@@ -36,36 +33,32 @@ body{display:flex;min-height:100vh;align-items:flex-start;justify-content:center
   <div class="mono">Ruang staf · PPD Kuching</div>
   <div id="view"></div>
 </div>
-<script src="shared.js?v=8a697040"></script>
-<script src="data.js?v=2abbace7"></script>
+<script src="shared.js?v=47619351"></script>
+<script src="data.js?v=72056c03"></script>
 <script>
 (function () {
   M.mount({ bare: true });
   var $ = function (id) { return document.getElementById(id); };
-  var via = 'emel';
   function steps(n, total) { var h = '<div class="steps" aria-label="Langkah ' + n + ' daripada ' + total + '">'; for (var i = 1; i <= total; i++) h += '<i class="' + (i <= n ? 'on' : '') + '"></i>'; return h + '</div>'; }
-  function total() { return via === 'emel' ? 3 : 2; }
 
   function login() {
-    $('view').innerHTML = '<h1>Log masuk</h1><p class="lead">Gunakan e-mel rasmi dan kata laluan PPDK.CH.</p>' +
-      '<form id="lf" novalidate><div class="field"><label class="lbl" for="em">E-mel rasmi</label><input id="em" type="text" inputmode="email" autocomplete="username" placeholder="nama@moe.gov.my"></div>' +
+    $('view').innerHTML = '<h1>Log masuk</h1><p class="lead">Gunakan e-mel rasmi @moe.gov.my dan kata laluan PPDK.CH. Nama dan data paparan ini rekaan.</p>' +
+      '<form id="lf" novalidate><div class="field"><label class="lbl" for="em">E-mel rasmi</label><input id="em" type="email" inputmode="email" autocomplete="username" placeholder="nama@moe.gov.my"></div>' +
       '<div class="field"><label class="lbl" for="pw">Kata laluan PPDK.CH</label><input id="pw" type="password" autocomplete="current-password" style="width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--rule-2);background:var(--card)"></div>' +
       '<button class="btn btn-ink btn-block" style="margin-top:18px" type="submit">Log masuk</button></form>' +
-      '<div class="or">atau</div><button class="btn btn-line btn-block" type="button" id="delima"><span class="g">G</span>Log masuk dengan DELIMa</button>' +
       '<p class="tiny" style="margin-top:22px">Lupa kata laluan atau tiada akaun? Hubungi Unit ICT PPD Kuching.</p>';
-    $('lf').addEventListener('submit', function (e) { e.preventDefault(); via='emel'; if(sessionStorage.getItem('ppdk-demo-mula')) location.href='hari-ini.html'; else sah(); });
-    $('delima').addEventListener('click', function () { via='delima'; if(sessionStorage.getItem('ppdk-demo-mula'))location.href='hari-ini.html'; else sah(); });
+    $('lf').addEventListener('submit', function (e) { e.preventDefault(); var email=$('em').value.trim(); if(!/^[^@\s]+@moe\.gov\.my$/i.test(email)){M.toast('Gunakan e-mel rasmi @moe.gov.my.');$('em').focus();return;} if(sessionStorage.getItem('ppdk-demo-mula')) location.href='hari-ini.html'; else sah(); });
   }
   function sah() {
     var m = M.me(), s = D.staf(m.name);
-    $('view').innerHTML = steps(1, total()) + '<h1>Sahkan maklumat anda</h1><p class="lead">Daripada senarai staf PPD Kuching. Maklumat ini dipapar kepada rakan dan dalam laporan.</p>' +
+    $('view').innerHTML = steps(1, 3) + '<h1>Sahkan maklumat anda</h1><p class="lead">Daripada senarai staf PPD Kuching. Maklumat ini dipapar kepada rakan dan dalam laporan.</p>' +
       '<dl class="idc"><div><dt>Nama</dt><dd>' + M.esc(m.name) + '</dd></div><div><dt>Jawatan</dt><dd>' + M.esc(s.jaw || m.jaw) + '</dd></div><div><dt>Sektor</dt><dd>' + M.sk(m.sek) + ' ' + M.esc(M.sekName(m.sek)) + '</dd></div><div><dt>E-mel</dt><dd>' + m.name.toLowerCase().replace(/[^a-z]+/g, '.').replace(/^\.|\.$/g, '') + '@moe.gov.my</dd></div></dl>' +
       '<div class="acts"><button class="btn btn-ink btn-block" id="ok">Betul, teruskan</button><button class="btn btn-line btn-block" id="salah">Ada yang salah</button></div><div id="fix"></div>';
-    $('ok').addEventListener('click', via === 'emel' ? kata : notif);
+    $('ok').addEventListener('click', kata);
     $('salah').addEventListener('click', function () {
       $('fix').innerHTML = '<div class="field" style="margin-top:16px"><label class="lbl" for="bt">Apa yang perlu dibetulkan?</label><textarea id="bt" rows="3" placeholder="cth. Jawatan saya sekarang Penolong PPD Kurikulum."></textarea><p class="hint">Dihantar kepada pentadbir sistem. Anda boleh teruskan menggunakan sistem sementara menunggu.</p></div><button class="btn btn-ink btn-block" id="hantar" style="margin-top:10px">Hantar &amp; teruskan</button>';
       $('salah').hidden = true;
-      $('hantar').addEventListener('click', function () { M.toast('Permohonan pembetulan dihantar'); (via === 'emel' ? kata : notif)(); });
+      $('hantar').addEventListener('click', function () { M.toast('Permohonan pembetulan dihantar'); kata(); });
     });
   }
   function kata() {
@@ -77,7 +70,7 @@ body{display:flex;min-height:100vh;align-items:flex-start;justify-content:center
   }
   function notif() {
     var pub = M.role() !== 'staf';
-    $('view').innerHTML = steps(total(), total()) + '<h1>Peringatan</h1><p class="lead">Dihantar ke e-mel rasmi. Boleh diubah kemudian di Profil.</p>' +
+    $('view').innerHTML = steps(3, 3) + '<h1>Peringatan</h1><p class="lead">Dihantar ke e-mel rasmi. Boleh diubah kemudian di Profil.</p>' +
       '<label class="tg"><span>Laporan belum lengkap<small>Sehari selepas tugas berakhir</small></span><input type="checkbox" checked></label>' +
       '<label class="tg"><span>Ringkasan jadual minggu depan<small>Setiap Jumaat petang</small></span><input type="checkbox"></label>' +
       (pub ? '<label class="tg"><span>Permohonan terbit untuk disemak<small>Untuk penerbit sektor</small></span><input type="checkbox" checked></label>' : '') +

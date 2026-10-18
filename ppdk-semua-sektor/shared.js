@@ -133,13 +133,13 @@
       return '<a href="' + n.href + '" class="' + (n.id === opts.page ? 'on' : '') + '"' + (n.id === opts.page ? ' aria-current="page"' : '') + '>' + icon(n.ic) + '<span>' + n.l + '</span><span></span></a>';
     }).join('');
     shell.innerHTML =
-      '<aside class="side"><a class="brand" href="hari-ini.html">PPDK<i>.CH</i></a><div class="brand-sub mono">Staf</div>' +
+      '<aside class="side"><a class="brand" href="hari-ini.html">PPDK<i>.CH</i></a><div class="brand-sub mono">Staf · data rekaan</div>' +
       '<div class="side-cta"><a class="btn btn-ink btn-block" href="rekod.html">' + icon('plus') + 'Rekod</a></div>' +
       '<nav class="nav" aria-label="Ruang kerja">' + navHtml + '</nav>' +
       '<div class="side-foot"><a class="who" id="who" href="profil.html"' + (opts.page === 'profil' ? ' aria-current="page"' : '') + '>' + whoHtml() + '</a>' +
       '<a href="portal.html">' + icon('globe') + 'ppdk.ch</a>' +
       '<a href="log-masuk.html">' + icon('logout') + 'Log keluar</a></div></aside>' +
-      '<div class="main"><header class="mtop"><a class="brand" href="hari-ini.html">PPDK<i>.CH</i></a><a class="avatar" id="mavatar" href="profil.html" aria-label="Profil saya">' + me().ini + '</a></header></div>';
+      '<div class="main"><header class="mtop"><a class="brand" href="hari-ini.html">PPDK<i>.CH</i> <small style="font:500 10px var(--mono)">· Demo</small></a><a class="avatar" id="mavatar" href="profil.html" aria-label="Profil saya">' + me().ini + '</a></header></div>';
     body.insertBefore(shell, content);
     shell.querySelector('.main').appendChild(content);
     var bn = document.createElement('nav'); bn.className = 'bnav'; bn.setAttribute('aria-label', 'Navigasi utama');

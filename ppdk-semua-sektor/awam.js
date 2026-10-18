@@ -30,7 +30,7 @@
     h.innerHTML = '<a class="brand" href="portal.html">PPDK<i>.CH</i></a><nav class="pnav" aria-label="Portal">' + nav.map(function (n) { return '<a href="' + n[0] + '"' + (n[2] === active ? ' aria-current="page"' : '') + '>' + n[1] + '</a>'; }).join('') + '</nav><a class="btn btn-dark btn-sm" href="log-masuk.html">Log masuk staf</a>';
     var c = document.getElementById('content'); c.insertBefore(h, c.firstChild);
     var f = document.createElement('footer'); f.className = 'pf';
-    f.innerHTML = '<span>Pejabat Pendidikan Daerah Kuching</span><span><a href="tentang.html#hubungi">Hubungi</a> · <a href="#" onclick="return false">Dashboard ICT (ict.ppdk.ch)</a></span>';
+    f.innerHTML = '<span>Pejabat Pendidikan Daerah Kuching · Nama dan data rekaan</span><span><a href="tentang.html#hubungi">Hubungi</a> · <a href="#" onclick="return false">Dashboard ICT (ict.ppdk.ch)</a></span>';
     c.appendChild(f);
   }
   window.AW = { DESC: DESC, KETUA: KETUA, pub: pub, place: place, short: short, color: color, item: item, header: header };
