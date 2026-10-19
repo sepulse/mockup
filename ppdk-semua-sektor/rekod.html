@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Rekod · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=95a3f3d8">
+<link rel="stylesheet" href="base.css?v=12b0feb5">
 <link rel="stylesheet" href="gaya.css?v=cc708408">
 <style>
 .picker{position:relative}
@@ -40,12 +40,12 @@
         <div class="dn" id="dn">Khamis</div><details class="more"><summary>Lebih daripada satu hari</summary><label class="lbl" for="tamat">Tarikh akhir</label><input id="tamat" type="date"></details>
       </div>
       <div class="fg"><div class="lbl2">Di mana</div>
-        <div class="seg wrap" id="mod"><button type="button" data-v="sekolah" aria-pressed="true">Sekolah</button><button type="button" data-v="lain">Lokasi lain</button><button type="button" data-v="online">Atas talian</button><button type="button" data-v="hibrid">Hibrid</button></div>
+        <div class="seg wrap" id="mod" role="group" aria-label="Di mana"><button type="button" data-v="sekolah" aria-pressed="true">Sekolah</button><button type="button" data-v="lain">Lokasi lain</button><button type="button" data-v="online">Atas talian</button><button type="button" data-v="hibrid">Hibrid</button></div>
         <div id="w-sek" class="picker" style="margin-top:12px">
           <label class="search"><span class="sr">Cari sekolah</span><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="sq" type="search" autocomplete="off" placeholder="Taip nama sekolah"></label>
           <div class="sug" id="ssug" hidden></div><div class="chosen" id="schosen"></div>
         </div>
-        <div id="w-lain" hidden style="margin-top:12px"><input id="lokasi" type="text" list="lokl" placeholder="cth. Pejabat PPD Kuching"><datalist id="lokl"><option>Pejabat PPD Kuching</option><option>Dewan Seminar PPD Kuching</option><option>Auditorium JPN Sarawak</option></datalist></div>
+        <div id="w-lain" hidden style="margin-top:12px"><input id="lokasi" type="text" list="lokl" aria-label="Lokasi lain" placeholder="cth. Pejabat PPD Kuching"><datalist id="lokl"><option>Pejabat PPD Kuching</option><option>Dewan Seminar PPD Kuching</option><option>Auditorium JPN Sarawak</option></datalist></div>
         <div id="w-hybrid" hidden class="field" style="margin-top:12px"><label class="lbl" for="joinmode">Penyertaan saya</label><select id="joinmode"><option value="fizikal">Fizikal</option><option value="atas_talian">Atas talian</option></select><p class="hint">Papan menunjukkan cara anda menyertai, bukan lokasi sesi bagi semua peserta.</p></div><div id="w-on" hidden style="margin-top:12px"><select id="plat" aria-label="Platform"><option>Google Meet</option><option>Microsoft Teams</option><option>Zoom</option><option>Lain-lain</option></select></div>
       </div>
       <label class="sulit"><input type="checkbox" id="sulit"><span><b>Sulit</b><small>Kes murid/guru atau peperiksaan. Rakan hanya nampak “lokasi dirahsiakan”.</small></span></label>
@@ -61,7 +61,7 @@
     <div data-k="cuti" hidden>
       <div class="fg"><div class="lbl2">Bila</div>
         <div class="inline"><div><label class="sr" for="cdari">Dari</label><input id="cdari" type="date" value="2026-10-19"></div><div><label class="sr" for="chingga">Hingga</label><input id="chingga" type="date" value="2026-10-19"></div></div>
-        <div class="seg" id="cbhg" style="margin-top:10px"><button type="button" data-v="penuh" aria-pressed="true">Sehari</button><button type="button" data-v="pagi">Pagi</button><button type="button" data-v="petang">Petang</button></div>
+        <div class="seg" id="cbhg" role="group" aria-label="Bahagian hari" style="margin-top:10px"><button type="button" data-v="penuh" aria-pressed="true">Sehari</button><button type="button" data-v="pagi">Pagi</button><button type="button" data-v="petang">Petang</button></div>
       </div>
       <div class="fg"><div class="lbl2">Jenis <small>akses mengikut peranan</small></div><select id="cjenis" aria-label="Jenis"><option>Cuti rehat</option><option>Cuti sakit</option><option>Cuti lain</option></select></div>
       <p class="tiny" style="margin-top:12px">Rakan nampak “Tidak di pejabat” sahaja. Ketua sektor melihat jenis bukan cuti sakit dalam sektor sendiri; cuti sakit hanya KPPD/HR berizin. Makluman, bukan permohonan cuti (HRMIS).</p>
@@ -71,7 +71,7 @@
   </form>
 </div>
 
-<script src="shared.js?v=47619351"></script>
+<script src="shared.js?v=cd739d78"></script>
 <script src="data.js?v=72056c03"></script>
 <script>
 (function () {
@@ -84,8 +84,8 @@
   function setKind(k) { st.kind = k; [].forEach.call($('kind').children, function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-v') === k); }); [].forEach.call(document.querySelectorAll('[data-k]'), function (el) { el.hidden = el.getAttribute('data-k') !== k; }); $('salin').hidden = k !== 'tugas'; $('save').textContent=k==='cuti'?'Simpan makluman':'Simpan jadual'; }
   function setMod(v) { st.mod = v; [].forEach.call($('mod').children, function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-v') === v); }); $('w-sek').hidden = !(v === 'sekolah' || v === 'hibrid'); $('w-lain').hidden = v !== 'lain'; $('w-hybrid').hidden = v !== 'hibrid'; $('w-on').hidden = !(v === 'online' || v === 'hibrid'); }
   function chips() {
-    $('schosen').innerHTML = st.sekolah.map(function (s, i) { return '<span class="chip">' + M.esc(s) + '<button type="button" class="x" data-rms="' + i + '" aria-label="Buang">✕</button></span>'; }).join('');
-    $('pchosen').innerHTML = st.peserta.map(function (p, i) { return '<span class="chip">' + M.esc(p) + '<button type="button" class="x" data-rmp="' + i + '" aria-label="Buang">✕</button></span>'; }).join('');
+    $('schosen').innerHTML = st.sekolah.map(function (s, i) { return '<span class="chip">' + M.esc(s) + '<button type="button" class="x" data-rms="' + i + '" aria-label="Buang ' + M.esc(s) + '">✕</button></span>'; }).join('');
+    $('pchosen').innerHTML = st.peserta.map(function (p, i) { return '<span class="chip">' + M.esc(p) + '<button type="button" class="x" data-rmp="' + i + '" aria-label="Buang ' + M.esc(p) + '">✕</button></span>'; }).join('');
   }
   function sug(inp, box, items, pick) {
     inp.addEventListener('input', function () { var t = inp.value.trim().toLowerCase(); if (!t) { box.hidden = true; return; } var h = items().filter(function (x) { return x.toLowerCase().indexOf(t) >= 0; }).slice(0, 6); box.innerHTML = h.length ? h.map(function (x) { return '<button type="button" data-v="' + M.esc(x) + '">' + M.esc(x) + '</button>'; }).join('') : '<div class="empty" style="padding:12px">Tiada. Guna “Lokasi lain”.</div>'; box.hidden = false; });

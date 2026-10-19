@@ -4,7 +4,7 @@
   --ink:#111819; --ink-2:#3B4648; --muted:#5E6769; --rule:#D8D3C8; --rule-2:#C7C1B4;
   --petrol:#0F4C52; --petrol-deep:#0A2B2F; --petrol-line:rgba(255,255,255,.12);
   --mint:#8FE0D3; --on-dark:#F2F0EA; --on-dark-2:rgba(242,240,234,.62);
-  --isd:#DC2626; --warn:#9A5B00; --warn-bg:#F6ECD9;
+  --isd:#DC2626; --warn:#9A5B00; --warn-bg:#F6ECD9; --req:#B91C1C;
   --sel-bg:var(--ink); --sel-fg:var(--paper);
   --z1:#2563EB; --z2:#16A34A; --z3:#F59E0B; --z4:#8B5CF6; --z5:#EC4899; --z6:#06B6D4; --z7:#D97706; --z8:#475569;
   --display:"Archivo",system-ui,sans-serif; --sans:"IBM Plex Sans",system-ui,sans-serif; --mono:"IBM Plex Mono",ui-monospace,monospace;
@@ -16,7 +16,7 @@
   --paper:#101615; --paper-2:#19201F; --card:#161D1C;
   --ink:#ECE8DF; --ink-2:#BFC4C1; --muted:#8D9694; --rule:#29312F; --rule-2:#3A4341;
   --petrol:#4FA9A1; --petrol-deep:#0F3D43; --on-dark-2:rgba(242,240,234,.66);
-  --isd:#EF4444; --warn:#E5B567; --warn-bg:#2A2416;
+  --isd:#EF4444; --warn:#E5B567; --warn-bg:#2A2416; --req:#F87171;
   --sel-bg:var(--petrol-deep); --sel-fg:var(--on-dark);
   --scrim:rgba(0,0,0,.62); --hatch:rgba(255,255,255,.05);
 }
@@ -143,6 +143,8 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--petrol);outline-
 .toolbar select{width:auto;min-width:150px}
 label.lbl{display:block;font-size:13px;font-weight:600;color:var(--ink-2);margin-bottom:6px}
 .hint{font-size:12.5px;color:var(--muted);margin-top:5px}
+/* Tanda medan wajib: merah lebih gelap supaya lulus 4.5:1 pada kertas. */
+.req{color:var(--req)}
 .field + .field{margin-top:14px}
 .row2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 .row3{display:grid;grid-template-columns:1.4fr 1fr 1fr;gap:12px}
@@ -210,7 +212,11 @@ body.no-ann .ann{display:none}
   .side,.top{display:none}
   .main{padding:0 16px calc(76px + env(safe-area-inset-bottom,0px))}
   .mtop{display:flex;justify-content:space-between;align-items:center;height:56px;border-bottom:1px solid var(--ink);position:sticky;top:var(--mock-h);background:var(--paper);z-index:30;margin:0 -16px;padding:0 16px}
-  .mtop .brand{font-size:20px;padding:0}
+  .mtop .brand{font-size:20px;padding:7px 0}
+  /* Sasaran sentuh telefon >=44px; avatar kekal 34px secara visual. */
+  .mtop .avatar{width:44px;height:44px;padding:5px;background-clip:content-box;margin-right:-5px}
+  .btn,.btn-sm,.seg button,.check{min-height:44px}
+  .text-btn{min-height:44px;margin-block:-8px}
   .mtop .brand small{font:500 10px/1 var(--mono);letter-spacing:.08em;color:var(--muted);margin-left:8px;text-transform:uppercase}
   .bnav{display:grid;grid-template-columns:repeat(5,1fr);position:fixed;left:0;right:0;bottom:0;height:calc(64px + env(safe-area-inset-bottom,0px));padding-bottom:env(safe-area-inset-bottom,0px);background:var(--paper);border-top:1px solid var(--ink);z-index:40}
   .bnav a{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font-size:11.5px;font-weight:500;color:var(--ink-2);text-align:center;line-height:1.15}
@@ -233,8 +239,38 @@ body.no-ann .ann{display:none}
   .toolbar select{flex:1 1 140px;min-width:0}
 }
 @media (min-width:781px){.show-m{display:none!important}}
+/* Elak zum automatik Safari iOS: fon medan sekurang-kurangnya 16px pada skrin sentuh. */
+@media (max-width:780px),(pointer:coarse){input:not([type=hidden]),select,textarea{font-size:16px}}
 
 /* Peranan: kandungan khusus */
 [data-role="staf"] .only-kppd,[data-role="staf"] .only-ketua,[data-role="staf"] .only-lead,
 [data-role="ketua"] .only-kppd,[data-role="ketua"] .only-staf,
 [data-role="kppd"] .only-staf,[data-role="kppd"] .only-ketua{display:none!important}
+
+/* Gerak: animasi data gaya A-1 (lihat gerak.js). Nilai akhir = keadaan asal elemen. */
+@keyframes ggrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes ggrowy{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+@keyframes gpop{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+@keyframes gin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.g-bx{transform-origin:left;animation:ggrow .9s cubic-bezier(.2,.8,.2,1) backwards}
+.g-by{transform-origin:bottom;animation:ggrowy .9s cubic-bezier(.2,.8,.2,1) backwards}
+.g-pop{animation:gpop .35s ease-out backwards}
+.g-in{animation:gin .35s ease-out backwards}
+@media (prefers-reduced-motion:reduce){.g-bx,.g-by,.g-pop,.g-in{animation:none!important;transition:none!important}}
+
+/* Cetak/PDF: keluarkan kawalan navigasi dan gerak sahaja; gaya skrin kekal. */
+@media print{
+  .side,.mtop,.top,.bnav,.mock-bar,.mtool,.scrim,.drawer,.toast,.ptop{display:none!important}
+  /* Butang skrin (Paparan, Tapis, carian, tindakan kepala, navigasi minggu, kongsi) tidak dicetak. */
+  #pap,#tapis,#pres,.qbar,.wk .iconbtn,.page-h > .btn,.page-h > .text-btn,.more-row,.share,.savebar2{display:none!important}
+  /* Kembalikan ruang kolum sidebar yang sudah disembunyikan daripada cetakan. */
+  .shell{display:block!important}
+  .mtop,.side,.mock-bar,.bnav,.full{position:static!important}
+  *,*::before,*::after{animation:none!important;transition:none!important;opacity:1!important}
+  /* Artikel panjang mesti boleh mengalir merentasi halaman A4. */
+  .panel,.mine,.r,.it,.li,.pcard,.next,.alert,.wd,.stage{break-inside:avoid}
+  /* Semasa pembentangan dicetak, cetak slaid sahaja tanpa laporan di belakangnya. */
+  body:has(> #full) > .shell{display:none!important}
+  #full.full{background:transparent!important;padding:0!important;inset:auto!important}
+  #full .fnav{display:none!important}
+}

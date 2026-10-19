@@ -42,7 +42,7 @@ a,button{color:inherit;font:inherit;text-decoration:none;background:none;border:
 <div class="bar">
   <div class="r1">
     <a class="home" href="index.html">← Halaman utama</a>
-    <div class="now" id="now"></div>
+    <h1 class="now" id="now"></h1>
     <div class="mode" id="mode"></div>
     <div class="pn"><a id="prev" href="#">← Sebelum</a><a id="next" href="#">Seterusnya →</a></div>
   </div>
@@ -72,9 +72,10 @@ a,button{color:inherit;font:inherit;text-decoration:none;background:none;border:
   var p = q.get('p') || PAGES[0].p;
   if (!/^[a-z-]+\.html(\?[\w=&-]*)?$/.test(p)) p = PAGES[0].p;
   function idxOf(path) { var f = path.split('?')[0]; for (var i = 0; i < PAGES.length; i++) if (PAGES[i].p.split('?')[0] === f) return i; return -1; }
+  if (idxOf(p) < 0) p = PAGES[0].p;
   function url(page, m) { return 'lihat.html?p=' + encodeURIComponent(page) + '&m=' + m; }
   var stage = document.getElementById('stage'), frame = document.createElement('iframe');
-  frame.title = 'Paparan';
+  frame.title = 'Paparan ' + (PAGES[idxOf(p)] || PAGES[0]).t;
   if (mode === 'telefon') { stage.className = 'stage phone'; var f = document.createElement('div'); f.className = 'phone-f'; f.appendChild(frame); stage.appendChild(f); }
   else { stage.className = 'stage desk'; stage.appendChild(frame); }
   frame.src = p;
@@ -89,8 +90,9 @@ a,button{color:inherit;font:inherit;text-decoration:none;background:none;border:
     document.getElementById('now').innerHTML = i >= 0 ? '<span>' + (i + 1) + ' / ' + PAGES.length + '</span>' + PAGES[i].t : '';
     document.getElementById('mode').innerHTML = ['komputer', 'telefon'].map(function (m) { return '<a href="' + url(cur, m) + '" aria-current="' + (m === mode) + '">' + (m === 'komputer' ? 'Komputer' : 'Telefon') + '</a>'; }).join('');
     var pv = document.getElementById('prev'), nx = document.getElementById('next');
-    pv.href = i > 0 ? url(PAGES[i - 1].p, mode) : '#'; pv.setAttribute('aria-disabled', !(i > 0));
-    nx.href = i >= 0 && i < PAGES.length - 1 ? url(PAGES[i + 1].p, mode) : '#'; nx.setAttribute('aria-disabled', !(i >= 0 && i < PAGES.length - 1));
+    pv.href = i > 0 ? url(PAGES[i - 1].p, mode) : '#'; pv.setAttribute('aria-disabled', !(i > 0)); pv.tabIndex = i > 0 ? 0 : -1;
+    nx.href = i >= 0 && i < PAGES.length - 1 ? url(PAGES[i + 1].p, mode) : '#'; nx.setAttribute('aria-disabled', !(i >= 0 && i < PAGES.length - 1)); nx.tabIndex = i >= 0 && i < PAGES.length - 1 ? 0 : -1;
+    frame.title = 'Paparan ' + (PAGES[i] || PAGES[0]).t;
     var on = document.querySelector('.grp a[aria-current="page"]'); if (on) on.scrollIntoView({ block: 'nearest', inline: 'nearest' });
   }
   /* Ikut navigasi di dalam paparan (menu sisi, pautan) supaya bar sentiasa tepat. */

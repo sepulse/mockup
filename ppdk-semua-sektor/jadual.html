@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Jadual · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=95a3f3d8">
+<link rel="stylesheet" href="base.css?v=12b0feb5">
 <link rel="stylesheet" href="gaya.css?v=cc708408">
 <style>
 .wk{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px}
@@ -38,7 +38,11 @@
 #out .li{box-shadow:inset 3px 0 0 var(--sc,var(--rule));padding-left:14px}
 #out .li.cuti{box-shadow:inset 3px 0 0 var(--rule)}
 #out .li.cx{box-shadow:inset 3px 0 0 var(--rule)}
-@media(max-width:780px){.wstrip{gap:4px}.wd{padding:8px 7px}.wd .d{font-size:19px}#out .li{padding-left:12px}}
+@media(max-width:780px){.wstrip{gap:4px}.wd{padding:8px 7px}.wd .d{font-size:19px}#out .li{padding-left:12px}.wk .iconbtn{width:44px;height:44px}}
+/* Hari ini dalam tema gelap: petrol cerah perlukan teks gelap (sama seperti butang utama gelap). */
+:root[data-theme="dark"] .wd.today,:root[data-theme="dark"] .wd.today .k,:root[data-theme="dark"] .wd.today .dots em,:root[data-theme="dark"] .dh.today span{color:#0A2B2F}
+:root[data-theme="dark"] .wd.today .dots i{box-shadow:0 0 0 1px rgba(10,43,47,.6)}
+:root[data-theme="dark"] .wd.today .dots i.o{box-shadow:inset 0 0 0 1px #0A2B2F}
 :root[data-theme="dark"] #out .li{box-shadow:inset 3px 0 0 color-mix(in srgb,var(--sc) 65%,#fff)}:root[data-theme="dark"] #out .li.cuti,:root[data-theme="dark"] #out .li.cx{box-shadow:inset 3px 0 0 var(--rule)}:root[data-theme="dark"] .wd .dots i{background:color-mix(in srgb,var(--sc) 65%,#fff)}
 </style>
 </head>
@@ -54,7 +58,8 @@
   <div id="out"></div>
 </div>
 
-<script src="shared.js?v=47619351"></script>
+<script src="shared.js?v=cd739d78"></script>
+<script src="gerak.js?v=3d1be233"></script>
 <script src="data.js?v=72056c03"></script>
 <script>
 (function () {
@@ -75,7 +80,8 @@
   function scv(k) { return 'var(--s-' + (k === 'Pengurusan' ? 'PGR' : k) + ')'; }
   function visC(c) { var m = M.me(); return st.scope === 'saya' ? c.owner === m.name : st.scope === 'sektor' ? c.sek === m.sek : (!st.sek || c.sek === st.sek); }
 
-  function render() {
+  function render() { render0(); Gerak.run($('content')); }
+  function render0() {
     var s = add(BASE, st.wk * 7), e = add(s, 4), h = '', sh = '', others = st.scope !== 'saya';
     $('range').textContent = s.getDate() + '–' + e.getDate() + ' ' + M.BULAN[e.getMonth()];
     $('ctx').textContent = SC[st.scope] + (st.sek ? ' · ' + st.sek : '');
@@ -103,7 +109,7 @@
     $('out').innerHTML = h; $('strip').innerHTML = sh;
   }
   function paparan() {
-    var d = M.drawer({ title: 'Paparan', body: '<div class="field"><span class="lbl">Tunjuk</span><div class="seg" id="psc">' + ['saya', 'sektor', 'semua'].map(function (k) { return '<button type="button" data-v="' + k + '" aria-pressed="' + (st.scope === k) + '">' + SC[k] + '</button>'; }).join('') + '</div></div>' +
+    var d = M.drawer({ title: 'Paparan', body: '<div class="field"><span class="lbl">Tunjuk</span><div class="seg" id="psc" role="group" aria-label="Tunjuk">' + ['saya', 'sektor', 'semua'].map(function (k) { return '<button type="button" data-v="' + k + '" aria-pressed="' + (st.scope === k) + '">' + SC[k] + '</button>'; }).join('') + '</div></div>' +
       '<div class="field" id="psekw"' + (st.scope === 'semua' ? '' : ' hidden') + '><label class="lbl" for="psek">Sektor</label><select id="psek"><option value="">Semua sektor</option>' + M.SEKTOR.map(function (s) { return '<option value="' + s.k + '"' + (s.k === st.sek ? ' selected' : '') + '>' + s.n + '</option>'; }).join('') + '</select></div>' +
       '<div class="field"><label class="check"><input type="checkbox" id="pcx"' + (st.cx ? ' checked' : '') + '> Tunjuk rancangan dibatalkan</label></div>',
       foot: '<button class="btn btn-ink" data-act="ok">Tunjuk</button>' });

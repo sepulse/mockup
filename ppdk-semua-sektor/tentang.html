@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Tentang · PPDK.CH</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=95a3f3d8">
+<link rel="stylesheet" href="base.css?v=12b0feb5">
 <link rel="stylesheet" href="gaya.css?v=cc708408">
-<link rel="stylesheet" href="awam.css?v=03e55e6c">
+<link rel="stylesheet" href="awam.css?v=8dd10f54">
 <style>
 .top-o{display:grid;grid-template-columns:56px minmax(0,1fr);gap:14px;align-items:center;padding:8px 0 18px;border-bottom:1px solid var(--rule)}
 .top-o b{display:block;font:700 18px/1.25 var(--display)}
@@ -47,7 +47,8 @@ details.org:not([open]) summary .c::after{content:" ▾"}
     <div class="ph map">Peta lokasi</div>
   </div>
 </div>
-<script src="shared.js?v=47619351"></script>
+<script src="shared.js?v=cd739d78"></script>
+<script src="gerak.js?v=3d1be233"></script>
 <script src="data.js?v=72056c03"></script>
 <script src="awam.js?v=5b0f37fa"></script>
 <script>
@@ -55,6 +56,7 @@ details.org:not([open]) summary .c::after{content:" ▾"}
   M.mount({ bare: true, noRole: true });
   AW.header('tentang');
   document.getElementById('upd').textContent = 'nama dan data rekaan · ' + M.fmtDate(M.TODAY, false);
+  function render() {
   var org = '<div class="top-o"><span class="avatar lg">KP</span><div><b>Ketua Pegawai Pendidikan Daerah</b><span>Nama KPPD (contoh rekaan)</span></div></div>';
   org += M.SEKTOR.map(function (s) {
     var k = AW.KETUA[s.k];
@@ -63,6 +65,10 @@ details.org:not([open]) summary .c::after{content:" ▾"}
       '<div class="mem">' + mem.map(function (x) { return '<div><b>' + M.esc(x.n) + '</b><span>' + M.esc(x.jaw) + '</span></div>'; }).join('') + '</div></details>';
   }).join('');
   document.getElementById('org').innerHTML = org;
+  Gerak.run(document.getElementById('org'));
+  }
+  document.addEventListener('datachange', render);
+  render();
 })();
 </script>
 </body>

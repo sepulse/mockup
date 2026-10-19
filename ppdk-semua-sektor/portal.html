@@ -5,13 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>PPDK.CH · PPD Kuching</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=95a3f3d8">
+<link rel="stylesheet" href="base.css?v=12b0feb5">
 <link rel="stylesheet" href="gaya.css?v=cc708408">
-<link rel="stylesheet" href="awam.css?v=03e55e6c">
+<link rel="stylesheet" href="awam.css?v=8dd10f54">
 </head>
 <body>
 <div id="content" class="pw">
-  <div class="ph1">
+  <div class="ph1 hero">
+    <div class="hk">PPD KUCHING · OKTOBER 2026</div>
+    <i class="ha" aria-hidden="true"></i>
     <h1>Aktiviti PPD Kuching</h1>
     <p>Laporan pegawai Pejabat Pendidikan Daerah Kuching yang telah disemak dan diterbitkan.</p>
   </div>
@@ -22,7 +24,8 @@
   <div class="agg" id="agg"></div>
   <p class="tiny" style="margin-top:10px">Tidak termasuk Sektor Psikologi &amp; Kaunseling dan Sektor Pentaksiran &amp; Peperiksaan.</p>
 </div>
-<script src="shared.js?v=47619351"></script>
+<script src="shared.js?v=cd739d78"></script>
+<script src="gerak.js?v=3d1be233"></script>
 <script src="data.js?v=72056c03"></script>
 <script src="awam.js?v=5b0f37fa"></script>
 <script>
@@ -35,12 +38,20 @@
   }
   function feed() {
     var l = AW.pub.filter(function (r) { return !sel || r.sek === sel; });
-    document.getElementById('feed').innerHTML = l.map(AW.item).join('') || '<div class="empty">Belum ada aktiviti diterbitkan untuk sektor ini.</div>';
+    document.getElementById('feed').innerHTML = l.map(function (r) { return AW.item(r).replace('<a class="it"', '<a class="it" style="--sc:' + AW.color(r.sek) + '"').replace('<h3>', '<h3 role="heading" aria-level="2">'); }).join('') || '<div class="empty">Belum ada aktiviti diterbitkan untuk sektor ini.</div>';
+    Gerak.run(document.getElementById('feed'));
   }
-  document.getElementById('schips').addEventListener('click', function (e) { var b = e.target.closest('[data-s]'); if (b) { sel = b.getAttribute('data-s'); chips(); feed(); } });
-  var totals=D.summary('ALL','2026-10',true);
-  document.getElementById('agg').innerHTML='<div><b>'+totals.a+'</b><span>Aktiviti selesai</span></div><div><b>'+totals.s+'</b><span>Sekolah terlibat</span></div><div><b>'+AW.pub.length+'</b><span>Laporan diterbitkan</span></div>';
-  chips(); feed();
+  function stats() {
+    var totals = D.summary('ALL','2026-10',true);
+    document.getElementById('agg').innerHTML='<div><b>'+totals.a+'</b><span>Aktiviti selesai</span></div><div><b>'+totals.s+'</b><span>Sekolah terlibat</span></div><div><b>'+AW.pub.length+'</b><span>Laporan diterbitkan</span></div>';
+    Gerak.run(document.getElementById('agg'));
+  }
+  document.getElementById('schips').addEventListener('click', function (e) { var b = e.target.closest('[data-s]'); if (b) { sel = b.getAttribute('data-s'); chips(); feed(); stats(); } });
+  document.addEventListener('datachange', function () {
+    AW.pub = D.REKOD.filter(function (r) { return r.tahap === 'umum'; }).sort(function (a, b) { return a.tarikh < b.tarikh ? 1 : -1; });
+    chips(); feed(); stats();
+  });
+  chips(); feed(); stats();
 })();
 </script>
 </body>

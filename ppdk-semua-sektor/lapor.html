@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Laporan · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=95a3f3d8">
+<link rel="stylesheet" href="base.css?v=12b0feb5">
 <link rel="stylesheet" href="gaya.css?v=cc708408">
 <style>
 .back{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink-2);min-height:44px}
@@ -75,7 +75,7 @@
 .donebox h2{font:700 18px/1.3 var(--display)}
 .donebox p{color:var(--ink-2);font-size:14px;margin-top:6px}
 .donebox .share{margin-top:14px}
-@media(max-width:780px){.photos{grid-template-columns:repeat(2,1fr)}.steps{gap:4px}.steps button{padding:8px 7px}.steps span{font-size:12.5px}.doc{padding:18px 16px}.gal4{grid-template-columns:repeat(2,1fr)}.doc .imgs{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:780px){.team button{min-height:44px}.photos{grid-template-columns:repeat(2,1fr)}.steps{gap:4px}.steps button{padding:8px 7px}.steps span{font-size:12.5px}.doc{padding:18px 16px}.gal4{grid-template-columns:repeat(2,1fr)}.doc .imgs{grid-template-columns:repeat(2,1fr)}}
 @media print{
   body *{visibility:hidden}
   #doc,#doc *{visibility:visible}
@@ -91,7 +91,7 @@
   <div id="main"></div>
 </div>
 
-<script src="shared.js?v=47619351"></script>
+<script src="shared.js?v=cd739d78"></script>
 <script src="data.js?v=72056c03"></script>
 <script>
 (function () {
@@ -165,11 +165,11 @@
     if (r._md) md = r._md;
     return '<div class="auto"><dl class="dl"><dt>Akauntabiliti</dt><dd>' + M.esc(A[0]) + '</dd><dt>Tugas utama</dt><dd>' + M.esc(A[1]) + '</dd></dl>' +
       '<p class="tiny">Daripada tetapan sektor. Tiada rekod lagi — <b>rekod dicipta automatik bila anda simpan</b> dan terus muncul di Jadual, Log Pergerakan dan Ringkasan.</p></div>' +
-      '<div class="field" style="margin-top:20px"><label class="lbl" for="ftajuk">Tajuk <span style="color:var(--isd)">*</span></label><input id="ftajuk" type="text" placeholder="Contoh: Kunjung bantu Program Pemulihan Khas" value="' + M.esc(r.tajuk) + '"></div>' +
+      '<div class="field" style="margin-top:20px"><label class="lbl" for="ftajuk">Tajuk <span class="req">*</span></label><input id="ftajuk" type="text" placeholder="Contoh: Kunjung bantu Program Pemulihan Khas" value="' + M.esc(r.tajuk) + '"></div>' +
       '<div class="field"><label class="lbl" for="fjenis">Jenis aktiviti</label><select id="fjenis">' + K.map(function (x) { return '<option' + (x === r.jenis ? ' selected' : '') + '>' + M.esc(x) + '</option>'; }).join('') + '</select></div>' +
       '<div class="when3"><div class="field"><label class="lbl" for="ftarikh">Tarikh</label><input id="ftarikh" type="date" max="' + M.TODAY + '" value="' + r.tarikh + '"></div>' +
       '<div class="field"><label class="lbl" for="fmula">Mula</label><input id="fmula" type="time" value="' + r.mula + '"></div><div class="field"><label class="lbl" for="fakhir">Tamat</label><input id="fakhir" type="time" value="' + r.akhir + '"></div></div>' +
-      '<div class="field"><span class="lbl">Tempat <span style="color:var(--isd)">*</span></span><div class="seg" id="fmod">' + [['sekolah', 'Sekolah'], ['lain', 'Lokasi lain'], ['online', 'Atas talian']].map(function (x) { return '<button type="button" data-md="' + x[0] + '" aria-pressed="' + (md === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div></div>' +
+      '<div class="field"><span class="lbl">Tempat <span class="req">*</span></span><div class="seg" id="fmod" role="group" aria-label="Tempat">' + [['sekolah', 'Sekolah'], ['lain', 'Lokasi lain'], ['online', 'Atas talian']].map(function (x) { return '<button type="button" data-md="' + x[0] + '" aria-pressed="' + (md === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div></div>' +
       (md === 'sekolah' ? '<div class="field"><label class="lbl" for="fsek">Sekolah <span class="muted" style="font-weight:400">— pisahkan dengan koma</span></label><input id="fsek" type="text" list="dlsek" placeholder="Taip nama sekolah" value="' + M.esc(r.sekolah.join(', ')) + '"><datalist id="dlsek">' + M.SEKOLAH.map(function (x) { return '<option value="' + M.esc(x.n) + '">'; }).join('') + '</datalist></div>'
         : md === 'lain' ? '<div class="field"><label class="lbl" for="flok">Lokasi</label><input id="flok" type="text" placeholder="Contoh: Auditorium JPN Sarawak" value="' + M.esc(r.lokasi || '') + '"></div>'
         : '<p class="tiny" style="margin:-4px 0 14px">Tempat dicatat "Lokasi masing-masing" dalam laporan.</p>') +
@@ -215,7 +215,7 @@
       '<div class="row"><button class="btn btn-ink" type="button" id="ai">✦ Jana draf AI</button><button class="text-btn" type="button" id="undoai" hidden>Undur draf</button><span class="tiny" id="ais">Enjin AI yang sama dengan borang ICT. Hanya guna maklumat rekod + catatan anda; tiada fakta ditambah.</span></div></div>' +
       '<div class="lblrow" style="margin:22px 0 8px"><span class="lbl" style="font-size:15px;margin:0">2 · Semak &amp; betulkan draf</span><span id="tag-rum" class="tiny">' + (r.ai ? 'Draf dibantu AI · semak fakta' : 'Atau tulis sendiri') + '</span></div>' +
       ta('obj', 'Objektif', 'bernombor', 3, r.obj) +
-      ta('rum', 'Rumusan <span style="color:var(--isd)">*</span>', 'satu perenggan', 5, r.rum) +
+      ta('rum', 'Rumusan <span class="req">*</span>', 'satu perenggan', 5, r.rum) +
       ta('imp', 'Impak', 'bernombor', 3, r.imp) +
       ta('ts', 'Tindak susul', 'bernombor · teks laporan sahaja', 3, r.ts) +
       (K ? ta('khas', K.charAt(0) + K.slice(1).toLowerCase(), 'bahagian khas sektor', 2, r.khas) : '') +

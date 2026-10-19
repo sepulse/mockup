@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Ringkasan Bulanan · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=95a3f3d8">
+<link rel="stylesheet" href="base.css?v=12b0feb5">
 <link rel="stylesheet" href="gaya.css?v=cc708408">
 <style>
 :root{--ac:var(--petrol)}
@@ -59,7 +59,8 @@
   <div style="margin-top:28px"><button class="btn btn-ink" type="button" id="pres"><svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Mod Pembentangan</button></div>
 </div>
 
-<script src="shared.js?v=47619351"></script>
+<script src="shared.js?v=cd739d78"></script>
+<script src="gerak.js?v=3d1be233"></script>
 <script src="data.js?v=72056c03"></script>
 <script>
 (function () {
@@ -95,7 +96,8 @@
   }
   function label() { return (st.sek === 'ALL' ? 'Semua sektor' : M.sekName(st.sek)) + ' · Oktober 2026' + (st.ver === 'awam' ? ' · versi awam' : ''); }
 
-  function render() {
+  function render() { render0(); Gerak.run($('body')); }
+  function render0() {
     var d = data();
     document.documentElement.style.setProperty('--ac', acc());
     $('ctx').innerHTML = '<span class="ctxk"></span>' + M.esc(label());
@@ -109,25 +111,40 @@
   function slide() {
     var d = data(), s = slides(), k = s[st.i];
     var T = { exec: ['Laporan eksekutif', label().split(' · ')[0], numsH(d) + mixH()], lip: ['Liputan', 'Sekolah terlibat', liputH(d)], jen: ['Tujuan', 'Jenis aktiviti', jenisH()], tr: ['Trend', 'Aktiviti selesai, 6 bulan', trendH(d)] }[k];
-    return '<div class="stage"><div class="kk">' + T[0] + ' · Oktober 2026</div><h2>' + T[1] + '</h2><div>' + T[2] + '</div><div class="ft"><span>PPDK.CH · Ringkasan Bulanan</span><span>' + (st.i + 1) + ' / ' + s.length + '</span></div></div>' +
+    return '<div class="stage"><div class="kk">' + T[0] + ' · Oktober 2026</div><h2 id="presentation-title">' + T[1] + '</h2><div>' + T[2] + '</div><div class="ft"><span>PPDK.CH · Ringkasan Bulanan</span><span>' + (st.i + 1) + ' / ' + s.length + '</span></div></div>' +
       '<div class="fnav"><button class="btn btn-line btn-sm" data-n="-1"' + (st.i ? '' : ' disabled') + '>← Sebelum</button><button class="btn btn-line btn-sm" data-n="1"' + (st.i < s.length - 1 ? '' : ' disabled') + '>Seterusnya →</button><button class="btn btn-line btn-sm" data-n="x">Tutup</button></div>';
   }
+  function show(f, focusNav) {
+    f.innerHTML = slide(); Gerak.run(f.querySelector('.stage'));
+    if (focusNav) {
+      var next = f.querySelector('[data-n="' + focusNav + '"]');
+      (next && !next.disabled ? next : f.querySelector('[data-n="x"]')).focus();
+    }
+  }
+  /* Bar dalam "Lihat liputan, jenis dan trend" dimainkan bila dibuka (animasi asal berlalu semasa tersembunyi). */
+  $('body').addEventListener('toggle', function (e) { if (e.target.open) Gerak.run(e.target); }, true);
   function pres() {
     if (data().blocked) return;
-    st.i = 0; var f = document.createElement('div'); f.className = 'full'; f.id = 'full'; f.innerHTML = slide(); document.body.appendChild(f);
-    f.addEventListener('click', function (e) { var b = e.target.closest('[data-n]'); if (!b) return; var n = b.getAttribute('data-n'); if (n === 'x') { f.remove(); return; } st.i += +n; f.innerHTML = slide(); });
+    st.i = 0; var f = document.createElement('div'); f.className = 'full'; f.id = 'full';
+    f.setAttribute('role', 'dialog'); f.setAttribute('aria-modal', 'true'); f.setAttribute('aria-labelledby', 'presentation-title');
+    document.body.appendChild(f); show(f);
+    f._releaseFocus = M.trapDialog(f, document.activeElement, closePresentation);
+    f.addEventListener('click', function (e) { var b = e.target.closest('[data-n]'); if (!b) return; var n = b.getAttribute('data-n'); if (n === 'x') { closePresentation(); return; } st.i += +n; show(f, n); });
+  }
+  function closePresentation() {
+    var f = $('full'); if (!f) return;
+    var release = f._releaseFocus; f.remove(); if (release) release();
   }
   document.addEventListener('keydown', function (e) {
     var f = $('full'); if (!f) return;
-    if (e.key === 'Escape') f.remove();
-    if (e.key === 'ArrowRight' && st.i < slides().length - 1) { st.i++; f.innerHTML = slide(); }
-    if (e.key === 'ArrowLeft' && st.i > 0) { st.i--; f.innerHTML = slide(); }
+    if (e.key === 'ArrowRight' && st.i < slides().length - 1) { st.i++; show(f, '1'); }
+    if (e.key === 'ArrowLeft' && st.i > 0) { st.i--; show(f, '-1'); }
   });
   function paparan() {
     var d = M.drawer({ title: 'Paparan', body:
       '<div class="field"><label class="lbl" for="psek">Sektor</label><select id="psek"><option value="ALL">Semua sektor</option>' + M.SEKTOR.map(function (s) { return '<option value="' + s.k + '"' + (s.k === st.sek ? ' selected' : '') + '>' + s.n + '</option>'; }).join('') + '</select></div>' +
       '<div class="field"><label class="lbl" for="pbln">Bulan</label><select id="pbln"><option>Oktober 2026</option><option disabled>September 2026 · belum tersedia</option></select></div>' +
-      '<div class="field"><span class="lbl">Versi</span><div class="seg" id="pver"><button type="button" data-v="dalaman" aria-pressed="' + (st.ver === 'dalaman') + '">Dalaman</button><button type="button" data-v="awam" aria-pressed="' + (st.ver === 'awam') + '">Versi awam</button></div><p class="hint">Versi awam: agregat sahaja; SPsK &amp; SPP tidak termasuk.</p></div>',
+      '<div class="field"><span class="lbl">Versi</span><div class="seg" id="pver" role="group" aria-label="Versi"><button type="button" data-v="dalaman" aria-pressed="' + (st.ver === 'dalaman') + '">Dalaman</button><button type="button" data-v="awam" aria-pressed="' + (st.ver === 'awam') + '">Versi awam</button></div><p class="hint">Versi awam: agregat sahaja; SPsK &amp; SPP tidak termasuk.</p></div>',
       foot: '<button class="btn btn-ink" data-act="ok">Tunjuk</button>' });
     if (st.sek === 'ALL') d.querySelector('#psek').value = 'ALL';
     var v = st.ver;
@@ -138,6 +155,7 @@
   $('pres').addEventListener('click', pres);
   function init() { st.sek = M.role() === 'kppd' ? 'ALL' : M.me().sek; render(); }
   document.addEventListener('rolechange', init);
+  document.addEventListener('datachange', render);
   init();
 })();
 </script>

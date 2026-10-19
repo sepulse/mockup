@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>Rekod Aktiviti · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=95a3f3d8">
+<link rel="stylesheet" href="base.css?v=12b0feb5">
 <link rel="stylesheet" href="gaya.css?v=cc708408">
 <style>
 .sum{font-size:14px;color:var(--ink-2);margin-bottom:16px}
@@ -55,7 +55,8 @@
   <div class="list" id="list" style="margin-top:14px"></div>
 </div>
 
-<script src="shared.js?v=47619351"></script>
+<script src="shared.js?v=cd739d78"></script>
+<script src="gerak.js?v=3d1be233"></script>
 <script src="data.js?v=72056c03"></script>
 <script>
 (function () {
@@ -73,7 +74,8 @@
   }
   function def() { return M.role() === 'kppd' ? 'semua' : M.role() === 'ketua' ? 'sektor' : 'saya'; }
 
-  function list() {
+  function list() { list0(); Gerak.run($('content')); }
+  function list0() {
     var m = M.me(), t = $('q').value.trim().toLowerCase();
     var rows = D.REKOD.filter(function (r) {
       if (st.scope === 'saya' && !D.involves(r, m.name)) return false;
@@ -100,7 +102,7 @@
 
   function tapis() {
     var d = M.drawer({ title: 'Tapis', body:
-      '<div class="field"><span class="lbl">Tunjuk</span><div class="seg" id="tsc">' + ['saya', 'sektor', 'semua'].map(function (k) { return '<button type="button" data-v="' + k + '" aria-pressed="' + (st.scope === k) + '">' + SC[k] + '</button>'; }).join('') + '</div></div>' +
+      '<div class="field"><span class="lbl">Tunjuk</span><div class="seg" id="tsc" role="group" aria-label="Tunjuk">' + ['saya', 'sektor', 'semua'].map(function (k) { return '<button type="button" data-v="' + k + '" aria-pressed="' + (st.scope === k) + '">' + SC[k] + '</button>'; }).join('') + '</div></div>' +
       '<div class="field"><label class="lbl" for="tsek">Sektor</label><select id="tsek"><option value="">Semua sektor</option>' + M.SEKTOR.map(function (s) { return '<option value="' + s.k + '"' + (s.k === st.sek ? ' selected' : '') + '>' + s.n + '</option>'; }).join('') + '</select></div>' +
       '<div class="field"><label class="lbl" for="tst">Status</label><select id="tst"><option value="">Semua</option>' + ['plan', 'need', 'done', 'mohon', 'pub', 'cx'].map(function (k) { return '<option value="' + k + '"' + (k === st.stat ? ' selected' : '') + '>' + (STL[k] || 'Laporan lengkap') + '</option>'; }).join('') + '</select></div>',
       foot: '<button class="text-btn" data-act="reset">Set semula</button><button class="btn btn-ink" data-act="ok">Tunjuk hasil</button>' });
@@ -123,7 +125,7 @@
     var sens = r.sek === 'SPsK' || r.sek === 'SPP', noPhoto = !((r.photos && r.photos.length) || r.gam);
     var place = D.where(r).t.replace('Tugas rasmi — ', '');
     var body = (sens ? '<p class="flag warn">Sektor ' + r.sek + ': penerbitan awam belum dibuka.</p>' : '') +
-      '<div class="pcard">' + (r.photos && r.photos[0] ? '<img src="' + M.esc(r.photos[0].src) + '" alt="Gambar utama" style="display:block;width:100%;aspect-ratio:16/8;object-fit:cover">' : '<div class="ph">Gambar utama</div>') + '<div class="b">' + M.sk(r.sek) + '<h4>' + M.esc(r.tajuk) + '</h4><p>' + M.fmtDate(r.tarikh) + ' · ' + M.esc(place) + '</p><p style="margin-top:8px">' + M.esc(r.rum||'Rumusan belum diisi.') + '</p></div></div>' +
+      '<div class="pcard">' + (r.photos && r.photos[0] ? '<img src="' + M.esc(r.photos[0].src) + '" alt="Gambar utama" style="display:block;width:100%;aspect-ratio:16/8;object-fit:cover">' : '<div class="ph">Gambar utama</div>') + '<div class="b">' + M.sk(r.sek) + '<h4 role="heading" aria-level="3">' + M.esc(r.tajuk) + '</h4><p>' + M.fmtDate(r.tarikh) + ' · ' + M.esc(place) + '</p><p style="margin-top:8px">' + M.esc(r.rum||'Rumusan belum diisi.') + '</p></div></div>' +
       '<details class="more"><summary>Lihat kapsyen Facebook</summary><div class="fbcap">' + M.esc(D.post(r, 'fb')) + '</div></details>' +
       (isPub ? '<div class="section-t">Semakan penerbit</div><div class="chk"><label><input type="checkbox" class="ck"> Tiada nama murid, data kes atau peperiksaan</label><label><input type="checkbox" class="ck"> Gambar sesuai untuk awam</label><label><input type="checkbox" class="ck"> Fakta dan nama sekolah betul</label></div>' : (!r.mohon ? (noPhoto ? '<p class="flag warn" style="margin-top:14px">Tambah sekurang-kurangnya 1 gambar sebelum mohon terbit. <a class="text-btn" href="lapor.html?id=' + r.id + '">Tambah gambar</a></p>' : '') +
         '<div class="section-t">Sebelum hantar</div><div class="chk"><label><input type="checkbox" class="ck2"> Tiada nama murid, data kes, kesihatan atau peperiksaan</label><label><input type="checkbox" class="ck2"> Gambar sesuai untuk paparan awam</label></div>' : '') +

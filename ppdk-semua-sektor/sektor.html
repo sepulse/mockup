@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Sektor · PPDK.CH</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=95a3f3d8">
+<link rel="stylesheet" href="base.css?v=12b0feb5">
 <link rel="stylesheet" href="gaya.css?v=cc708408">
-<link rel="stylesheet" href="awam.css?v=03e55e6c">
+<link rel="stylesheet" href="awam.css?v=8dd10f54">
 <style>
 .sl{border-top:1px solid var(--ink)}
 .sl a{display:grid;grid-template-columns:6px minmax(0,1fr) auto;gap:16px;align-items:center;padding:16px 0;border-bottom:1px solid var(--rule)}
@@ -26,7 +26,8 @@
 </head>
 <body>
 <div id="content" class="pw"><div id="body"></div></div>
-<script src="shared.js?v=47619351"></script>
+<script src="shared.js?v=cd739d78"></script>
+<script src="gerak.js?v=3d1be233"></script>
 <script src="data.js?v=72056c03"></script>
 <script src="awam.js?v=5b0f37fa"></script>
 <script>
@@ -34,11 +35,13 @@
   M.mount({ bare: true, noRole: true });
   AW.header('sektor');
   var k = new URLSearchParams(location.search).get('s'), b = document.getElementById('body');
+  function render() {
   var s = M.SEKTOR.filter(function (x) { return x.k === k; })[0];
   if (!s) {
     document.title = 'Sektor · PPDK.CH';
     b.innerHTML = '<div class="ph1"><h1>Sektor PPD Kuching</h1><p>Tujuh sektor, satu pejabat. Pilih sektor untuk melihat fungsi dan aktiviti yang diterbitkan.</p></div><div class="sl">' +
       M.SEKTOR.map(function (x) { return '<a href="sektor.html?s=' + encodeURIComponent(x.k) + '" style="--sc:' + AW.color(x.k) + '"><i></i><span><b>' + M.esc(x.n.replace(' (termasuk Unit ICT)', '')) + '</b><span class="d">' + AW.DESC[x.k] + '</span><span class="k">Ketua (rekaan): ' + AW.KETUA[x.k] + '</span></span>' + M.icon('next') + '</a>'; }).join('') + '</div>';
+    Gerak.run(b);
     return;
   }
   var name = s.n.replace(' (termasuk Unit ICT)', ''), list = AW.pub.filter(function (r) { return r.sek === k; }), closed = k === 'SPsK' || k === 'SPP';
@@ -48,6 +51,13 @@
     '<div class="h2p"><h2>Aktiviti diterbitkan</h2><span>' + list.length + ' laporan</span></div><div class="feed">' + (list.map(AW.item).join('') || '<div class="empty">Belum ada aktiviti diterbitkan.</div>') + '</div>' +
     '<div class="h2p"><h2>Oktober dalam angka</h2></div>' +
     (closed ? '<p class="tiny">Ringkasan sektor ini belum dipaparkan kepada awam.</p>' : '<div class="agg"><div><b>' + D.summary(k,'2026-10',true).a + '</b><span>Aktiviti selesai</span></div><div><b>' + D.summary(k,'2026-10',true).s + '</b><span>Sekolah terlibat</span></div><div><b>' + list.length + '</b><span>Laporan diterbitkan</span></div></div>');
+  Gerak.run(b);
+  }
+  document.addEventListener('datachange', function () {
+    AW.pub = D.REKOD.filter(function (r) { return r.tahap === 'umum'; }).sort(function (a, b) { return a.tarikh < b.tarikh ? 1 : -1; });
+    render();
+  });
+  render();
 })();
 </script>
 </body>

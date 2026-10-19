@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Laporan · PPDK.CH</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=95a3f3d8">
+<link rel="stylesheet" href="base.css?v=12b0feb5">
 <link rel="stylesheet" href="gaya.css?v=cc708408">
-<link rel="stylesheet" href="awam.css?v=03e55e6c">
+<link rel="stylesheet" href="awam.css?v=8dd10f54">
 <style>
 .art{max-width:720px}
 .art h1{font:800 clamp(26px,4vw,38px)/1.12 var(--display);letter-spacing:-.02em;margin-top:12px}
@@ -24,7 +24,8 @@
 </head>
 <body>
 <div id="content" class="pw"><div id="body"></div></div>
-<script src="shared.js?v=47619351"></script>
+<script src="shared.js?v=cd739d78"></script>
+<script src="gerak.js?v=3d1be233"></script>
 <script src="data.js?v=72056c03"></script>
 <script src="awam.js?v=5b0f37fa"></script>
 <script>
@@ -32,8 +33,9 @@
   M.mount({ bare: true, noRole: true });
   AW.header('aktiviti');
   var id = new URLSearchParams(location.search).get('id');
+  function render() {
   var r = AW.pub.filter(function (x) { return x.id === id; })[0];
-  if(!r){document.title='Laporan tidak ditemui';document.getElementById('body').innerHTML='<div class="ph1"><h1>Laporan tidak ditemui</h1><p>Pautan mungkin tidak sah atau laporan belum diterbitkan.</p><a class="btn btn-ink" href="portal.html">Kembali ke aktiviti</a></div>';return;}
+  if(!r){document.title='Laporan tidak ditemui';document.getElementById('body').innerHTML='<div class="ph1"><h1>Laporan tidak ditemui</h1><p>Pautan mungkin tidak sah atau laporan belum diterbitkan.</p><a class="btn btn-ink" href="portal.html">Kembali ke aktiviti</a></div>';Gerak.run(document.getElementById('body'));return;}
   document.title = r.tajuk + ' · PPDK.CH';
   var more = AW.pub.filter(function (x) { return x.sek === r.sek && x.id !== r.id; }).slice(0, 3);
   document.getElementById('body').innerHTML = '<article class="art"><p style="margin-top:18px"><a class="text-btn" href="sektor.html?s=' + encodeURIComponent(r.sek) + '">' + M.sk(r.sek) + ' ' + M.esc(AW.short(r.sek)) + '</a></p>' +
@@ -46,7 +48,14 @@
     '<p class="hash" style="margin-top:18px">#PPDKuching #' + r.sek + '</p>' +
     '<div class="share"><button class="btn btn-line btn-sm" id="cp">Salin pautan</button><span class="tiny">Hantaran Facebook PPD memaut ke halaman ini.</span></div></article>' +
     (more.length ? '<div class="h2p"><h2>Lagi daripada ' + M.esc(AW.short(r.sek)) + '</h2></div><div class="feed">' + more.map(AW.item).join('') + '</div>' : '');
+  Gerak.run(document.getElementById('body'));
   document.getElementById('cp').addEventListener('click', function () { navigator.clipboard.writeText(location.href).then(function(){M.toast('Pautan disalin')},function(){M.toast('Salin pautan dari bar alamat pelayar')}); });
+  }
+  document.addEventListener('datachange', function () {
+    AW.pub = D.REKOD.filter(function (r) { return r.tahap === 'umum'; }).sort(function (a, b) { return a.tarikh < b.tarikh ? 1 : -1; });
+    render();
+  });
+  render();
 })();
 </script>
 </body>
