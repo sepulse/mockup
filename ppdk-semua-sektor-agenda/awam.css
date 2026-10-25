@@ -1,0 +1,65 @@
+/* PPDK.CH semua sektor — paparan contoh. Data ilustrasi (nama, sekolah dan angka rekaan). */
+.pw{max-width:980px;margin:0 auto;padding:0 clamp(16px,3vw,32px) 80px}
+.ptop{display:flex;justify-content:space-between;align-items:center;gap:16px;height:64px;border-bottom:1px solid var(--ink)}
+.ptop .brand{padding:0;font-size:22px}
+.pnav{display:flex;gap:4px;margin-right:auto;margin-left:24px}
+.pnav a{padding:8px 10px;font-size:14.5px;font-weight:500;color:var(--ink-2)}
+.pnav a:hover{color:var(--ink);background:var(--paper-2)}
+.pnav a[aria-current="page"]{color:var(--ink);font-weight:700;box-shadow:inset 0 -2px 0 var(--ink)}
+.ph1{padding:36px 0 18px}
+.ph1 h1{font:800 clamp(28px,4vw,40px)/1.05 var(--display);letter-spacing:-.02em}
+.ph1 p{color:var(--ink-2);margin-top:8px;font-size:15px;max-width:60ch}
+.ph1 .m{margin-top:12px;font:500 12.5px/1.4 var(--mono);color:var(--muted)}
+.schips{display:flex;gap:6px;overflow-x:auto;padding-bottom:4px;border-bottom:1px solid var(--ink)}
+.schips button,.schips a{flex:none;display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 12px;font-size:13.5px;font-weight:500;color:var(--ink-2);border-bottom:3px solid transparent;margin-bottom:-1px}
+.schips i{width:9px;height:9px;background:var(--sc)}
+.schips [aria-pressed="true"]{color:var(--ink);font-weight:700;border-bottom-color:var(--ink)}
+.feed{display:flex;flex-direction:column}
+.it{display:grid;grid-template-columns:150px minmax(0,1fr);gap:18px;padding:18px 0;border-bottom:1px solid var(--rule);text-align:left;width:100%}
+.it:hover h3{text-decoration:underline}
+.it .ph{aspect-ratio:4/3}
+.it .m{font:500 12.5px/1.4 var(--mono);color:var(--muted);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.it h3{font:700 19px/1.3 var(--display);margin-top:6px}
+.it p{font-size:14px;color:var(--ink-2);margin-top:4px}
+.pf{margin-top:48px;border-top:1px solid var(--ink);padding-top:18px;display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;font-size:13.5px;color:var(--muted)}
+.pf a{color:var(--petrol);font-weight:600}
+.h2p{display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin:44px 0 10px;padding-bottom:10px;border-bottom:1px solid var(--ink)}
+.h2p h2{font:800 22px/1.1 var(--display)}
+.h2p span{font-size:13px;color:var(--muted)}
+.agg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px}
+.agg b{display:block;font:800 40px/1 var(--display);font-stretch:85%}
+.agg span{font-size:13px;color:var(--muted)}
+.bar-r{display:grid;grid-template-columns:150px 1fr 56px;gap:12px;align-items:center;padding:9px 0;font-size:14px;border-bottom:1px solid var(--rule)}
+.bar-r .bar{height:8px;background:var(--paper-2);position:relative}
+.bar-r .bar i{position:absolute;inset:0 auto 0 0;background:var(--petrol)}
+.bar-r b{font:600 13px/1 var(--mono);text-align:right}
+@media (max-width:700px){
+  .ptop{flex-wrap:wrap;height:auto;padding:12px 0 0;gap:8px 12px}
+  .pnav{order:3;width:100%;margin:0;overflow-x:auto}
+  .it{grid-template-columns:96px minmax(0,1fr);gap:12px}.it h3{font-size:16px}.it p{font-size:13px}
+  .agg{grid-template-columns:1fr 1fr}.agg b{font-size:32px}
+  .bar-r{grid-template-columns:120px 1fr 48px}
+}
+
+/* Portal (portal.html): aksen petrol, keluarga A-1. Token sedia ada sahaja; warna sektor tidak diubah. */
+.ph1.hero{margin-top:24px;padding:26px clamp(18px,3vw,32px) 28px;background:var(--petrol-deep);color:var(--on-dark)}
+.hero .hk{font:500 12px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--on-dark-2)}
+.hero .ha{display:block;width:32px;height:3px;background:var(--mint);margin:12px 0 14px}
+.hero h1{color:var(--on-dark)}
+.hero p{color:var(--on-dark-2);margin-top:10px}
+.schips{border-bottom-color:var(--rule-2)}
+.schips [aria-pressed="true"]{border-bottom-color:var(--petrol)}
+#feed .it{box-shadow:inset 2px 0 0 var(--sc,transparent);padding-left:14px}
+#feed .it > div:last-child::after{content:"Baca \2192";display:block;margin-top:8px;font:600 13px/1 var(--sans);color:var(--petrol)}
+:root[data-theme="dark"] #feed .it{box-shadow:inset 2px 0 0 color-mix(in srgb,var(--sc,transparent) 65%,#fff)}
+#agg{background:var(--petrol-deep);padding:22px clamp(18px,3vw,32px);gap:0}
+#agg > div{padding:0 clamp(12px,2.4vw,24px);border-left:1px solid var(--petrol-line)}
+#agg > div:first-child{padding-left:0;border-left:0}
+#agg b{color:var(--mint)}
+#agg span{color:var(--on-dark-2)}
+@media (max-width:700px){
+  #agg > div{padding:12px 0 0;border-left:0}
+  #agg > div:nth-child(n+3){border-top:1px solid var(--petrol-line);margin-top:12px}
+  #agg > div:nth-child(2){padding-left:14px;border-left:1px solid var(--petrol-line)}
+  #agg > div:nth-child(1),#agg > div:nth-child(2){padding-top:0}
+}

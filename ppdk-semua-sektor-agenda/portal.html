@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PPDK.CH · PPD Kuching</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css?v=eb478dd3">
+<link rel="stylesheet" href="gaya.css?v=cbbbdafc">
+<link rel="stylesheet" href="awam.css?v=8dd10f54">
+<style>
+/* Laporan utama bergambar + senarai padat. Telefon: pemilih sektor ganti jalur cip yang terpotong. */
+.ssel{display:none}
+/* Komputer: cip sektor dibalut ke baris kedua, bukan bar skrol yang memotong nama. */
+.schips{flex-wrap:wrap;overflow:visible;row-gap:2px}
+.pgrid{display:grid;grid-template-columns:minmax(0,1fr);gap:8px;margin-top:20px}
+.feat{display:block;border:1px solid var(--ink);background:var(--card);box-shadow:inset 0 4px 0 var(--sc)}
+.feat .ph,.feat img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;border:0;border-bottom:1px solid var(--rule)}
+.feat .b{padding:18px 20px 20px}
+.feat .m{display:flex;gap:8px;align-items:center;font-size:13.5px;color:var(--muted)}
+.feat h2{font:800 clamp(22px,2.6vw,30px)/1.15 var(--display);margin-top:10px;letter-spacing:-.01em}
+.feat p{font-size:15px;color:var(--ink-2);margin-top:8px;line-height:1.5}
+.feat .ex{display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.feat .go{display:inline-block;margin-top:12px;font-weight:600;color:var(--petrol)}
+.feat:hover h2{text-decoration:underline}
+.cl-h{display:flex;justify-content:space-between;align-items:baseline;margin:18px 0 4px}
+.cl-h b{font:700 18px/1.2 var(--display)}
+.cl-h span{font-size:13px;color:var(--muted)}
+.cl a{display:grid;grid-template-columns:64px minmax(0,1fr);gap:12px;padding:13px 0 13px 10px;border-bottom:1px solid color-mix(in srgb,var(--rule) 75%,transparent);box-shadow:inset 2px 0 0 var(--sc)}
+.cl a:hover h3{text-decoration:underline}
+.cl .d{font:500 13px/1.4 var(--mono);color:var(--ink-2)}
+.cl h3{font:600 16px/1.35 var(--sans)}
+.cl p{font-size:13.5px;color:var(--muted);margin-top:3px;display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+@media (min-width:900px){
+  .pgrid{grid-template-columns:minmax(0,1.45fr) minmax(0,1fr);column-gap:32px;align-items:start}
+  .cl-h{margin-top:0}
+}
+@media (max-width:700px){
+  .schips{display:none}
+  .ssel{display:flex;flex-direction:column;gap:6px;margin-top:18px;font-size:14px;font-weight:600;color:var(--ink-2)}
+  .feat .b{padding:14px 16px 16px}
+}
+:root[data-theme="dark"] .feat{box-shadow:inset 0 4px 0 color-mix(in srgb,var(--sc) 65%,#fff)}
+:root[data-theme="dark"] .cl a{box-shadow:inset 2px 0 0 color-mix(in srgb,var(--sc) 65%,#fff)}
+</style>
+</head>
+<body>
+<div id="content" class="pw">
+  <div class="ph1 hero">
+    <div class="hk">PPD KUCHING · OKTOBER 2026</div>
+    <i class="ha" aria-hidden="true"></i>
+    <h1>Aktiviti PPD Kuching</h1>
+    <p>Laporan pegawai Pejabat Pendidikan Daerah Kuching yang telah disemak dan diterbitkan.</p>
+  </div>
+  <nav class="schips" id="schips" aria-label="Sektor"></nav>
+  <label class="ssel">Sektor<select id="ssel"></select></label>
+  <div class="pgrid" id="feed"></div>
+
+  <div class="h2p"><h2>Oktober dalam angka</h2><span>agregat · tiada nama sekolah atau pegawai</span></div>
+  <div class="agg" id="agg"></div>
+  <p class="tiny" style="margin-top:10px">Tidak termasuk Sektor Psikologi &amp; Kaunseling dan Sektor Pentaksiran &amp; Peperiksaan.</p>
+</div>
+<script src="shared.js?v=61d306a6"></script>
+<script src="gerak.js?v=3d1be233"></script>
+<script src="data.js?v=341eafbf"></script>
+<script src="awam.js?v=5b0f37fa"></script>
+<script>
+(function () {
+  M.mount({ bare: true, noRole: true });
+  AW.header('aktiviti');
+  var sel = '';
+  function chips() {
+    document.getElementById('schips').innerHTML = '<button type="button" data-s="" aria-pressed="' + (sel === '') + '">Semua</button>' + M.SEKTOR.map(function (s) { return '<button type="button" data-s="' + s.k + '" aria-pressed="' + (sel === s.k) + '" style="--sc:' + AW.color(s.k) + '"><i></i>' + AW.short(s.k) + '</button>'; }).join('');
+  }
+  function sselH() {
+    document.getElementById('ssel').innerHTML = '<option value="">Semua sektor</option>' + M.SEKTOR.map(function (s) { return '<option value="' + s.k + '"' + (sel === s.k ? ' selected' : '') + '>' + AW.short(s.k) + '</option>'; }).join('');
+  }
+  /* Laporan terkini = utama (bergambar, rumusan ringkas); selebihnya senarai padat tanpa gambar kecil. */
+  function feed() {
+    var l = AW.pub.filter(function (r) { return !sel || r.sek === sel; }), f = l[0];
+    if (!f) { document.getElementById('feed').innerHTML = '<div class="empty">Belum ada aktiviti diterbitkan untuk sektor ini.</div>'; return; }
+    var img = f.photos && f.photos[0] ? '<img src="' + M.esc(f.photos[0].src) + '" alt="">' : '<div class="ph">Gambar utama</div>';
+    var h = '<a class="feat" href="laporan.html?id=' + f.id + '" style="--sc:' + AW.color(f.sek) + '">' + img + '<div class="b"><div class="m">' + M.sk(f.sek) + '<span>' + M.fmtDate(f.tarikh, false) + '</span></div>' +
+      '<h2>' + M.esc(f.tajuk) + '</h2><p>' + M.esc(AW.place(f)) + '</p>' + (f.rum ? '<p class="ex">' + M.esc(f.rum) + '</p>' : '') + '<span class="go">Baca laporan →</span></div></a>';
+    var rest = l.slice(1);
+    h += '<div><div class="cl-h"><b>Laporan lain</b><span>' + rest.length + ' laporan</span></div><div class="cl">' + (rest.map(function (r) {
+      return '<a href="laporan.html?id=' + r.id + '" style="--sc:' + AW.color(r.sek) + '"><span class="d">' + Number(r.tarikh.slice(8)) + ' ' + M.BULAN[Number(r.tarikh.slice(5, 7)) - 1].slice(0, 3) + '</span><span><h3>' + M.esc(r.tajuk) + '</h3><p>' + M.sk(r.sek) + M.esc(AW.place(r)) + '</p></span></a>';
+    }).join('') || '<p class="tiny" style="padding:12px 0">Tiada laporan lain.</p>') + '</div></div>';
+    document.getElementById('feed').innerHTML = h;
+    Gerak.run(document.getElementById('feed'), { items: '.feat,.cl a' });
+  }
+  function stats() {
+    var totals = D.summary('ALL','2026-10',true);
+    document.getElementById('agg').innerHTML='<div><b>'+totals.a+'</b><span>Aktiviti selesai</span></div><div><b>'+totals.s+'</b><span>Sekolah terlibat</span></div><div><b>'+AW.pub.length+'</b><span>Laporan diterbitkan</span></div>';
+    Gerak.run(document.getElementById('agg'));
+  }
+  document.getElementById('schips').addEventListener('click', function (e) { var b = e.target.closest('[data-s]'); if (b) { sel = b.getAttribute('data-s'); chips(); sselH(); feed(); stats(); } });
+  document.getElementById('ssel').addEventListener('change', function () { sel = this.value; chips(); feed(); stats(); });
+  document.addEventListener('datachange', function () {
+    AW.pub = D.REKOD.filter(function (r) { return r.tahap === 'umum'; }).sort(function (a, b) { return a.tarikh < b.tarikh ? 1 : -1; });
+    chips(); sselH(); feed(); stats();
+  });
+  chips(); sselH(); feed(); stats();
+})();
+</script>
+</body>
+</html>

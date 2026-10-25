@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Laporan · Staf</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css?v=eb478dd3">
+<link rel="stylesheet" href="gaya.css?v=cbbbdafc">
+<link rel="stylesheet" href="agenda.css?v=80604b75">
+<link rel="stylesheet" href="bahasa.css?v=c8d377cd">
+<style>
+.back{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink-2);min-height:44px}
+.back svg{width:16px;height:16px}
+.steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;margin:6px 0 22px}
+.steps button{display:flex;flex-direction:column;align-items:flex-start;gap:5px;padding:10px 10px 9px;border:1px solid var(--rule);border-top:3px solid var(--rule);background:var(--paper);text-align:left;min-height:44px}
+.steps b{font:600 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.steps span{font-size:13.5px;font-weight:600;color:var(--ink-2);line-height:1.25}
+.steps button[aria-current="step"]{border-top-color:var(--sc);background:var(--card)}
+.steps button[aria-current="step"] span{color:var(--ink)}
+.steps button.ok b{color:var(--petrol)}
+.pane[hidden]{display:none}
+.auto{border:1px solid var(--rule);border-left:3px solid var(--sc);background:var(--card);padding:14px 16px}
+.auto .dl{font-size:14px}
+.auto .tiny{margin-top:10px}
+.team{display:flex;flex-wrap:wrap;gap:6px}
+.team span{display:inline-flex;align-items:center;gap:6px;padding:6px 9px;border:1px solid var(--rule);font-size:13px;background:var(--paper)}
+.team button{border:1px dashed var(--rule-2);padding:6px 9px;font-size:13px;color:var(--ink-2);min-height:32px}
+.team .rm{border:0;padding:0 2px;min-height:0}
+.aibox{border:1px solid var(--rule);background:var(--paper-2);padding:14px 16px;margin-top:6px}
+.aibox .row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:10px}
+.aitag{display:inline-flex;align-items:center;gap:6px;font:600 10.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--warn);background:var(--warn-bg);padding:5px 7px}
+.lblrow{display:flex;justify-content:space-between;align-items:baseline;gap:10px}
+.gal4{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.gal4 button{aspect-ratio:4/3;border:1px dashed var(--rule-2);font-size:20px;color:var(--muted);background:var(--paper)}
+.gal4 button.on{border:1px solid var(--rule);background:repeating-linear-gradient(135deg,var(--paper-2) 0 8px,var(--card) 8px 16px);font:500 11px/1 var(--mono);color:var(--muted)}
+.num3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+/* Pratonton format rasmi */
+.doc{border:1px solid var(--rule);background:#fff;color:#111;padding:28px 30px;font-size:13.5px;line-height:1.55}
+.doc .hd{display:flex;justify-content:space-between;gap:12px;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:14px}
+.doc .hd b{font:800 15px/1.2 var(--display)}
+.doc .hd span{font:500 11px/1.4 var(--mono);color:#555;text-align:right}
+.doc h3{font:800 17px/1.25 var(--display);margin:0 0 10px;text-transform:uppercase}
+.doc table{width:100%;border-collapse:collapse;margin-bottom:12px}
+.doc td{border:1px solid #ccc;padding:5px 8px;vertical-align:top}
+.doc td:first-child{width:30%;color:#555;font-size:12.5px}
+.doc h4{font:700 12px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;margin:14px 0 6px;color:#333}
+.doc p,.doc li{white-space:pre-line}
+.doc .imgs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-top:6px}
+.doc .imgs i{aspect-ratio:4/3;background:repeating-linear-gradient(135deg,#eee 0 8px,#f7f7f7 8px 16px);border:1px solid #ddd}
+.doc .pa{font:600 12px/1.5 var(--mono);color:#333}
+.doc .pt{font:800 16px/1.3 var(--display);margin:8px 0 6px}
+.doc .ph2{font-weight:700;margin-top:10px}
+.doc .ps{margin-top:12px;font-style:italic}
+.doc .hs{color:#1d4ed8}
+.doc > div{white-space:pre-wrap}
+.doc .ft{margin-top:18px;border-top:1px solid #ccc;padding-top:8px;font:500 10.5px/1.4 var(--mono);color:#666}
+.share{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chk{display:flex;flex-direction:column;gap:9px;margin-top:8px}
+.chk label{display:flex;gap:9px;align-items:flex-start;font-size:14px;cursor:pointer}
+.chk input{width:17px;height:17px;accent-color:var(--petrol);margin-top:2px}
+.lfoot .text-btn{white-space:nowrap}.lfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:26px 0 30px;padding-top:16px;border-top:1px solid var(--rule)}
+.lfoot .r{display:flex;gap:8px;align-items:center}
+.wm{font:600 11px/1 var(--mono);letter-spacing:.08em;color:#9a5b00;background:#f6ecd9;padding:7px 9px;margin-bottom:12px;display:inline-block}
+.photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.photos figure{border:1px solid var(--rule);background:var(--card)}
+.photos img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}
+.photos figcaption{display:flex;justify-content:space-between;gap:6px;padding:6px 8px;font-size:12px;color:var(--muted)}
+.photos figcaption span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.doc .imgs img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;border:1px solid #ddd}
+.stat{font-size:12.5px;color:var(--warn);font-weight:600}
+.stat.ok{color:var(--muted);font-weight:500}
+.lock{border:1px solid var(--rule);border-left:3px solid var(--ink-2);background:var(--card);padding:12px 14px;font-size:14px;margin-bottom:14px}
+.when3{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr);gap:8px}.when3 input{min-width:0;width:100%}
+@media(max-width:480px){.when3{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.when3 .field:first-child{grid-column:1/-1}}
+.donebox{border:1px solid var(--rule);border-left:3px solid var(--petrol);background:var(--card);padding:18px}
+.donebox h2{font:700 18px/1.3 var(--display)}
+.donebox p{color:var(--ink-2);font-size:14px;margin-top:6px}
+.donebox .share{margin-top:14px}
+@media(max-width:780px){.team button{min-height:44px}.team .rm{min-width:44px;min-height:44px;margin:-13px -14px}.photos{grid-template-columns:repeat(2,1fr)}.steps{gap:4px}.steps button{padding:8px 7px}.steps span{font-size:12.5px}.doc{padding:18px 16px}.gal4{grid-template-columns:repeat(2,1fr)}.doc .imgs{grid-template-columns:repeat(2,1fr)}}
+/* Borang–pratonton (komputer ≥1100px): borang kiri, format laporan rasmi kanan, dikemas kini semasa menaip. */
+@media(min-width:1100px){
+  #content.wrap-n{max-width:1240px}
+  .lgrid{display:grid;grid-template-columns:minmax(0,620px) minmax(0,1fr);column-gap:36px;align-items:start}
+  .lpv{position:sticky;top:20px;max-height:calc(100vh - 40px);overflow:auto;padding-bottom:12px}
+  .lpv .section-t{margin-top:0}
+  .lpv .doc{padding:22px 24px;font-size:13px}
+}
+@media print{
+  body *{visibility:hidden}
+  #doc,#doc *{visibility:visible}
+  #doc{position:absolute;left:0;top:0;width:100%;border:0;padding:0}
+  .wm{display:none}
+}
+</style>
+</head>
+<body>
+<div id="content" class="wrap-n">
+  <a class="back" href="aktiviti.html"><svg class="i" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>Rekod Aktiviti</a>
+  <div class="page-h" style="padding-top:4px"><div><h1>Laporan</h1><div class="sub" id="ctx"></div></div><span class="stat ok" id="stat" role="status"></span></div>
+  <div id="main"></div>
+</div>
+
+<script src="shared.js?v=61d306a6"></script>
+<script src="data.js?v=341eafbf"></script>
+<script>
+(function () {
+  M.mount({ page: 'aktiviti' });
+  var $ = function (id) { return document.getElementById(id); };
+  var id = new URLSearchParams(location.search).get('id');
+  var me = M.me(), baru = !id;
+  /* Pintu "Laporan terus": tiada rekod lagi. Rekod dicipta automatik bila pegawai simpan (draf atau laporan). */
+  var r = baru ? { id: 'N' + Date.now().toString(36), owner: me.name, sek: me.sek, tarikh: M.TODAY, tamat: M.TODAY, mula: '08:00', akhir: '12:00',
+    jenis: (M.KATALOG[me.sek] || M.KATALOG._)[0], tajuk: '', mod: 'fizikal', sekolah: [], lokasi: '', peserta: [], status: 'selesai', laporan: 'belum', tahap: 'dalaman', baru: true }
+    : D.REKOD.filter(function (x) { return x.id === id; })[0];
+  var STEPS = ['Maklumat', 'Kandungan', 'Semak & simpan'], step = 0;
+
+  if (!r || (r.tahap === 'sulit' && !D.canSulit(r))) {
+    $('main').innerHTML = '<div class="empty" style="border-top:1px solid var(--ink)">' + (r ? 'Laporan ini terhad.' : 'Rekod tidak ditemui.') + '</div>';
+    return;
+  }
+  /* Draf berasingan: sunting salinan kerja; laporan lengkap (dan angka Ringkasan) hanya berubah bila "Simpan laporan". */
+  var src = r, REC = ['tajuk', 'jenis', 'tarikh', 'tamat', 'mula', 'akhir', 'mod', 'sekolah', 'lokasi'],
+    REP = ['obj', 'cat', 'rum', 'imp', 'ts', 'khas', 'bil', 'ruj', 'peserta', 'photos', 'ai'];
+  function pick(o, ks) { var x = {}; ks.forEach(function (k) { if (o[k] !== undefined) x[k] = JSON.parse(JSON.stringify(o[k])); }); return x; }
+  r = JSON.parse(JSON.stringify(src)); if (src.drafLaporan) Object.assign(r, src.drafLaporan); delete r.drafLaporan;
+  r.photos = r.photos || [];
+  var dirty = false, undo = null;
+  function mark() { dirty = true; $('stat').className = 'stat'; $('stat').textContent = 'Perubahan belum disimpan'; }
+  function clean(msg) { dirty = false; $('stat').className = 'stat ok'; $('stat').textContent = msg || ''; }
+  window.addEventListener('beforeunload', function (e) { if (dirty) { e.preventDefault(); e.returnValue = ''; } });
+  /* Keadaan baca sahaja (daripada Sol). */
+  function lockMsg() {
+    if (src.owner !== me.name) return 'Laporan ini milik ' + src.owner + '. Paparan baca sahaja.';
+    if (D.ict(src)) return 'Laporan ini daripada rekod ICT. Ubah melalui rekod ICT — tidak perlu merekod semula.';
+    if (src.tahap === 'umum') return 'Laporan ini telah diterbitkan. Paparan baca sahaja.';
+    if (src.mohon) return 'Menunggu semakan ketua sektor ' + src.sek + '. Paparan baca sahaja.';
+    if (src.status === 'dibatalkan') return 'Rancangan ini dibatalkan — tiada laporan.';
+    if (!baru && src.status !== 'selesai' && src.tamat >= M.TODAY) return 'Laporan dibuka selepas tugas tamat. Di Hari ini, tekan Mula kemudian Tamat pada tugas ini.';
+    return '';
+  }
+  if (src.drafLaporan) clean('Draf disambung');
+  document.documentElement.style.setProperty('--sc', 'var(--s-' + (r.sek === 'Pengurusan' ? 'PGR' : r.sek) + ')');
+  var w, place;
+  function refresh() {
+    w = D.where(r); place = w.t.replace('Tugas rasmi — ', '');
+    $('ctx').innerHTML = (r.tajuk ? M.esc(r.tajuk) : 'Laporan baharu · rekod dicipta bila disimpan') + ' ' + M.sk(r.sek);
+  }
+  r.peserta = r.peserta || [];
+  refresh();
+
+  function team() { return [r.owner].concat(r.peserta); }
+  function lines(t) { return (t || '').split(/\n+/).map(function (x) { return x.replace(/^\s*(\d+[.)]|[-•*])\s*/, '').trim(); }).filter(Boolean); }
+  function numbered(t) { return lines(t).map(function (x, i) { return (i + 1) + '. ' + x.charAt(0).toUpperCase() + x.slice(1); }).join('\n'); }
+  function dateTxt() { return M.fmtDate(r.tarikh) + (r.tamat && r.tamat !== r.tarikh ? ' – ' + M.fmtDate(r.tamat) : ''); }
+
+  /* ---------- Langkah 1: Maklumat (daripada rekod + konfigurasi sektor) ---------- */
+  function p1() {
+    var A = D.aka(r.sek);
+    if (r.baru) return p1baru(A);
+    /* Ringkas: tarikh, masa, tempat sahaja; medan automatik lain dilipat (masih masuk format laporan). */
+    return '<div class="auto sum1"><span class="k1">Daripada rekod · tiada taip semula</span>' +
+      '<div class="facts"><span>' + M.icon('cal') + dateTxt() + '</span><span>' + M.icon('clock') + r.mula + '–' + r.akhir + '</span><span>' + M.icon('pin') + M.esc(place) + '</span></div>' +
+      '<details class="more1"><summary>Butiran daripada rekod</summary><dl class="dl">' +
+      '<dt>Akauntabiliti</dt><dd>' + M.esc(A[0]) + '</dd>' +
+      '<dt>Tugas utama</dt><dd>' + M.esc(A[1]) + '</dd>' +
+      '<dt>Tajuk</dt><dd>' + M.esc(r.tajuk.toUpperCase()) + '</dd></dl>' +
+      '<p class="tiny">Daripada rekod dan tetapan sektor. Hari dikira automatik. <a class="text-btn" href="rekod.html?ubah=' + r.id + '">Ubah rekod</a></p></details></div>' +
+      '<div class="field" style="margin-top:20px"><span class="lbl">Penglibatan</span><div class="team" id="tim">' + whoH() + '</div></div>' +
+      '<div class="addrow" id="ladd">' + (r.ruj ? '' : '<button type="button" data-add="ruj">+ No. rujukan</button>') + '</div>' +
+      '<div class="field" id="x-ruj"' + (r.ruj ? '' : ' hidden') + '><label class="lbl" for="ruj">No. rujukan <span class="muted" style="font-weight:400">— pilihan</span></label><input id="ruj" type="text" placeholder="Contoh: surat panggilan, no. tiket" value="' + M.esc(r.ruj || '') + '"></div>' +
+      '<p class="tiny" style="margin-top:14px">Seterusnya: tulis catatan ringkas, AI sediakan Objektif, Rumusan, Impak dan Tindak Susul.</p>';
+  }
+  function p1baru(A) {
+    var K = M.KATALOG[r.sek] || M.KATALOG._, md = r.mod === 'atas_talian' ? 'online' : r.sekolah.length || !r.lokasi ? 'sekolah' : 'lain';
+    if (r._md) md = r._md;
+    /* Medan yang perlu diisi dahulu; Akauntabiliti/Tugas utama (automatik) dilipat di bawah. */
+    return '<p class="tiny" style="margin-bottom:14px">Tiada rekod lagi — <b>rekod dicipta automatik bila anda simpan</b> dan terus muncul di Jadual, Log Pergerakan dan Ringkasan.</p>' +
+      '<div class="field"><label class="lbl" for="ftajuk">Tajuk <span class="req">*</span></label><input id="ftajuk" type="text" placeholder="Contoh: Kunjung bantu Program Pemulihan Khas" value="' + M.esc(r.tajuk) + '"></div>' +
+      '<div class="field"><label class="lbl" for="fjenis">Jenis aktiviti</label><select id="fjenis">' + K.map(function (x) { return '<option' + (x === r.jenis ? ' selected' : '') + '>' + M.esc(x) + '</option>'; }).join('') + '</select></div>' +
+      '<div class="when3"><div class="field"><label class="lbl" for="ftarikh">Tarikh</label><input id="ftarikh" type="date" max="' + M.TODAY + '" value="' + r.tarikh + '"></div>' +
+      '<div class="field"><label class="lbl" for="fmula">Mula</label><input id="fmula" type="time" value="' + r.mula + '"></div><div class="field"><label class="lbl" for="fakhir">Tamat</label><input id="fakhir" type="time" value="' + r.akhir + '"></div></div>' +
+      '<div class="field"><span class="lbl">Tempat <span class="req">*</span></span><div class="seg" id="fmod" role="group" aria-label="Tempat">' + [['sekolah', 'Sekolah'], ['lain', 'Lokasi lain'], ['online', 'Atas talian']].map(function (x) { return '<button type="button" data-md="' + x[0] + '" aria-pressed="' + (md === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div></div>' +
+      (md === 'sekolah' ? '<div class="field"><label class="lbl" for="fsek">Sekolah <span class="muted" style="font-weight:400">— pisahkan dengan koma</span></label><input id="fsek" type="text" list="dlsek" placeholder="Taip nama sekolah" value="' + M.esc(r.sekolah.join(', ')) + '"><datalist id="dlsek">' + M.SEKOLAH.map(function (x) { return '<option value="' + M.esc(x.n) + '">'; }).join('') + '</datalist></div>'
+        : md === 'lain' ? '<div class="field"><label class="lbl" for="flok">Lokasi</label><input id="flok" type="text" placeholder="Contoh: Auditorium JPN Sarawak" value="' + M.esc(r.lokasi || '') + '"></div>'
+        : '<p class="tiny" style="margin:-4px 0 14px">Tempat dicatat "Lokasi masing-masing" dalam laporan.</p>') +
+      '<div class="field"><span class="lbl">Penglibatan</span><div class="team" id="tim">' + whoH() + '</div></div>' +
+      '<details class="more1 auto"><summary>Butiran daripada tetapan sektor</summary><dl class="dl"><dt>Akauntabiliti</dt><dd>' + M.esc(A[0]) + '</dd><dt>Tugas utama</dt><dd>' + M.esc(A[1]) + '</dd></dl></details>';
+  }
+  function readP1() {
+    if (!$('ftajuk')) return;
+    r.tajuk = $('ftajuk').value.trim(); r.jenis = $('fjenis').value; r.tarikh = r.tamat = $('ftarikh').value || M.TODAY; r.mula = $('fmula').value || '08:00'; r.akhir = $('fakhir').value || '12:00';
+    var md = (document.querySelector('#fmod [aria-pressed="true"]') || {}).getAttribute ? document.querySelector('#fmod [aria-pressed="true"]').getAttribute('data-md') : 'sekolah';
+    r._md = md; r.mod = md === 'online' ? 'atas_talian' : 'fizikal';
+    if ($('fsek')) { r.sekolah = $('fsek').value.split(',').map(function (x) { return x.trim(); }).filter(Boolean); r.lokasi = ''; }
+    if ($('flok')) { r.lokasi = $('flok').value.trim(); r.sekolah = []; }
+    if (md === 'online') { r.sekolah = []; r.lokasi = ''; }
+    refresh();
+  }
+  function p1ok() { return r.tajuk && (r.mod === 'atas_talian' || r.sekolah.length || r.lokasi); }
+  /* Cipta rekod (sekali) — selepas ini sama seperti laporan daripada rekod sedia ada. */
+  function create() {
+    if (!r.baru) return;
+    delete r.baru; delete r._md; baru = false;
+    Object.assign(src, pick(r, REC)); delete src.baru; D.REKOD.push(src);
+    try { history.replaceState(null, '', 'lapor.html?id=' + encodeURIComponent(r.id)); } catch (e) {}
+    M.toast('Rekod dicipta · muncul di Jadual dan Log Pergerakan');
+  }
+  function whoH() {
+    return team().map(function (n, i) { return '<span>' + M.esc(n) + (i ? ' <button type="button" class="rm" data-rm="' + (i - 1) + '" aria-label="Buang ' + M.esc(n) + '">✕</button>' : ' <em class="muted" style="font-style:normal;font-size:12px">pemilik</em>') + '</span>'; }).join('') +
+      '<button type="button" id="addp">+ Pegawai</button>';
+  }
+  function addPegawai() {
+    var opts = D.STAF.filter(function (s) { return team().indexOf(s.n) < 0 && s.n !== 'KPPD'; });
+    var d = M.drawer({ title: 'Tambah pegawai', body: '<div class="field"><label class="lbl" for="pp">Pegawai</label><select id="pp">' + opts.map(function (s) { return '<option>' + M.esc(s.n) + '</option>'; }).join('') + '</select></div>', foot: '<button class="btn btn-ink" data-act="ok">Tambah</button>' });
+    d.querySelector('[data-act="ok"]').onclick = function () { r.peserta.push(d.querySelector('#pp').value); mark(); M.closeDrawer(); $('tim').innerHTML = whoH(); livePv(); };
+  }
+
+  /* ---------- Langkah 2: Kandungan — draf AI ialah tindakan utama ---------- */
+  function ta(id, label, hint, rows, val) {
+    return '<div class="field"><div class="lblrow"><label class="lbl" for="' + id + '">' + label + (hint ? ' <span class="muted" style="font-weight:400">— ' + hint + '</span>' : '') + '</label><span class="tagai">' + (r.ai ? '<span class="aitag">AI · semak</span>' : '') + '</span></div><textarea id="' + id + '" rows="' + rows + '">' + M.esc(val || '') + '</textarea></div>';
+  }
+  function p2() {
+    var K = D.KHAS[r.sek];
+    return '<div class="aibox"><div class="lblrow"><label class="lbl" for="cat" style="font-size:15px">1 · Catatan ringkas anda</label><span class="aitag" style="color:var(--petrol);background:var(--card)">✦ Draf AI</span></div>' +
+      '<textarea id="cat" rows="5" placeholder="Tulis ringkas, satu perkara satu baris. Contoh:\n3 kelas Tahun 4 dipantau\nguru guna bahan konkrit untuk pecahan\nmurid aktif dalam kumpulan\nperlu bimbingan susulan PBD">' + M.esc(r.cat || '') + '</textarea>' +
+      '<div class="row"><button class="btn btn-ink" type="button" id="ai">✦ Jana draf AI</button><button class="text-btn" type="button" id="undoai" hidden>Undur draf</button><span class="tiny" id="ais">Enjin AI yang sama dengan borang ICT. Hanya guna maklumat rekod + catatan anda; tiada fakta ditambah.</span></div></div>' +
+      '<div class="lblrow" style="margin:22px 0 8px"><span class="lbl" style="font-size:15px;margin:0">2 · Semak &amp; betulkan draf</span><span id="tag-rum" class="tiny">' + (r.ai ? 'Draf dibantu AI · semak fakta' : 'Atau tulis sendiri') + '</span></div>' +
+      ta('obj', 'Objektif', 'bernombor', 3, r.obj) +
+      ta('rum', 'Rumusan <span class="req">*</span>', 'satu perenggan', 5, r.rum) +
+      ta('imp', 'Impak', 'bernombor', 3, r.imp) +
+      ta('ts', 'Tindak susul', 'bernombor · teks laporan sahaja', 3, r.ts) +
+      (K ? ta('khas', K.charAt(0) + K.slice(1).toLowerCase(), 'bahagian khas sektor', 2, r.khas) : '') +
+      '<div class="addrow" id="ladd" style="margin-top:6px">' + (r.bil ? '' : '<button type="button" data-add="bil">+ Bilangan peserta</button>') + '</div>' +
+      '<div class="field" id="x-bil"' + (r.bil ? '' : ' hidden') + '><span class="lbl">Bilangan peserta (tiada nama)</span><div class="num3">' + ['Guru', 'Murid', 'Pihak luar'].map(function (k, i) { return '<input type="number" min="0" class="bil" placeholder="' + k + '" aria-label="' + k + '" value="' + ((r.bil || [])[i] || '') + '">'; }).join('') + '</div></div>';
+  }
+  /* Simulasi draf AI (enjin sama dengan borang ICT): input = maklumat rekod + catatan pegawai sahaja; tiada fakta baharu.
+     Enjin sebenar: prompt sektor (Objektif / Rumusan / Impak / Tindak Susul; bilangan poin ikut input). */
+  function draft() {
+    var c = lines($('cat').value);
+    if (!c.length) { $('cat').focus(); M.toast('Tulis catatan dahulu'); return; }
+    undo = { obj: $('obj').value, rum: $('rum').value, imp: $('imp').value, ts: $('ts').value, ai: r.ai };
+    var b = $('ai'); b.disabled = true; b.textContent = 'Menjana draf…'; $('ais').textContent = 'Sedang menjana · anggaran 30–50 s (demo: segera). Kekalkan halaman ini terbuka.';
+    setTimeout(function () {
+      var cap = function (x) { return x.charAt(0).toUpperCase() + x.slice(1).replace(/\.?$/, '.'); };
+      var fu = c.filter(function (x) { return /perlu|susul|cadang|akan/i.test(x); }), fa = c.filter(function (x) { return fu.indexOf(x) < 0; });
+      if (!$('obj').value.trim()) $('obj').value = '1. Melaksanakan ' + r.tajuk.charAt(0).toLowerCase() + r.tajuk.slice(1) + ' di ' + place + '.';
+      $('rum').value = r.tajuk + ' telah dilaksanakan di ' + place + ' pada ' + dateTxt() + ' dengan penglibatan ' + team().length + ' pegawai PPD Kuching. ' + fa.map(cap).join(' ');
+      $('imp').value = numbered(fa.map(cap).join('\n'));
+      $('ts').value = fu.length ? numbered(fu.map(cap).join('\n')) : '';
+      r.ai = true; $('tag-rum').textContent = 'Draf dibantu AI · semak fakta';
+      [].forEach.call(document.querySelectorAll('.tagai'), function (x) { x.innerHTML = '<span class="aitag">AI · semak</span>'; });
+      b.disabled = false; b.textContent = '✦ Jana semula'; $('undoai').hidden = false; mark(); livePv();
+      $('ais').textContent = 'Draf siap di bawah. Betulkan apa-apa yang tidak tepat.' + (fu.length ? '' : ' Tiada tindak susul dalam catatan — tambah sendiri jika perlu.');
+      $('rum').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 1400);
+  }
+
+  /* ---------- Langkah 3: Bukti, pratonton format wajib, semak ---------- */
+  function p3() {
+    var n = r.photos.length;
+    return '<div class="field"><div class="lblrow"><label class="lbl" for="photos">Gambar</label><span class="tiny">' + n + ' / 6 · 4 disyorkan · sekurang-kurangnya 1 jika mahu terbit</span></div>' +
+      '<input id="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple' + (n >= 6 ? ' disabled' : '') + '><p class="tiny" id="pstat" role="status"></p>' +
+      '<div class="photos">' + r.photos.map(function (p, i) { return '<figure><img src="' + M.esc(p.src) + '" alt="Gambar ' + (i + 1) + '"><figcaption><span>' + M.esc(p.name) + '</span><button type="button" class="text-btn" data-rmp="' + i + '">Buang</button></figcaption></figure>'; }).join('') + '</div></div>' +
+      (wide() ? '' : docBlock()) +
+      '<div class="section-t" style="margin-top:22px">Pengesahan pegawai</div><div class="chk"><label><input type="checkbox" id="confirm"> Saya telah menyemak fakta, senarai pegawai dan kandungan laporan' + (r.ai ? ', termasuk draf AI' : '') + '.</label></div>' +
+      '<p class="tiny" style="margin-top:6px">Semakan untuk paparan awam (nama murid, gambar) dibuat semasa mohon terbit.</p>';
+  }
+  /* Kecilkan gambar sebelum simpan (daripada Sol): maks 960px, JPEG. */
+  async function readPhoto(file) {
+    if (!/^image\/(jpeg|png|webp)$/.test(file.type)) throw Error('Pilih gambar JPEG, PNG atau WebP.');
+    if (file.size > 12 * 1024 * 1024) throw Error('Gambar melebihi 12 MB.');
+    var url = URL.createObjectURL(file);
+    try {
+      var img = new Image(); await new Promise(function (ok, no) { img.onload = ok; img.onerror = function () { no(Error('Gambar tidak dapat dibaca.')); }; img.src = url; });
+      var k = Math.min(1, 960 / Math.max(img.width, img.height)), c = document.createElement('canvas');
+      c.width = Math.max(1, Math.round(img.width * k)); c.height = Math.max(1, Math.round(img.height * k));
+      var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, c.width, c.height); x.drawImage(img, 0, 0, c.width, c.height);
+      return { name: file.name, src: c.toDataURL('image/jpeg', 0.72) };
+    } finally { URL.revokeObjectURL(url); }
+  }
+  function docH(final) {
+    var H = /^(PENGLIBATAN|OBJEKTIF|RUMUSAN|IMPAK|TINDAK SUSUL|AMALAN TERBAIK SEKOLAH):$/;
+    var body = D.post(r, 'teks').split('\n').map(function (l, i) {
+      var e = M.esc(l);
+      if (i < 2) return '<div class="pa">' + e + '</div>';
+      if (i === 2) return '<div class="pt">' + e + '</div>';
+      if (H.test(l)) return '<div class="ph2">' + e + '</div>';
+      if (/^"/.test(l)) return '<div class="ps">' + e + '</div>';
+      if (/^#/.test(l)) return '<div class="hs">' + e + '</div>';
+      return '<div>' + e + '</div>';
+    }).join('');
+    return '<div class="doc" id="doc">' + (final ? '' : '<p class="wm">PRATONTON DRAF · BELUM DISAHKAN PEGAWAI</p>') + '<div class="hd"><b>PEJABAT PENDIDIKAN DAERAH KUCHING</b><span>' + M.esc(M.sekName(r.sek)) + '</span></div>' + body +
+      (r.photos.length ? '<div class="imgs">' + r.photos.map(function (p, i) { return '<img src="' + M.esc(p.src) + '" alt="Gambar ' + (i + 1) + '">'; }).join('') + '</div>' : '') +
+      '<div class="ft">Disediakan oleh ' + M.esc(r.owner) + ' · ' + M.esc(me.jaw) + '</div></div>';
+  }
+  function docBlock() {
+    return '<div class="section-t" style="margin-top:22px">Pratonton — format laporan PPD Kuching</div>' + docH(false) +
+      '<div class="share"><button class="btn btn-line btn-sm" type="button" id="pdf">Cetak PDF</button><button class="btn btn-line btn-sm" type="button" id="wa">Salin WhatsApp</button></div>' +
+      '<p class="tiny" style="margin-top:8px">Format sama digunakan untuk PDF, WhatsApp dan Facebook (jika diterbitkan).</p>';
+  }
+  function wide() { return window.matchMedia('(min-width:1100px)').matches; }
+  /* Panel kanan: langkah 1–2 = pratonton langsung; langkah 3 = pratonton akhir + PDF/WhatsApp. */
+  function pv() {
+    if (step === 2) return docBlock();
+    return '<div class="section-t">Pratonton langsung</div><p class="tiny" style="margin:-4px 0 10px">Format laporan PPD Kuching · dikemas kini semasa anda menaip.</p>' + docH(false).replace('id="doc"', 'id="docpv"');
+  }
+  function livePv() { if (editing && wide() && step < 2 && $('lpv')) { collect(); $('lpv').innerHTML = pv(); } }
+  var editing = false;
+  function waText(final) { return (final ? '' : 'DRAF · belum disahkan pegawai\n\n') + D.post(r, 'wa'); }
+
+  /* ---------- Kawalan ---------- */
+  function collect() {
+    readP1();
+    if ($('ruj')) r.ruj = $('ruj').value.trim();
+    if ($('rum')) { r.obj = $('obj').value.trim(); r.cat = $('cat').value.trim(); r.rum = $('rum').value.trim(); r.imp = $('imp').value.trim(); r.ts = $('ts').value.trim(); if ($('khas')) r.khas = $('khas').value.trim();
+      var b = [].map.call(document.querySelectorAll('.bil'), function (x) { return x.value ? Number(x.value) : 0; }); r.bil = b.some(Boolean) ? b : null; }
+  }
+  function render() {
+    editing = true;
+    $('main').innerHTML = (wide() ? '<div class="lgrid"><div class="lcol">' : '') + '<nav class="steps" aria-label="Langkah laporan">' + STEPS.map(function (s, i) { return '<button type="button" data-step="' + i + '"' + (i === step ? ' aria-current="step"' : '') + (i < step ? ' class="ok"' : '') + '><b>' + (i < step ? '✓ ' : '') + 'Langkah ' + (i + 1) + '</b><span>' + s + '</span></button>'; }).join('') + '</nav>' +
+      '<div class="pane">' + [p1, p2, p3][step]() + '</div>' +
+      '<div class="lfoot stk"><button class="text-btn" type="button" id="draf">Simpan draf</button><div class="r">' +
+      (step ? '<button class="btn btn-line" type="button" id="prev">Sebelum</button>' : '') +
+      (step < 2 ? '<button class="btn btn-ink" type="button" id="next">Seterusnya</button>' : '<button class="btn btn-ink" type="button" id="save">Simpan laporan</button>') + '</div></div>' +
+      (wide() ? '</div><aside class="lpv" id="lpv" aria-label="Pratonton laporan">' + pv() + '</aside></div>' : '');
+    window.scrollTo(0, 0);
+  }
+  function go(n) {
+    collect();
+    if (r.baru && n > 0 && !p1ok()) { if (step !== 0) { step = 0; render(); } M.toast('Isi tajuk dan tempat dahulu'); ($('ftajuk') && !r.tajuk ? $('ftajuk') : document.querySelector('#fsek,#flok') || $('ftajuk')).focus(); return; }
+    if (n === 2 && !r.rum) { if (step !== 1) { step = 1; render(); } $('rum').focus(); M.toast('Isi rumusan dahulu'); return; }
+    step = n; render();
+  }
+  function renderLocked(msg) {
+    editing = false;
+    var final = src.laporan === 'lengkap';
+    $('main').innerHTML = '<div class="lock">' + M.esc(msg) + '</div>' + (final || src.rum ? docH(final) + '<div class="share"><button class="btn btn-line btn-sm" type="button" id="pdf">Cetak PDF</button><button class="btn btn-line btn-sm" type="button" id="wa">Salin WhatsApp</button></div>' : '') +
+      '<div class="share" style="margin-top:18px"><a class="btn btn-line" href="aktiviti.html">Kembali ke Rekod Aktiviti</a></div>';
+  }
+  function done() {
+    editing = false;
+    var canPub = r.tahap !== 'sulit' && r.sek !== 'SPsK' && r.sek !== 'SPP';
+    $('main').innerHTML = '<div class="donebox"><h2>Laporan disimpan</h2><p>Kekal dalaman — dilihat oleh pegawai yang dibenarkan sahaja. Rekod ini juga dikira dalam Ringkasan Bulanan.</p>' +
+      '<div class="share">' + (canPub ? '<a class="btn btn-ink" href="aktiviti.html?terbit=' + r.id + '">Mohon terbit di ppdk.ch</a>' : '') + '<a class="btn btn-line" href="aktiviti.html">Kembali ke Rekod Aktiviti</a></div>' +
+      (canPub ? '<p class="tiny" style="margin-top:12px">Terbit = pilihan. Penerbit sektor menyemak sebelum laporan muncul di portal dan Facebook.</p>' : '') + '</div>';
+  }
+  document.addEventListener('click', function (e) {
+    var t = e.target;
+    if (t.closest('[data-step]')) { var n = +t.closest('[data-step]').getAttribute('data-step'); if (n !== step) go(n); return; }
+    if (t.closest('#next')) { go(step + 1); return; }
+    if (t.closest('#prev')) { go(step - 1); return; }
+    var mdb = t.closest('[data-md]'); if (mdb) { collect(); r._md = mdb.getAttribute('data-md'); render(); return; }
+    if (t.closest('#draf')) { collect(); if (r.baru) { if (!p1ok()) { step = 0; render(); M.toast('Isi tajuk dan tempat dahulu'); return; } create(); }
+      src.drafLaporan = pick(r, REP); if (!D.persist()) return; clean('Draf disimpan · belum lengkap'); M.toast('Draf disimpan · laporan lengkap belum berubah'); return; }
+    if (t.closest('#undoai') && undo) { ['obj', 'rum', 'imp', 'ts'].forEach(function (f) { $(f).value = undo[f]; }); r.ai = undo.ai; undo = null; $('undoai').hidden = true; collect(); render(); mark(); M.toast('Draf AI diundur'); return; }
+    var rp = t.closest('[data-rmp]'); if (rp) { collect(); r.photos.splice(+rp.getAttribute('data-rmp'), 1); mark(); render(); return; }
+    if (t.closest('#addp')) { addPegawai(); return; }
+    if (t.closest('[data-rm]')) { r.peserta.splice(+t.closest('[data-rm]').getAttribute('data-rm'), 1); mark(); $('tim').innerHTML = whoH(); livePv(); return; }
+    if (t.closest('#ai')) { draft(); return; }
+    var a = t.closest('#ladd [data-add]'); if (a) { $('x-' + a.getAttribute('data-add')).hidden = false; a.hidden = true; return; }
+    var g = t.closest('[data-g]'); if (g) { var i = +g.getAttribute('data-g'); r.gam = i < (r.gam || 0) ? i : i + 1; D.persist(); render(); return; }
+    if (t.closest('#pdf')) { window.print(); return; }
+    if (t.closest('#wa')) { var s = waText(!!document.querySelector('.lock') && src.laporan === 'lengkap'); try { navigator.clipboard.writeText(s); } catch (x) {} M.toast('Teks WhatsApp disalin'); return; }
+    if (t.closest('#save')) {
+      collect();
+      if (!$('confirm').checked) { $('confirm').focus(); M.toast('Sahkan semakan dahulu'); return; }
+      var before = JSON.stringify(src);
+      if (r.baru) create();
+      Object.assign(src, pick(r, REP)); src.gam = r.photos.length; delete src.drafLaporan; src.status = 'selesai'; src.laporan = 'lengkap';
+      if (!D.persist()) { var old = JSON.parse(before); Object.keys(src).forEach(function (k) { delete src[k]; }); Object.assign(src, old); return; }
+      clean(''); done(); M.toast('Laporan disimpan · kekal dalaman');
+    }
+  });
+  document.addEventListener('input', function (e) { if (e.target.closest('#main') && e.target.id !== 'photos') { mark(); livePv(); } });
+  window.matchMedia('(min-width:1100px)').addEventListener('change', function () { if (editing) { collect(); render(); } });
+  document.addEventListener('change', async function (e) {
+    if (e.target.id !== 'photos') return;
+    collect(); var files = [].slice.call(e.target.files || []), room = 6 - r.photos.length;
+    if (files.length > room) M.toast('Maksimum 6 gambar · ' + room + ' lagi dibenarkan');
+    $('pstat').textContent = 'Memproses gambar…';
+    for (var i = 0; i < Math.min(files.length, room); i++) { try { r.photos.push(await readPhoto(files[i])); } catch (x) { M.toast(x.message); } }
+    mark(); render();
+  });
+  var lm = baru ? '' : lockMsg();
+  if (lm) renderLocked(lm); else render();
+})();
+</script>
+</body>
+</html>

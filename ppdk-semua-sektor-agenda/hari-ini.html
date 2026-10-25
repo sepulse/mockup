@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Hari ini · Staf</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css?v=eb478dd3">
+<link rel="stylesheet" href="gaya.css?v=cbbbdafc">
+<link rel="stylesheet" href="agenda.css?v=80604b75">
+<link rel="stylesheet" href="bahasa.css?v=c8d377cd">
+<style>
+/* Susunan: Sekarang → Perlu tindakan → Kemudian → Log. Kad tanpa tindakan → Perlu tindakan naik dahulu. KPPD (telefon): Perlu semakan → Log → Sekarang. */
+.blocks{display:flex;flex-direction:column}
+.b-now{order:1}.b-todo{order:2}.b-later{order:3}.b-board{order:4}
+.blocks.tf .b-todo{order:0}
+[data-role="kppd"] .b-todo{order:0}[data-role="kppd"] .b-board{order:1}
+@media (min-width:1100px){[data-role="kppd"] .b-board{order:4}}
+</style>
+</head>
+<body>
+<div id="content" class="wrap-n wrap-ag">
+  <div class="page-h"><div><h1 class="hi" id="hi">Hari ini</h1><div class="sub">Khamis, 15 Oktober</div></div></div>
+
+  <div class="blocks ag-grid" id="blocks">
+    <section class="b-now" aria-label="Tugas saya sekarang" id="mine"></section>
+    <section class="b-todo" id="todo"></section>
+    <section class="b-later" id="later"></section>
+
+    <section class="b-board">
+      <details class="lp" id="lp">
+        <summary><span class="t"><b id="h-rk">Log Pergerakan Pegawai</b><span id="lpn"></span></span><svg class="i" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></svg></summary>
+        <div class="lp-b">
+          <p class="tiny" style="margin-bottom:10px">Jadual direkodkan · bukan lokasi langsung</p>
+          <div class="qbar">
+            <label class="search"><span class="sr">Cari pegawai</span><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="q" type="search" placeholder="Cari nama"></label>
+            <button class="btn btn-line" type="button" id="tapis">Tapis</button>
+          </div>
+          <div class="fchips" id="fchips"></div>
+          <div class="list" id="board" style="margin-top:12px"></div>
+          <p class="tiny" style="margin-top:10px">Tiada dalam senarai tidak bermaksud hadir di pejabat.</p>
+        </div>
+      </details>
+    </section>
+  </div>
+</div>
+
+<script src="shared.js?v=61d306a6"></script>
+<script src="gerak.js?v=3d1be233"></script>
+<script src="data.js?v=341eafbf"></script>
+<script>
+(function () {
+  M.mount({ page: 'hari' });
+  var T = M.TODAY, NOW = '08:42', st = { sek: '', jen: '', all: false };
+  var $ = function (id) { return document.getElementById(id); };
+  var wide = window.matchMedia ? matchMedia('(min-width:1100px)') : { matches: false };
+  var GI = { items: '.now,.td,.calm' };
+  function byId(id) { return D.REKOD.filter(function (x) { return x.id === id; })[0]; }
+  function place(r, n) { return D.where(r, n).t.replace('Tugas rasmi — ', ''); }
+  function sc(sek) { return 'var(--s-' + (sek === 'Pengurusan' ? 'PGR' : sek) + ')'; }
+  function hhmm(t) { return t.replace(':', '.'); }
+  function dm(d) { return Number(d.slice(8)) + ' Okt'; }
+
+  /* Sapaan: nama panggilan = buang nama akhir jika 3 perkataan atau lebih. */
+  function hi() {
+    var m = M.me(), w = m.name.split(' '), nm = M.role() === 'kppd' ? '' : ', ' + (w.length > 2 ? w.slice(0, -1).join(' ') : w[0]);
+    var g = NOW < '12:00' ? 'Selamat pagi' : NOW < '14:00' ? 'Selamat tengah hari' : NOW < '19:00' ? 'Selamat petang' : 'Selamat malam';
+    $('hi').textContent = g + nm;
+  }
+
+  /* Kad Sekarang: tindakan ikut peraturan sama seperti openRecord (data.js). */
+  function nowCard(r) {
+    var m = M.me(), mine = r.owner === m.name, hid = D.where(r).hidden;
+    var live = r.sehari || r.tarikh < T || (r.mula <= NOW && NOW < r.akhir);
+    var k = r.dimula ? '<span class="k live"><i></i>Sedang berjalan' + (r.sehari || r.tamat > T ? '' : ' · tamat ' + hhmm(r.akhir)) + '</span>'
+      : live ? '<span class="k idle"><i></i>Dalam waktu jadual · belum dimulakan</span>'
+      : '<span class="k idle"><i></i>Seterusnya · mula ' + hhmm(r.mula) + '</span>';
+    var act = '';
+    if (!hid && mine && !D.ict(r) && r.status !== 'dibatalkan' && r.status !== 'selesai') {
+      if (!r.dimula) act = '<button class="btn btn-ink" data-act="mula">Mula tugas</button>';
+      else if (r.tamat <= T) act = '<button class="btn btn-ink" data-act="tamat">Tamatkan &amp; tulis laporan</button>';
+      else act = '<span class="note">Tugas berbilang hari · sedang berjalan</span>';
+    } else if (D.ict(r)) act = '<span class="note">Rekod ICT · diurus melalui dashboard ICT</span>';
+    else if (!mine) act = '<span class="note">Anda peserta · pemilik: ' + M.esc(r.owner) + '</span>';
+    /* Tiada tindakan untuk saya → kad padat supaya tindakan sebenar menonjol. */
+    var c = act.indexOf('data-act') < 0;
+    return '<div class="now' + (c ? ' now-c' : '') + '" style="--sc:' + sc(r.sek) + '" data-id="' + r.id + '">' + k +
+      '<span class="tm">' + D.timeLabel(r, T) + '</span><span class="n">' + (hid ? 'Tugas rasmi' : M.esc(r.tajuk)) + '</span>' +
+      '<span class="s">' + M.icon('pin') + M.esc(place(r)) + '</span>' +
+      '<div class="act">' + act + '<button class="text-btn" data-r="' + r.id + '">Butiran</button></div></div>';
+  }
+
+  function mine() {
+    var m = M.me();
+    var list = D.REKOD.filter(function (r) { return D.onDate(r, T) && D.involves(r, m.name) && r.status !== 'dibatalkan'; }).sort(function (a, b) { return a.mula < b.mula ? -1 : 1; });
+    var next = list.filter(function (r) { return r.status !== 'selesai' && (r.sehari || r.akhir > NOW); })[0];
+    if (next) $('mine').innerHTML = nowCard(next);
+    else if (list.length) $('mine').innerHTML = '<div class="now empty-now"><span class="k idle"><i></i>Jadual hari ini telah tamat</span><span class="s">Laporan boleh dilengkapkan di bawah atau melalui Rekod Aktiviti.</span></div>';
+    else $('mine').innerHTML = '<a class="now empty-now" href="rekod.html" style="display:block"><span class="k idle"><i></i>Hari ini</span><span class="n">Tiada jadual direkodkan</span><span class="s">Ketik untuk merekod tugas atau tidak di pejabat.</span><div class="act"><span class="btn btn-ink">' + M.icon('plus') + ' Rekod</span></div></a>';
+
+    /* Perlu tindakan: laporan tertunggak (paling lama dahulu) + permohonan terbit (ketua: sektornya; KPPD: semua sektor). */
+    var kppd = M.role() === 'kppd', act = !!document.querySelector('#mine [data-act]');
+    var need = D.REKOD.filter(function (r) { return r.owner === m.name && r.status !== 'dibatalkan' && r.tamat < T && r.laporan !== 'lengkap'; }).sort(function (a, b) { return a.tarikh < b.tarikh ? -1 : 1; });
+    var mohon = M.role() === 'staf' ? [] : D.REKOD.filter(function (r) { return (kppd || r.sek === m.sek) && r.mohon && r.tahap === 'dalaman'; }).sort(function (a, b) { return a.tarikh < b.tarikh ? -1 : 1; });
+    var nI = need.map(function (r) { return [r, 0]; }), mI = mohon.map(function (r) { return [r, 1]; });
+    var items = kppd ? mI.concat(nI) : nI.concat(mI);
+    var n = items.length, tf = n > 0 && (kppd || !act);
+    /* Satu butang utama sahaja: petrol pada Perlu tindakan hanya jika kad Sekarang tiada tindakan atau berada di bawahnya. */
+    var rows = items.slice(0, 3).map(function (x, i) {
+      var r = x[0], b = 'btn ' + (i === 0 && tf ? 'btn-ink' : 'btn-line') + ' btn-sm';
+      return x[1] ? '<div class="td rv"><button class="m" data-r="' + r.id + '"><span class="n">' + M.esc(r.tajuk) + '</span><span class="s">' + M.sk(r.sek) + ' Menunggu semakan · ' + M.esc(r.owner) + ' · ' + dm(r.tarikh) + '</span></button><a class="' + b + '" href="aktiviti.html?terbit=' + encodeURIComponent(r.id) + '">Semak laporan</a></div>'
+        : '<div class="td"><button class="m" data-r="' + r.id + '"><span class="n">' + M.esc(r.tajuk) + '</span><span class="s">' + M.dayName(r.tarikh) + ', ' + dm(r.tarikh) + ' · ' + M.esc(place(r)) + '</span></button><a class="' + b + '" href="lapor.html?id=' + encodeURIComponent(r.id) + '">Lengkapkan laporan</a></div>';
+    });
+    $('blocks').classList.toggle('tf', tf);
+    /* Perlu tindakan di atas → butang kad Sekarang jadi garis (kekal satu butang petrol pada skrin pertama). */
+    var nb = document.querySelector('#mine [data-act]'); if (nb && tf) nb.className = 'btn btn-line';
+    $('todo').innerHTML = '<div class="todo"><div class="todo-h"><h2 id="h-td">' + (kppd ? 'Perlu semakan' : 'Perlu tindakan') + (n ? ' <span class="cnt">' + n + '</span>' : '') + '</h2>' +
+      (n > 3 ? '<a class="text-btn" href="aktiviti.html?f=' + (mohon.length ? 'mohon' : 'need') + '">Lihat semua (' + n + ')</a>' : '') + '</div>' +
+      (n ? rows.join('') : '<p class="calm">' + M.icon('check') + 'Tiada kerja tertunggak</p>') + '</div>';
+    $('todo').setAttribute('aria-labelledby', 'h-td');
+
+    /* Kemudian hari ini: baki jadual selepas kad Sekarang. */
+    var rest = list.filter(function (r) { return r !== next && r.status !== 'selesai' && (r.sehari || r.akhir > NOW); });
+    $('later').innerHTML = rest.length ? '<div class="sec-t"><h2>Kemudian hari ini</h2><span>' + rest.length + ' jadual</span></div><div class="list">' + rest.map(function (r) {
+      return '<button class="li" data-r="' + r.id + '"><span class="t">' + D.timeLabel(r, T) + '</span><span><span class="n">' + (D.where(r).hidden ? 'Tugas rasmi' : M.esc(r.tajuk)) + '</span><span class="s" style="display:block">' + M.esc(place(r)) + '</span></span><span class="e"></span></button>';
+    }).join('') + '</div>' : '';
+  }
+
+  function people() {
+    var p = {};
+    D.REKOD.forEach(function (r) { if (!D.onDate(r, T) || r.status === 'dibatalkan') return; [r.owner].concat(r.peserta).forEach(function (n) { (p[n] = p[n] || []).push({ r: r }); }); });
+    D.CUTI.forEach(function (c) { if (c.dari <= T && T <= c.hingga) (p[c.owner] = p[c.owner] || []).push({ c: c }); });
+    return p;
+  }
+  function entLabel(e, n) { return e.c ? { t: e.c.dari === e.c.hingga ? (e.c.bahagian==='pagi'?'Pagi':e.c.bahagian==='petang'?'Petang':'Sehari') : 'Hingga ' + Number(e.c.hingga.slice(8)) + '/10', s: 'Tidak di pejabat' } : { t: D.timeLabel(e.r, T), s: place(e.r, n) + D.ictTag(e.r) }; }
+  /* Entri yang meliputi masa sekarang dahulu, kemudian yang akan datang, kemudian yang sudah lepas. */
+  function rank(e) { var r = e.r; if (e.c || r.sehari || r.tarikh < T || (r.mula <= NOW && NOW < r.akhir)) return 0; return r.mula > NOW ? 1 : 2; }
+
+  function board() { board0(); Gerak.run($('blocks'), GI); }
+  function board0() {
+    var term = $('q').value.trim().toLowerCase(), p = people();
+    function matching(e,n) {
+      if (!st.jen) return true;
+      if (st.jen === 'away') return !!e.c;
+      if (!e.r) return false;
+      return st.jen === 'online' ? D.online(e.r,n) : D.physical(e.r,n);
+    }
+    var names = D.STAF.map(function(s){return s.n}).sort(function(a,b){return a.localeCompare(b)});
+    $('lpn').textContent = names.filter(function (n) { return (p[n] || []).length; }).length + ' pegawai ada jadual hari ini';
+    var rows = names.filter(function(n){ return (!st.sek || D.staf(n).sek === st.sek) && (!term || n.toLowerCase().indexOf(term)>=0) && ((p[n]||[]).some(function(e){return matching(e,n)}) || (term && !st.jen)); });
+    var collapsed = !st.all && !term && rows.length > 8;
+    var h = rows.map(function (n, i) {
+      var es = (p[n]||[]).filter(function(e){return matching(e,n)}).sort(function (a, b) { var x = rank(a) - rank(b); if (x) return x; return (a.r ? a.r.mula : '') < (b.r ? b.r.mula : '') ? -1 : 1; });
+      var e = es.length ? entLabel(es[0], n) : { t: '—', s: 'Tiada jadual direkodkan' }, sek = D.staf(n).sek;
+      return '<button class="li' + (collapsed && i >= 8 ? ' li-x' : '') + '" data-p="' + M.esc(n) + '"><span class="t">' + e.t + '</span><span><span class="n">' + M.esc(n) + ' ' + M.sk(sek) + '</span><span class="pl">' + M.esc(e.s) + '</span></span><span class="e">' + (es.length > 1 ? '+' + (es.length - 1) + ' lagi' : '') + '</span></button>';
+    }).join('');
+    if (!rows.length) h = term ? '<div class="empty">Tiada jadual direkodkan untuk “' + M.esc(term) + '” hari ini.</div>' : '<div class="empty">Tiada padanan.</div>';
+    if (collapsed) h += '<div class="more-row"><button class="text-btn" id="all">Tunjuk semua (' + rows.length + ')</button></div>';
+    $('board').innerHTML = h + '<p class="tiny" style="margin-top:12px">Kemas kini 08:42 · ' + rows.length + ' pegawai sepadan</p>';
+    var ch = []; if (st.sek) ch.push(['sek', M.sekName(st.sek)]); if (st.jen) ch.push(['jen', { away: 'Tidak di pejabat', out: 'Tugas fizikal', online: 'Atas talian' }[st.jen]]);
+    $('fchips').innerHTML = ch.map(function (c) { return '<button class="chip" data-x="' + c[0] + '">' + c[1] + ' <span class="x">✕</span></button>'; }).join('');
+  }
+
+  function tapis() {
+    var d = M.drawer({ title: 'Tapis', body: '<div class="field"><label class="lbl" for="tsek">Sektor</label><select id="tsek"><option value="">Semua sektor</option>' + M.SEKTOR.map(function (s) { return '<option value="' + s.k + '"' + (s.k === st.sek ? ' selected' : '') + '>' + s.n + '</option>'; }).join('') + '</select></div>' +
+      '<div class="field"><span class="lbl">Jadual</span><div class="seg" id="tjen" role="group" aria-label="Jadual">' + [['', 'Semua'], ['out', 'Tugas fizikal'], ['online', 'Atas talian'], ['away', 'Tidak di pejabat']].map(function (x) { return '<button type="button" data-v="' + x[0] + '" aria-pressed="' + (st.jen === x[0]) + '">' + x[1] + '</button>'; }).join('') + '</div></div>',
+      foot: '<button class="text-btn" data-act="reset">Set semula</button><button class="btn btn-ink" data-act="ok">Tunjuk hasil</button>' });
+    var jen = st.jen;
+    d.querySelector('#tjen').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; jen = b.getAttribute('data-v'); [].forEach.call(this.children, function (x) { x.setAttribute('aria-pressed', x === b); }); });
+    d.querySelector('[data-act="ok"]').addEventListener('click', function () { st.sek = d.querySelector('#tsek').value; st.jen = jen; M.closeDrawer(); board(); });
+    d.querySelector('[data-act="reset"]').addEventListener('click', function () { st.sek = ''; st.jen = ''; M.closeDrawer(); board(); });
+  }
+
+  /* Mula / Tamat terus dari kad; gagal simpan = keadaan tidak berubah (sama seperti openRecord). */
+  function act(kind, r) {
+    if (kind === 'mula') { r.dimula = true; if (!D.persist()) { delete r.dimula; return; } mine(); Gerak.run($('blocks'), GI); M.toast('Tugas dimulakan'); }
+    else { r.status = 'selesai'; if (!D.persist()) { r.status = 'dirancang'; return; } location.href = 'lapor.html?id=' + encodeURIComponent(r.id); }
+  }
+
+  document.addEventListener('click', function (e) {
+    var t;
+    if ((t = e.target.closest('.now [data-act]'))) act(t.getAttribute('data-act'), byId(t.closest('.now').getAttribute('data-id')));
+    else if ((t = e.target.closest('[data-r]'))) D.openRecord(byId(t.getAttribute('data-r')));
+    else if ((t = e.target.closest('[data-c]'))) D.openCuti(D.CUTI.filter(function (x) { return x.id === t.getAttribute('data-c'); })[0]);
+    else if ((t = e.target.closest('[data-p]'))) D.openKad(t.getAttribute('data-p'));
+    else if ((t = e.target.closest('[data-x]'))) { st[t.getAttribute('data-x')] = ''; board(); }
+    else if (e.target.closest('#all')) { st.all = true; board(); }
+  });
+  $('tapis').addEventListener('click', tapis);
+  $('q').addEventListener('input', board);
+  /* Papan terbuka untuk KPPD dan di komputer; telefon staf/ketua = satu baris ringkas. */
+  function openLp() { if (wide.matches || M.role() === 'kppd') $('lp').open = true; }
+  $('lp').addEventListener('toggle', function () { if (!$('lp').open && wide.matches) $('lp').open = true; });
+  if (wide.addEventListener) wide.addEventListener('change', openLp);
+  function init() { st.sek = M.role() === 'ketua' ? M.me().sek : ''; st.all = false; $('lp').open = false; openLp(); hi(); mine(); board(); }
+  document.addEventListener('rolechange', init);
+  document.addEventListener('datachange', function () { mine(); board(); });
+  init();
+})();
+</script>
+</body>
+</html>

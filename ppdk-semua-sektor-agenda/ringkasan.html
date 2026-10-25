@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Ringkasan Bulanan · Staf</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css?v=eb478dd3">
+<link rel="stylesheet" href="gaya.css?v=cbbbdafc">
+<link rel="stylesheet" href="bahasa.css?v=c8d377cd">
+<style>
+:root{--ac:var(--petrol)}
+.wrap-s{max-width:760px}
+.ctxk{display:inline-block;width:10px;height:10px;background:var(--ac);margin-right:7px;vertical-align:0}
+/* Pemilih dekat tajuk */
+.ctl{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin:-4px 0 22px}
+.ctl label{display:flex;flex-direction:column;gap:5px;font-size:13.5px;font-weight:600;color:var(--ink-2)}
+.ctl select{min-width:190px}
+.lead{font:600 19px/1.4 var(--display);margin-bottom:16px;max-width:620px}
+.lead em{font-style:normal;color:var(--ac)}
+/* Angka utama: boleh ditekan → rekod */
+.nums{display:grid;grid-template-columns:repeat(3,1fr);border-top:3px solid var(--ac)}
+.nums > *{display:flex;flex-direction:column;align-items:flex-start;gap:4px;padding:16px 14px 16px 0;text-align:left;border-bottom:1px solid var(--rule)}
+.nums button:hover .l{text-decoration:underline}
+.nums b{display:block;font:800 44px/1 var(--display);font-stretch:85%}
+.nums > :first-child b{color:var(--ac)}
+.nums .l{font-size:14.5px;font-weight:600;color:var(--ink)}
+.nums .dl{font-size:13.5px;color:var(--ink-2)}
+.nums .dl.na{color:var(--muted)}
+.nums .go{display:none}
+/* Komposisi sektor (Semua sektor sahaja) */
+.mix{margin-top:18px}
+.mix .stk{display:flex;height:12px;gap:2px}
+.mix .stk i{background:var(--sc);min-width:3px}
+.mix .lg{display:flex;flex-wrap:wrap;gap:8px 16px;margin-top:10px;font-size:13.5px;color:var(--ink-2)}
+.mix .lg span{display:inline-flex;align-items:center;gap:6px}
+.mix .lg b{font:600 13px/1 var(--mono);color:var(--ink)}
+/* Baris bar boleh ditekan */
+.bar-r{display:grid;grid-template-columns:150px 1fr 56px;gap:12px;align-items:center;width:100%;padding:11px 0;font-size:15px;text-align:left;border-bottom:1px solid color-mix(in srgb,var(--rule) 75%,transparent)}
+button.bar-r:hover{background:var(--paper-2)}
+.bar-r .bar{height:8px;background:var(--paper-2);position:relative}
+.bar-r .bar i{position:absolute;inset:0 auto 0 0;background:var(--sc,var(--ac))}
+.bar-r b{font:600 14px/1 var(--mono);text-align:right}
+.cov{font-size:14.5px;color:var(--ink-2);margin-bottom:6px}
+.cov b{font:700 15px/1 var(--mono);color:var(--ink)}
+/* Trend: bulan tanpa data ≠ sifar */
+.trend{display:flex;align-items:flex-end;gap:10px;height:130px;border-bottom:1px solid var(--rule-2);padding-top:10px}
+.trend div{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:4px;height:100%;font:500 12px/1 var(--mono);color:var(--ink-2)}
+.trend i{display:block;width:100%;max-width:46px;background:var(--rule-2)}
+.trend div.na{color:var(--muted)}
+.trend div.na i{height:100%!important;background:repeating-linear-gradient(135deg,transparent 0 5px,var(--hatch) 5px 10px);border:1px dashed var(--rule-2)}
+.trend div.cur i{background:var(--ac)}
+.trend div.cur i.part{background:repeating-linear-gradient(135deg,var(--ac) 0 6px,color-mix(in srgb,var(--ac) 55%,transparent) 6px 12px)}
+.trend div.cur{color:var(--ink)}
+.tl{display:flex;gap:10px;margin-top:6px}
+.tl span{flex:1;text-align:center;font:500 12px/1.2 var(--mono);color:var(--muted)}
+.leg{display:flex;flex-wrap:wrap;gap:6px 16px;margin-top:10px;font-size:13px;color:var(--muted)}
+.leg span{display:inline-flex;align-items:center;gap:6px}
+.leg i{width:12px;height:12px;display:inline-block}
+.leg i.na{border:1px dashed var(--rule-2);background:repeating-linear-gradient(135deg,transparent 0 3px,var(--hatch) 3px 6px)}
+.leg i.part{background:repeating-linear-gradient(135deg,var(--ac) 0 3px,color-mix(in srgb,var(--ac) 55%,transparent) 3px 6px)}
+/* Mod pembentangan 16:9 */
+.full{position:fixed;inset:0;z-index:80;background:var(--scrim);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+.stage{width:min(1280px,94vw,calc((90vh - 60px) * 16 / 9));aspect-ratio:16/9;background:var(--card);border:1px solid var(--rule);padding:clamp(18px,3.5vw,48px);display:flex;flex-direction:column;container-type:inline-size}
+.stage .kk{font:600 clamp(11px,1.3cqi,15px)/1 var(--sans);color:var(--ac)}
+.stage{border-top:6px solid var(--ac)}
+.stage h2{font:800 clamp(20px,3.6cqi,44px)/1.1 var(--display);margin:8px 0 auto}
+.stage .lead{font-size:clamp(14px,2.2cqi,26px);max-width:none}
+.stage .nums b{font-size:clamp(28px,6cqi,76px)}
+.stage .nums .l{font-size:clamp(12px,1.5cqi,18px)}
+.stage .nums .dl{font-size:clamp(11px,1.3cqi,15px)}
+.stage .bar-r{font-size:clamp(12px,1.5cqi,17px);grid-template-columns:30% 1fr 12%}
+.stage .trend{height:clamp(120px,24cqi,300px)}
+.stage .ft{display:flex;justify-content:space-between;margin-top:clamp(10px,2cqi,24px);font:500 clamp(10px,1.1cqi,12px)/1 var(--sans);color:var(--muted)}
+.fnav{display:flex;gap:10px;margin-top:12px;align-items:center}
+.fnav button{background:var(--card)}
+@media (max-width:780px){
+  .ctl{display:grid;grid-template-columns:1fr 1fr}
+  .ctl select{min-width:0}
+  .ctl .seg{grid-column:1 / -1}
+  .ctl .seg button{flex:1}
+  .nums{grid-template-columns:1fr 1fr}
+  .nums > :first-child{grid-column:1 / -1}
+  .nums b{font-size:38px}
+  .nums > :first-child b{font-size:52px}
+  .bar-r{grid-template-columns:120px 1fr 44px}
+  .lead{font-size:17.5px}
+}
+/* Komputer: dua lajur */
+@media (min-width:1100px){
+  .wrap-s{max-width:1140px}
+  .cols{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);column-gap:48px;align-items:start}
+  .cols > div > .sec-t:first-child{margin-top:0}
+}
+:root[data-theme="dark"] .mix .stk i,:root[data-theme="dark"] .bar-r .bar i{background:color-mix(in srgb,var(--sc,var(--ac)) 65%,#fff)}:root[data-theme="dark"] .nums > :first-child b,:root[data-theme="dark"] .stage .kk,:root[data-theme="dark"] .lead em{color:color-mix(in srgb,var(--ac) 55%,#fff)}:root[data-theme="dark"] .nums,:root[data-theme="dark"] .stage{border-top-color:color-mix(in srgb,var(--ac) 65%,#fff)}:root[data-theme="dark"] .trend div.cur i,:root[data-theme="dark"] .ctxk{background:color-mix(in srgb,var(--ac) 65%,#fff)}
+</style>
+</head>
+<body>
+<div id="content" class="wrap-s">
+  <div class="page-h"><div><h1>Ringkasan Bulanan</h1><div class="sub" id="ctx"></div></div><button class="btn btn-line hide-m" type="button" id="pres"><svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Mod Pembentangan</button></div>
+  <div class="ctl">
+    <label>Sektor<select id="csek"></select></label>
+    <label>Bulan<select id="cbln"></select></label>
+    <div class="seg" id="cver" role="group" aria-label="Versi"><button type="button" data-v="dalaman">Dalaman</button><button type="button" data-v="awam">Versi awam</button></div>
+  </div>
+  <div id="body"></div>
+  <div class="show-m" style="margin-top:28px"><button class="btn btn-line" type="button" id="pres2"><svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Mod Pembentangan</button></div>
+</div>
+
+<script src="shared.js?v=61d306a6"></script>
+<script src="gerak.js?v=3d1be233"></script>
+<script src="data.js?v=341eafbf"></script>
+<script>
+(function () {
+  M.mount({ page: 'ringkasan' });
+  var $ = function (id) { return document.getElementById(id); };
+  var MONTHS = ['2026-05', '2026-06', '2026-07', '2026-08', '2026-09', '2026-10'];
+  var MO = { '2026-05': 'Mei', '2026-06': 'Jun', '2026-07': 'Jul', '2026-08': 'Ogo', '2026-09': 'Sep', '2026-10': 'Okt' };
+  var CUR = '2026-10', DAY = Number(M.TODAY.slice(8));
+  /* Agregat bulan lepas (ILUSTRASI): [aktiviti, sekolah, pegawai]. `sama` = 1–15 hb bulan itu, untuk banding bulan semasa yang belum tamat.
+     Tiada entri = belum ada data (sektor belum mula merekod), bukan sifar. SPsK dan SPP mula Oktober 2026. */
+  var SEJ = {
+    ALL: { '2026-05': [14, 10, 11], '2026-06': [9, 7, 9], '2026-07': [17, 12, 12], '2026-08': [20, 13, 14], '2026-09': [22, 14, 16], sama: [9, 7, 9] },
+    SPb: { '2026-05': [7, 6, 4], '2026-06': [4, 4, 3], '2026-07': [8, 7, 4], '2026-08': [9, 7, 4], '2026-09': [10, 8, 4], sama: [3, 3, 3] },
+    SPr: { '2026-05': [1, 0, 1], '2026-06': [1, 0, 1], '2026-07': [2, 0, 2], '2026-08': [1, 0, 1], '2026-09': [2, 0, 2], sama: [1, 0, 1] },
+    SPS: { '2026-05': [3, 2, 2], '2026-06': [2, 2, 2], '2026-07': [3, 3, 2], '2026-08': [3, 2, 2], '2026-09': [4, 3, 3], sama: [2, 2, 2] },
+    SPbM: { '2026-05': [3, 2, 3], '2026-06': [2, 1, 2], '2026-07': [4, 3, 3], '2026-08': [5, 4, 3], '2026-09': [3, 2, 3], sama: [1, 1, 1] },
+    Pengurusan: { '2026-08': [2, 2, 2], '2026-09': [3, 3, 2], sama: [2, 1, 2] }
+  };
+  var st = { sek: '', ver: 'dalaman', i: 0, month: CUR };
+
+  function sekKey() { return st.sek; }
+  function hist(m) { var h = SEJ[sekKey()]; return h && h[m] ? h[m] : null; }
+  function prevOf(m) { var i = MONTHS.indexOf(m); return i > 0 ? MONTHS[i - 1] : null; }
+  function bulan(m) { return M.BULAN[Number(m.slice(5)) - 1]; }
+  function ictN(d) { var n = d.list.filter(D.ict).length; return n ? ' · Pengurusan · Unit ICT: ' + n + ' aktiviti, direkod sekali' : ''; }
+  function data() {
+    var d, cur = st.month === CUR;
+    if (cur) d = D.summary(st.sek, CUR, st.ver === 'awam');
+    else { var h = hist(st.month); d = { a: h ? h[0] : 0, s: h ? h[1] : 0, p: h ? h[2] : 0, jenis: {}, list: [], none: !h }; }
+    d.cur = cur; d.blocked = st.ver === 'awam' && (st.sek === 'SPsK' || st.sek === 'SPP');
+    var pm = prevOf(st.month), ph = pm ? hist(pm) : null;
+    d.prevLbl = pm ? (cur ? '1–' + DAY + ' ' + MO[pm] : bulan(pm)) : '';
+    d.prev = ph ? (cur ? SEJ[sekKey()].sama : ph) : null;
+    d.prevName = pm ? bulan(pm) : '';
+    d.tr = MONTHS.map(function (m) { return m === CUR ? (st.month === CUR ? d.a : D.summary(st.sek, CUR, st.ver === 'awam').a) : (hist(m) ? hist(m)[0] : null); });
+    return d;
+  }
+  /* Perubahan neutral (tiada merah/hijau): ini bukan markah. */
+  function delta(v, i, d) {
+    if (d.none) return '<span class="dl na">Belum ada data</span>';
+    if (!d.prev) return '<span class="dl na">Belum ada data ' + (d.prevLbl || 'bulan lepas') + '</span>';
+    var x = v - d.prev[i];
+    return '<span class="dl">' + (x === 0 ? 'Sama seperti ' + d.prevLbl : (x > 0 ? '↑ ' + x : '↓ ' + (-x)) + ' berbanding ' + d.prevLbl) + '</span>';
+  }
+  function leadH(d) {
+    var when = d.cur ? 'setakat ' + DAY + ' ' + bulan(st.month) : 'pada ' + bulan(st.month);
+    if (d.none) return '<p class="lead">Belum ada data untuk ' + bulan(st.month) + '. Sektor ini belum merekod pada bulan itu.</p>';
+    if (!d.a) return '<p class="lead">Tiada aktiviti selesai ' + when + '.</p>';
+    var s = '<em>' + d.a + ' aktiviti</em> selesai' + (d.s ? ' di ' + d.s + ' sekolah' : '') + ' ' + when + '. ';
+    if (!d.prev) s += 'Belum ada data ' + d.prevName + ' untuk dibanding.';
+    else { var x = d.a - d.prev[0]; s += x === 0 ? 'Sama seperti tempoh yang sama ' + d.prevName + '.' : (x > 0 ? x + ' lebih banyak' : (-x) + ' kurang') + ' daripada ' + (d.cur ? 'tempoh yang sama ' : '') + d.prevName + '.'; }
+    return '<p class="lead">' + s + '</p>';
+  }
+  function numsH(d, still) {
+    var tag = function (k) { return still || !d.cur ? 'div' : 'button type="button" data-dd="' + k + '"'; }, end = function () { return still || !d.cur ? 'div' : 'button'; };
+    var n = function (v) { return d.none ? '—' : v; };
+    return '<div class="nums"><' + tag('a') + '><b>' + n(d.a) + '</b><span class="l">Aktiviti selesai</span>' + delta(d.a, 0, d) + '</' + end() + '>' +
+      '<' + tag('s') + '><b>' + n(d.s) + '</b><span class="l">Sekolah terlibat</span>' + delta(d.s, 1, d) + '</' + end() + '>' +
+      (st.ver === 'awam' ? '' : '<div><b>' + n(d.p) + '</b><span class="l">Pegawai terlibat</span>' + delta(d.p, 2, d) + '</div>') + '</div>';
+  }
+  function schools(d) { var c = {}; d.list.forEach(function (r) { r.sekolah.forEach(function (s) { c[s] = (c[s] || 0) + 1; }); }); return c; }
+  function liputH(d) {
+    var c = schools(d), low = 0, high = 0; Object.keys(c).forEach(function (s) { if (/^SMK|^SM /i.test(s)) high++; else low++; });
+    return '<p class="cov"><b>' + d.s + '</b> daripada <b>' + M.SEKOLAH.length + '</b> sekolah dalam senarai</p>' +
+      [['Sekolah rendah', low, 'r'], ['Sekolah menengah', high, 'm']].map(function (x) { return '<button type="button" class="bar-r" data-dd="s"><span>' + x[0] + '</span><span class="bar"><i style="width:' + (d.s ? x[1] / d.s * 100 : 0) + '%"></i></span><b>' + x[1] + '</b></button>'; }).join('');
+  }
+  function jenisH(d, still) {
+    var k = Object.keys(d.jenis).sort(function (a, b) { return d.jenis[b] - d.jenis[a]; });
+    return k.map(function (j) { var t = still ? 'div' : 'button type="button" data-dd="j" data-j="' + M.esc(j) + '"'; return '<' + t + ' class="bar-r"><span>' + M.esc(j) + '</span><span class="bar"><i style="width:' + (d.jenis[j] / Math.max(1, d.a) * 100) + '%"></i></span><b>' + d.jenis[j] + '</b></' + (still ? 'div' : 'button') + '>'; }).join('') || '<p class="tiny">Tiada aktiviti selesai bulan ini.</p>';
+  }
+  function trendH(d) {
+    var mx = Math.max.apply(null, d.tr.map(function (v) { return v || 0; }).concat([1]));
+    return '<div class="trend" role="img" aria-label="Aktiviti selesai enam bulan">' + d.tr.map(function (v, i) {
+      var m = MONTHS[i], cur = m === CUR;
+      if (v == null) return '<div class="na">—<i></i></div>';
+      return '<div class="' + (m === st.month ? 'cur' : '') + '">' + v + '<i class="' + (cur ? 'part' : '') + '" style="height:' + Math.max(2, v / mx * 85) + '%"></i></div>';
+    }).join('') + '</div><div class="tl">' + MONTHS.map(function (m) { return '<span>' + MO[m] + '</span>'; }).join('') + '</div>' +
+      '<div class="leg"><span><i class="na"></i>Belum ada data (bukan sifar)</span><span><i class="part"></i>Okt: setakat ' + DAY + ' hb</span></div>' +
+      (st.sek === 'ALL' ? '<p class="tiny" style="margin-top:8px">Sebelum Oktober tidak termasuk SPsK dan SPP (mula merekod Oktober 2026).</p>' : '');
+  }
+  function acc() { return st.sek === 'ALL' ? 'var(--petrol)' : 'var(--s-' + (st.sek === 'Pengurusan' ? 'PGR' : st.sek) + ')'; }
+  function mixH() {
+    if (st.sek !== 'ALL' || st.month !== CUR) return '';
+    var rows = M.SEKTOR.map(function (x) { return [x.k, D.summary(x.k, CUR, st.ver === 'awam').a]; }).filter(function (x) { return x[1] > 0; });
+    var tot = rows.reduce(function (a, x) { return a + x[1]; }, 0); if (!tot) return '';
+    var c = function (k) { return 'var(--s-' + (k === 'Pengurusan' ? 'PGR' : k) + ')'; };
+    return '<div class="mix"><div class="stk" role="img" aria-label="Aktiviti ikut sektor">' + rows.map(function (x) { return '<i style="--sc:' + c(x[0]) + ';flex:' + x[1] + '" title="' + x[0] + ': ' + x[1] + '"></i>'; }).join('') + '</div>' +
+      '<div class="lg">' + rows.map(function (x) { return '<span>' + M.sk(x[0]) + '<b>' + x[1] + '</b></span>'; }).join('') + '</div></div>';
+  }
+  function label() { return (st.sek === 'ALL' ? 'Semua sektor' : M.sekName(st.sek)) + ' · ' + bulan(st.month) + ' 2026' + (st.ver === 'awam' ? ' · versi awam' : ''); }
+
+  function render() { render0(); Gerak.run($('body')); }
+  function render0() {
+    var d = data();
+    document.documentElement.style.setProperty('--ac', acc());
+    $('ctx').innerHTML = '<span class="ctxk"></span>' + M.esc(label());
+    $('csek').value = st.sek; $('cbln').value = st.month;
+    [].forEach.call($('cver').children, function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-v') === st.ver); });
+    $('pres').disabled = $('pres2').disabled = !!d.blocked;
+    if (d.blocked) { $('body').innerHTML = '<div class="empty" style="border-top:1px solid var(--ink)">Sektor ini tiada versi awam sehingga sektor bersetuju.</div>'; return; }
+    var src = '<p class="tiny" style="margin-top:14px">' + (st.ver === 'awam' ? 'Agregat laporan Lengkap dan Diterbitkan' : 'Laporan Lengkap dan Diterbitkan') + ' · aktiviti unik dikira sekali' + (st.ver === 'awam' || !d.cur ? '' : ictN(d)) + (d.cur ? ' · ketik angka untuk lihat rekod' : '') + '</p>';
+    var detail = d.cur
+      ? '<div class="sec-t"><h2>Liputan sekolah</h2></div>' + liputH(d)
+      : '<p class="ann"><b>Paparan contoh:</b> butiran liputan dan jenis hanya dimuatkan untuk Oktober. Produksi memaparkan butiran setiap bulan.</p>';
+    var right = (d.cur && st.ver !== 'awam' ? '<div class="sec-t"><h2>Jenis aktiviti</h2><span>ikut katalog sektor</span></div>' + jenisH(d) : '') +
+      '<div class="sec-t"><h2>6 bulan</h2><span>aktiviti selesai</span></div>' + trendH(d);
+    $('body').innerHTML = leadH(d) + '<div class="cols"><div>' + numsH(d) + mixH() + src + detail + '</div><div>' + right + '</div></div>';
+  }
+
+  /* Ketik angka → rekod yang membentuknya. Tiada senarai pegawai (tiada ranking). */
+  function drill(kind, j) {
+    var d = data(), rows = d.list.slice().sort(function (a, b) { return a.tarikh < b.tarikh ? 1 : -1; }), title, body;
+    var rec = function (list) { return '<div class="list">' + list.map(function (r) { var h = D.where(r).hidden; return '<button class="li" data-r="' + r.id + '"><span class="t">' + Number(r.tarikh.slice(8)) + ' Okt</span><span><span class="n">' + (h ? 'Tugas rasmi' : M.esc(r.tajuk)) + ' ' + M.sk(r.sek) + '</span><span class="s" style="display:block">' + M.esc(D.where(r).t.replace('Tugas rasmi — ', '')) + '</span></span><span></span></button>'; }).join('') + '</div>'; };
+    if (kind === 'a') { title = d.a + ' aktiviti selesai'; body = rec(rows); }
+    else if (kind === 'j') { var l = rows.filter(function (r) { return r.jenis === j; }); title = M.esc(j) + ' · ' + l.length; body = rec(l); }
+    else {
+      var c = schools(d); title = d.s + ' sekolah terlibat';
+      body = '<div class="list">' + Object.keys(c).sort().map(function (s) { return '<button class="li" data-sch="' + M.esc(s) + '"><span class="t">' + c[s] + ' akt.</span><span><span class="n">' + M.esc(s) + '</span></span><span></span></button>'; }).join('') + '</div>';
+    }
+    var dr = M.drawer({ kicker: label(), title: title, body: body });
+    dr.addEventListener('click', function (e) {
+      var r = e.target.closest('[data-r]'), s = e.target.closest('[data-sch]');
+      if (r) { var x = D.REKOD.filter(function (y) { return y.id === r.getAttribute('data-r'); })[0]; M.closeDrawer(); D.openRecord(x); }
+      if (s) { var n = s.getAttribute('data-sch'), l = rows.filter(function (y) { return y.sekolah.indexOf(n) >= 0; }); M.closeDrawer(); var d2 = M.drawer({ title: M.esc(n), body: rec(l) }); d2.addEventListener('click', function (e2) { var r2 = e2.target.closest('[data-r]'); if (r2) { M.closeDrawer(); D.openRecord(D.REKOD.filter(function (y) { return y.id === r2.getAttribute('data-r'); })[0]); } }); }
+    });
+  }
+  $('body').addEventListener('click', function (e) { var b = e.target.closest('[data-dd]'); if (b) drill(b.getAttribute('data-dd'), b.getAttribute('data-j')); });
+
+  function slides() { return st.ver === 'awam' || st.month !== CUR ? ['exec', 'tr'] : ['exec', 'lip', 'jen', 'tr']; }
+  function slide() {
+    var d = data(), s = slides(), k = s[st.i];
+    var T = { exec: ['Laporan eksekutif', label().split(' · ')[0], leadH(d) + numsH(d, true) + mixH()], lip: ['Liputan', 'Sekolah terlibat', liputH(d)], jen: ['Tujuan', 'Jenis aktiviti', jenisH(d, true)], tr: ['Trend', 'Aktiviti selesai, 6 bulan', trendH(d)] }[k];
+    return '<div class="stage"><div class="kk">' + T[0] + ' · ' + bulan(st.month) + ' 2026</div><h2 id="presentation-title">' + T[1] + '</h2><div>' + T[2] + '</div><div class="ft"><span>PPDK.CH · Ringkasan Bulanan</span><span>' + (st.i + 1) + ' / ' + s.length + '</span></div></div>' +
+      '<div class="fnav"><button class="btn btn-line btn-sm" data-n="-1"' + (st.i ? '' : ' disabled') + '>← Sebelum</button><button class="btn btn-line btn-sm" data-n="1"' + (st.i < s.length - 1 ? '' : ' disabled') + '>Seterusnya →</button><button class="btn btn-line btn-sm" data-n="x">Tutup</button></div>';
+  }
+  function show(f, focusNav) {
+    f.innerHTML = slide(); Gerak.run(f.querySelector('.stage'));
+    if (focusNav) {
+      var next = f.querySelector('[data-n="' + focusNav + '"]');
+      (next && !next.disabled ? next : f.querySelector('[data-n="x"]')).focus();
+    }
+  }
+  function pres() {
+    if (data().blocked) return;
+    st.i = 0; var f = document.createElement('div'); f.className = 'full'; f.id = 'full';
+    f.setAttribute('role', 'dialog'); f.setAttribute('aria-modal', 'true'); f.setAttribute('aria-labelledby', 'presentation-title');
+    document.body.appendChild(f); show(f);
+    f._releaseFocus = M.trapDialog(f, document.activeElement, closePresentation);
+    f.addEventListener('click', function (e) { var b = e.target.closest('[data-n]'); if (!b) return; var n = b.getAttribute('data-n'); if (n === 'x') { closePresentation(); return; } st.i += +n; show(f, n); });
+  }
+  function closePresentation() {
+    var f = $('full'); if (!f) return;
+    var release = f._releaseFocus; f.remove(); if (release) release();
+  }
+  document.addEventListener('keydown', function (e) {
+    var f = $('full'); if (!f) return;
+    if (e.key === 'ArrowRight' && st.i < slides().length - 1) { st.i++; show(f, '1'); }
+    if (e.key === 'ArrowLeft' && st.i > 0) { st.i--; show(f, '-1'); }
+  });
+
+  $('csek').innerHTML = '<option value="ALL">Semua sektor</option>' + M.SEKTOR.map(function (s) { return '<option value="' + s.k + '">' + s.n.replace(/^Sektor /, '') + '</option>'; }).join('');
+  $('cbln').innerHTML = MONTHS.slice().reverse().map(function (m) { return '<option value="' + m + '">' + bulan(m) + ' 2026' + '</option>'; }).join('');
+  $('csek').addEventListener('change', function () { st.sek = this.value; render(); });
+  $('cbln').addEventListener('change', function () { st.month = this.value; render(); });
+  $('cver').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; st.ver = b.getAttribute('data-v'); render(); });
+  $('pres').addEventListener('click', pres); $('pres2').addEventListener('click', pres);
+  function init() { st.sek = M.role() === 'kppd' ? 'ALL' : M.me().sek; render(); }
+  document.addEventListener('rolechange', init);
+  document.addEventListener('datachange', render);
+  init();
+})();
+</script>
+</body>
+</html>

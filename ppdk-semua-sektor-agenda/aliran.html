@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>PPDK.CH · Aliran kerja</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css?v=eb478dd3">
+<link rel="stylesheet" href="gaya.css?v=cbbbdafc">
+<style>
+.iw{max-width:900px;margin:0 auto;padding:44px clamp(16px,3vw,32px) 80px}
+.iw h1{font:800 clamp(28px,4.2vw,44px)/1.05 var(--display);letter-spacing:-.02em;margin-top:12px;max-width:20ch}
+.iw > p{color:var(--ink-2);margin-top:12px;font-size:16px;max-width:62ch;line-height:1.55}
+.iw h2{font:700 18px/1.2 var(--display);margin:38px 0 12px}
+/* Rantai status satu rekod */
+.chain{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;border-top:1px solid var(--ink);margin-top:10px}
+.chain div{flex:1 1 130px;padding:12px 14px 14px 0;border-bottom:1px solid var(--rule);position:relative}
+.chain div + div{padding-left:18px}
+.chain div + div::before{content:"→";position:absolute;left:0;top:12px;color:var(--muted);font:500 13px/1 var(--mono)}
+.chain b{display:block;font-size:14.5px}
+.chain span{display:block;font-size:12.5px;color:var(--muted);margin-top:3px;line-height:1.35}
+.chain i{display:inline-block;width:8px;height:8px;margin-right:7px;background:var(--c);vertical-align:1px}
+/* Garis masa langkah */
+.flow{position:relative;margin-top:6px}
+.flow::before{content:"";position:absolute;left:15px;top:8px;bottom:8px;width:2px;background:var(--rule)}
+.stp{display:grid;grid-template-columns:32px minmax(0,1fr);gap:16px;padding:16px 0}
+.stp .no{width:32px;height:32px;display:grid;place-items:center;background:var(--card);border:2px solid var(--ph,var(--ink));font:700 13px/1 var(--mono);position:relative;z-index:1}
+.stp h3{font:700 17px/1.25 var(--display)}
+.stp .wh{display:inline-block;margin-left:8px;font:600 10.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);vertical-align:2px}
+.stp p{font-size:14.5px;color:var(--ink-2);margin-top:4px;line-height:1.5;max-width:62ch}
+.stp .go{display:flex;flex-wrap:wrap;gap:6px 14px;margin-top:8px}
+.stp .go a{font-weight:600;font-size:13.5px;color:var(--petrol);min-height:32px;display:inline-flex;align-items:center}
+.stp .side{margin-top:10px;border-left:3px solid var(--rule-2);padding:8px 12px;font-size:13.5px;color:var(--ink-2);background:var(--paper-2)}
+.stp .side b{color:var(--ink)}
+.ph-plan{--ph:var(--ink-2)}.ph-lapor{--ph:var(--warn)}.ph-terbit{--ph:var(--petrol)}.ph-awam{--ph:var(--petrol)}.ph-ring{--ph:var(--s-SPS)}
+.grp{font:600 10.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:22px 0 0 48px}
+table.cmp{width:100%;border-collapse:collapse;border-top:1px solid var(--ink);font-size:14px}
+table.cmp th,table.cmp td{text-align:left;padding:10px 10px 10px 0;border-bottom:1px solid var(--rule);vertical-align:top}
+table.cmp th{font:600 11px/1.2 var(--mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+table.cmp td:first-child{font-weight:600;width:30%}
+@media (max-width:700px){.chain div:first-child::before{content:none}.chain div{flex-basis:100%;padding-left:18px}.chain div:first-child{padding-left:18px}.chain div::before{content:"→";position:absolute;left:0;top:12px;color:var(--muted);font:500 13px/1 var(--mono)}.grp{margin-left:48px}table.cmp td:first-child{width:38%}}
+</style>
+</head>
+<body>
+<div id="content" class="iw">
+  <div class="mono" style="color:var(--petrol)">PPDK.CH · Aliran kerja</div>
+  <h1>Satu rekod, dari rancangan hingga laporan awam</h1>
+  <p>Pegawai merekod tugas sekali. Rekod yang sama menjadi jadual, Log Pergerakan Pegawai, laporan rasmi, hantaran portal dan angka Ringkasan Bulanan — tiada taip semula.</p>
+
+  <h2>Kitar hayat satu rekod</h2>
+  <div class="chain">
+    <div><b><i style="--c:var(--ink-2)"></i>Dirancang</b><span>Muncul di Jadual dan Log Pergerakan Pegawai</span></div>
+    <div><b><i style="--c:var(--warn)"></i>Perlu laporan</b><span>Tarikh tugas sudah lepas</span></div>
+    <div><b><i style="--c:var(--ink)"></i>Lengkap</b><span>Akses dalaman; dikira dalam Ringkasan</span></div>
+    <div><b><i style="--c:var(--warn-bg);box-shadow:inset 0 0 0 1px var(--warn)"></i>Menunggu semakan</b><span>Pilihan — selepas Mohon terbit</span></div>
+    <div><b><i style="--c:var(--petrol)"></i>Diterbitkan</b><span>Portal ppdk.ch dan Facebook</span></div>
+  </div>
+
+  <h2>Langkah demi langkah</h2>
+  <div class="flow">
+    <div class="grp">Sebelum tugas</div>
+    <div class="stp ph-plan"><span class="no">1</span><div><h3>Log masuk<span class="wh">Semua staf</span></h3>
+      <p>E-mel rasmi @moe.gov.my. Kali pertama: sahkan maklumat diri, tukar kata laluan, pilih peringatan.</p>
+      <div class="go"><a href="lihat.html?p=log-masuk.html&amp;m=komputer">Buka skrin →</a></div></div></div>
+    <div class="stp ph-plan"><span class="no">2</span><div><h3>Rekod tugas<span class="wh">Staf</span></h3>
+      <p>Butang + Rekod: jenis aktiviti, tarikh (boleh berbilang hari), masa, sekolah atau lokasi, pegawai bersama. Atau rekod "Tidak di pejabat" — tanpa sebab, tanpa laporan.</p>
+      <div class="go"><a href="lihat.html?p=rekod.html&amp;m=komputer">Rekod tugas →</a><a href="lihat.html?p=rekod.html%3Fjenis%3Dcuti&amp;m=komputer">Tidak di pejabat →</a></div>
+      <div class="side"><b>Rekod Unit ICT</b> masuk sendiri daripada dashboard ICT — pegawai ICT tidak merekod semula di sini.</div></div></div>
+    <div class="stp ph-plan"><span class="no">3</span><div><h3>Jadual &amp; Log Pergerakan Pegawai<span class="wh">Semua staf</span></h3>
+      <p>Rekod terus muncul dalam Jadual minggu ini dan Log Pergerakan Pegawai hari ini. Rakan sekerja nampak "Tugas rasmi — lokasi" atau "Tidak di pejabat" sahaja.</p>
+      <div class="go"><a href="lihat.html?p=jadual.html&amp;m=komputer">Jadual →</a><a href="lihat.html?p=hari-ini.html&amp;m=komputer">Hari ini →</a></div></div></div>
+
+    <div class="grp">Hari tugas &amp; selepas</div>
+    <div class="stp ph-lapor"><span class="no">4</span><div><h3>Hari ini<span class="wh">Staf</span></h3>
+      <p>Kad "Dalam waktu jadual" menunjukkan tugas semasa. Ketik tugas → <b>Mula tugas</b> → selepas selesai <b>Tamatkan &amp; tulis laporan</b> terus membuka laporan pada rekod yang sama. Jika terlupa, rekod bertukar kepada <b>Perlu laporan</b> selepas tarikh tugas dan peringatan muncul di Hari ini.</p>
+      <div class="go"><a href="lihat.html?p=hari-ini.html&amp;m=komputer">Hari ini →</a></div></div></div>
+    <div class="stp ph-lapor"><span class="no">5</span><div><h3>Tulis laporan — 3 langkah<span class="wh">Pemilik rekod</span></h3>
+      <p><b>1 Maklumat</b> diisi automatik daripada rekod (tarikh, tempat, jenis, pegawai). <b>2 Kandungan</b>: tulis catatan ringkas → "Jana draf AI" (enjin yang sama dengan borang ICT) menghasilkan Rumusan, Impak dan Tindak susul bernombor; pegawai semak fakta. <b>3 Semak &amp; simpan</b>: muat naik gambar, pratonton format rasmi (bertanda DRAF sehingga disahkan), Cetak PDF, Salin WhatsApp, satu pengesahan pegawai. Draf disimpan berasingan — laporan lengkap dan angka Ringkasan hanya berubah bila "Simpan laporan".</p>
+      <div class="go"><a href="lihat.html?p=lapor.html%3Fid%3DA102&amp;m=komputer">Tulis laporan →</a><a href="lihat.html?p=aktiviti.html&amp;m=komputer">Rekod Aktiviti →</a></div>
+      <div class="side">Laporan disimpan <b>dalaman</b>. Terbit ialah pilihan, bukan syarat.</div>
+      <div class="side"><b>Tiada rekod lebih awal?</b> "Tulis laporan terus" di Rekod Aktiviti: isi maklumat di Langkah 1, rekod dicipta automatik bila disimpan dan terus masuk Jadual, Log Pergerakan Pegawai dan Ringkasan. <a href="lihat.html?p=lapor.html&amp;m=komputer" style="color:var(--petrol);font-weight:600">Cuba →</a></div></div></div>
+
+    <div class="grp">Penerbitan (pilihan)</div>
+    <div class="stp ph-terbit"><span class="no">6</span><div><h3>Mohon terbit<span class="wh">Pemilik rekod</span></h3>
+      <p>Pratonton kad portal dan kapsyen Facebook daripada teks laporan. Dua semakan pegawai (tiada nama murid/data kes; gambar sesuai) dan sekurang-kurangnya 1 gambar, kemudian hantar untuk semakan ketua sektor. Rekod sulit, SPsK dan SPP tidak boleh diterbitkan sehingga sektor bersetuju.</p>
+      <div class="go"><a href="lihat.html?p=aktiviti.html%3Fterbit%3DA102&amp;m=komputer">Mohon terbit →</a></div></div></div>
+    <div class="stp ph-terbit"><span class="no">7</span><div><h3>Semak laporan &amp; terbit<span class="wh">Ketua Sektor</span></h3>
+      <p>Tiga semakan wajib: tiada nama murid/data kes, gambar sesuai untuk awam, fakta dan nama sekolah betul. Terbit atau pulangkan kepada pegawai.</p>
+      <div class="go"><a href="lihat.html?p=aktiviti.html%3Frole%3Dketua%26f%3Dmohon&amp;m=komputer">Senarai menunggu →</a></div></div></div>
+    <div class="stp ph-awam"><span class="no">8</span><div><h3>Portal awam &amp; Facebook<span class="wh">Orang awam</span></h3>
+      <p>Laporan muncul di ppdk.ch (utama, halaman sektor, halaman laporan) dan Facebook. Tiada jadual, pergerakan atau cuti di paparan awam.</p>
+      <div class="go"><a href="lihat.html?p=portal.html&amp;m=komputer">Utama →</a><a href="lihat.html?p=sektor.html%3Fs%3DSPb&amp;m=komputer">Sektor →</a><a href="lihat.html?p=laporan.html%3Fid%3DA101&amp;m=komputer">Laporan →</a></div></div></div>
+
+    <div class="grp">Setiap bulan</div>
+    <div class="stp ph-ring"><span class="no">9</span><div><h3>Ringkasan Bulanan<span class="wh">Ketua Sektor · KPPD</span></h3>
+      <p>Angka dijana automatik daripada laporan lengkap (dalaman + umum), aktiviti bersama dikira sekali. Mod Pembentangan 16:9 untuk mesyuarat; versi awam agregat sahaja.</p>
+      <div class="go"><a href="lihat.html?p=ringkasan.html&amp;m=komputer">Ringkasan →</a><a href="lihat.html?p=ringkasan.html%3Frole%3Dkppd&amp;m=komputer">Paparan KPPD →</a></div></div></div>
+  </div>
+
+  <h2>Laporan sektor berbanding borang ICT sedia ada</h2>
+  <table class="cmp">
+    <thead><tr><th>Perkara</th><th>Borang ICT</th><th>Laporan semua sektor</th></tr></thead>
+    <tbody>
+      <tr><td>Maklumat asas</td><td>Diisi dalam borang</td><td>Daripada rekod — tiada taip semula</td></tr>
+      <tr><td>Draf rumusan</td><td>Draf AI daripada borang</td><td>Enjin AI yang sama; input = rekod + catatan pegawai; semak fakta wajib</td></tr>
+      <tr><td>Impak &amp; tindak susul</td><td>Wajib, bernombor</td><td>Pilihan, bernombor; tindak susul teks sahaja</td></tr>
+      <tr><td>Gambar</td><td>Minimum 4</td><td>4 disyorkan; wajib jika mahu terbit</td></tr>
+      <tr><td>Zon sekolah</td><td>Ya</td><td>Tiada — zon untuk Unit ICT sahaja</td></tr>
+      <tr><td>Cetak PDF / WhatsApp</td><td>Ya</td><td>Ya</td></tr>
+      <tr><td>Terbit awam</td><td>Terus</td><td>Pilihan, melalui penerbit sektor</td></tr>
+    </tbody>
+  </table>
+
+  <p style="margin-top:28px"><a class="btn btn-ink" href="lihat.html?m=komputer">Lihat semua skrin berurutan</a> <a class="btn btn-line" href="index.html" style="margin-left:6px">Halaman utama</a></p>
+</div>
+<script src="shared.js?v=61d306a6"></script>
+<script>M.mount({ bare: true });</script>
+</body>
+</html>

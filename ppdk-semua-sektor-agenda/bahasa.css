@@ -1,0 +1,53 @@
+/* PPDK.CH semua sektor — paparan contoh. Data ilustrasi (nama, sekolah dan angka rekaan). */
+:root{--fs-h1:30px;--fs-h2:20px;--fs-act:18px;--fs-body:16px;--fs-meta:14px}
+@media (max-width:780px){:root{--fs-h1:28px}}
+:root[data-theme="dark"]{--ink-2:#D0D4D1;--muted:#A7AFAD;--rule:#2F3836;--rule-2:#46504E}
+
+/* Skala teks */
+body{font-size:var(--fs-body)}
+body .page-h h1,body .page-h .hi{font-size:var(--fs-h1)}
+body .page-h .sub{font-size:15px}
+body .sec-t h2,body .todo-h h2,body .grp-h,body .lp > summary b{font-size:var(--fs-h2)}
+body .now .n{font-size:21px}
+body .td .n,body .ac .n,body .next .n{font-size:var(--fs-act)}
+body .li .n{font-size:16.5px}
+body .li .s,body .td .s,body .ac .s,body .now .s,body .lp > summary span span{font-size:var(--fs-meta)}
+body .li .t,body .ac .d{font-size:14px}
+body .li .e,body .stc,body .st{font-size:13.5px}
+body .tiny,body .hint,body .note,body .sec-t span{font-size:13.5px}
+body label.lbl,body .lbl{font-size:14px}
+body .btn{font-size:15px}
+body .btn-sm{font-size:14px}
+body .text-btn{font-size:14.5px}
+body .dl{font-size:15px}
+body .dl dt{font-size:13.5px}
+body .drawer-h h2{font-size:21px}
+body .calm{font-size:15px}
+body .empty{font-size:15px;color:var(--ink-2)}
+
+/* Label: ayat biasa, bukan mono huruf besar kecil. Mono kekal untuk masa, angka dan kod. */
+body .now .k,body .next .k,body .sum1 .k1{font:600 14px/1.2 var(--sans);letter-spacing:0;text-transform:none}
+body .section-t{font:700 15px/1.2 var(--sans);letter-spacing:0;text-transform:none;color:var(--ink-2)}
+body .drawer-h .mono{font:600 13px/1.2 var(--sans);letter-spacing:0;text-transform:none}
+body .steps b{font:600 13px/1.2 var(--sans);letter-spacing:0;text-transform:none}
+body .dh span{font:600 13px/1 var(--sans);letter-spacing:0;text-transform:none}
+body .wd .k{font-size:11.5px}
+
+/* Kurang garis: senarai dipisah ruang + garis halus, tiada garis hitam di bawah tajuk bahagian. */
+body .list{border-top:0}
+body .li{border-bottom-color:color-mix(in srgb,var(--rule) 75%,transparent)}
+body .list > .li:last-child{border-bottom:0}
+body .calm{border:0;padding-left:0}
+body details.more{border-top:0;padding-top:4px}
+body .sec-t{margin-top:32px}
+
+/* Status: satu cip (data.js D.stChip), dipakai semua skrin. */
+.stw{display:inline-flex;align-items:center;gap:6px}
+.stc{display:inline-flex;align-items:center;gap:5px;font-weight:600;color:var(--muted);white-space:nowrap}
+.stc svg{width:14px;height:14px}
+.stc i{width:7px;height:7px;border-radius:50%;background:var(--warn)}
+.stc.need{color:var(--warn)}
+.stc.mohon{color:var(--ink-2)}
+.stc.pub{color:var(--petrol)}
+.stc.cx{color:var(--muted)}
+.stc.lk{color:var(--isd)}
