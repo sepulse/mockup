@@ -1,4 +1,5 @@
-/* PPDK.CH semua sektor — paparan contoh. Data ilustrasi (nama, sekolah dan angka rekaan). */
+/* Paparan contoh. Data ILUSTRASI (nama, sekolah dan angka rekaan).
+   Suis peranan ialah alat perbandingan mockup, BUKAN kawalan keselamatan. */
 (function () {
   'use strict';
   var store = {
@@ -97,7 +98,7 @@
     { id: 'aktiviti', href: 'aktiviti.html', ic: 'list', l: 'Rekod Aktiviti', m: 'Aktiviti' },
     { id: 'ringkasan', href: 'ringkasan.html', ic: 'slides', l: 'Ringkasan Bulanan', m: 'Ringkasan' }
   ];
-  /* */
+  /* Alat mockup: satu butang kecil terapung, bukan sebahagian UI. */
   function toolHtml(opts) {
     var r = role(), t = theme();
     return '<div class="mpanel" id="mpanel" hidden><div class="mono">Demo · data ilustrasi</div>' +

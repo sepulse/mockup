@@ -1,4 +1,4 @@
-/* PPDK.CH semua sektor — paparan contoh. Data ilustrasi (nama, sekolah dan angka rekaan). */
+/* Portal awam ppdk.ch — kepala, kaki, senarai aktiviti diterbitkan. Data ilustrasi. */
 (function () {
   'use strict';
   var DESC = {

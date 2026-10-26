@@ -1,4 +1,8 @@
-/* PPDK.CH semua sektor — paparan contoh. Data ilustrasi (nama, sekolah dan angka rekaan). */
+/* Gerak: animasi data gaya A-1 (assets/overview-swiss.js, master-a1/assets/a1-components.css).
+   Gerak.run(root, opts) dipanggil di hujung setiap render. Ia:
+   (a) count-up nombor (500 ms, easeOutCubic, dari nilai terakhir; muat pertama dari 0),
+   (b) memutar semula bar (grow), titik (pop), kad/baris (muncul berperingkat 40 ms, had 400 ms).
+   Tiada MutationObserver. Reduced motion: tiada animasi, nilai akhir terus (CSS + semakan di sini). */
 (function () {
   'use strict';
   var PERIOD_MS = 500, STEP_MS = 40, CAP_MS = 400;

@@ -1,4 +1,5 @@
-/* PPDK.CH semua sektor — paparan contoh. Data ilustrasi (nama, sekolah dan angka rekaan). */
+/* Data ILUSTRASI untuk mockup. Nama, sekolah dan angka rekaan.
+   Satu rekod = satu aktiviti (bukan satu laporan setiap peserta). Cuti = jadual berasingan `ketidakhadiran`. */
 (function () {
   'use strict';
   var STAF = [
@@ -32,6 +33,9 @@
     return o;
   }
   var REKOD = [
+    /* Peserta (Nur Aina) pada tugas milik Rahman Jali yang belum dilaporkan — keadaan "Ingatkan pemilik". */
+    R({ id: 'A111', tarikh: '2026-10-13', mula: '14:00', akhir: '16:30', owner: 'Rahman Jali', sek: 'SPb', jenis: 'Mesyuarat', tajuk: 'Mesyuarat Penyelarasan SISC+ Daerah', mod: 'fizikal', lokasi: 'Bilik Mesyuarat PPD Kuching', peserta: ['Nur Aina Hashim'], status: 'selesai' }),
+    R({ id: 'A110', tarikh: '2026-10-14', mula: '14:00', akhir: '16:00', owner: 'Nur Aina Hashim', sek: 'SPb', jenis: 'Bimbingan guru (SISC+)', tajuk: 'Bimbingan susulan PBD Matematik', mod: 'fizikal', sekolah: ['SK Bukit Indah'], status: 'selesai', laporan: 'lengkap', pulang: { sebab: 'Betulkan nama sekolah dalam rumusan dan tambah gambar aktiviti sebelum hantar semula.', oleh: 'Rahman Jali', tarikh: '2026-10-15' } }),
     /* --- Nur Aina (staf contoh) --- */
     R({ id: 'A101', tarikh: '2026-10-12', mula: '08:00', akhir: '12:00', owner: 'Nur Aina Hashim', sek: 'SPb', jenis: 'Bimbingan guru (SISC+)', tajuk: 'Bimbingan PdP Matematik Tahun 4', mod: 'fizikal', sekolah: ['SK Bukit Indah'], status: 'selesai', laporan: 'lengkap', tahap: 'umum', siri: 'Bimbingan PdP Matematik' }),
     R({ id: 'A102', tarikh: '2026-10-13', mula: '08:00', akhir: '13:00', owner: 'Nur Aina Hashim', sek: 'SPb', jenis: 'Bengkel / kursus', tajuk: 'Bengkel PBD Matematik Menengah Rendah', mod: 'fizikal', sekolah: ['SMK Taman Mutiara'], peserta: ['Ahmad Faizal Rosli'], status: 'selesai' }),
@@ -90,8 +94,20 @@
     }
     if (r.mod === 'hibrid') r.penyertaan = { 'Lina Marlissa': 'atas_talian' };
   });
-  try { var retained = JSON.parse(sessionStorage.getItem(stateKey)); if (retained) { REKOD = retained.rekod; CUTI = retained.cuti; } } catch(e) {}
+  try { var retained = JSON.parse(sessionStorage.getItem(stateKey)); if (retained) { REKOD = retained.rekod.concat(REKOD.filter(function (r) { return !retained.rekod.some(function (x) { return x.id === r.id; }); })); CUTI = retained.cuti; } } catch(e) {}
+  var networkSim = new URLSearchParams(location.search).get('sim') === 'rangkaian';
+  function saveFailure(host, retry) {
+    if (persist.error !== 'rangkaian') return;
+    host.innerHTML = '<p>Belum dihantar - sambungan terputus. Input anda masih di sini.</p><button class="btn btn-line btn-sm" type="button">Cuba semula</button>';
+    host.className = 'flag warn'; host.hidden = false; host.setAttribute('role', 'alert'); host.tabIndex = -1; host.focus();
+    host.querySelector('button').onclick = function () {
+      networkSim = false; var u = new URL(location.href); if (u.searchParams.get('sim') === 'rangkaian') { u.searchParams.delete('sim'); history.replaceState(null, '', u); }
+      host.hidden = true; retry();
+    };
+  }
   function persist() {
+    persist.error = '';
+    if (networkSim || navigator.onLine === false) { persist.error = 'rangkaian'; return false; }
     try { sessionStorage.setItem(stateKey, JSON.stringify({rekod:REKOD, cuti:CUTI})); return true; }
     catch (e) { M.toast('Storan sesi penuh atau tidak tersedia. Kurangkan gambar dan cuba simpan semula.'); return false; }
   }
@@ -144,9 +160,10 @@
     return r.sehari ? 'Sehari' : r.mula + '–' + r.akhir;
   }
   /* Kamus status (ISTILAH.md): satu status kerja bagi setiap rekod; akses (Dalaman/Umum/Sulit) berasingan. */
-  var ST = { plan: 'Dirancang', need: 'Perlu laporan', done: 'Lengkap', mohon: 'Menunggu semakan', pub: 'Diterbitkan', cx: 'Dibatalkan' };
+  var ST = { plan: 'Dirancang', need: 'Perlu laporan', done: 'Lengkap', pulang: 'Dipulangkan', mohon: 'Menunggu semakan', pub: 'Diterbitkan', cx: 'Dibatalkan' };
   function stKey(r, today) {
     if (r.status === 'dibatalkan') return 'cx';
+    if (r.pulang && !r.mohon && r.tahap !== 'umum') return 'pulang';
     if (r.status === 'selesai' || r.tamat < (today || M.TODAY)) return r.laporan !== 'lengkap' ? 'need' : r.tahap === 'umum' ? 'pub' : r.mohon ? 'mohon' : 'done';
     return 'plan';
   }
@@ -154,7 +171,7 @@
     var k = stKey(r, today), lock = r.tahap === 'sulit' ? '<span class="stc lk" title="Sulit" aria-label="Sulit">' + M.icon('lock') + '</span>' : '';
     if (k === 'plan') return lock;
     var ic = k === 'need' ? M.icon('clock') : k === 'mohon' ? '<i></i>' : k === 'pub' ? M.icon('globe') : k === 'done' ? M.icon('check') : '';
-    return '<span class="stc ' + k + '">' + ic + ST[k] + '</span>' + lock;
+    return '<span class="stc ' + (k === 'pulang' ? 'need' : k) + '">' + ic + ST[k] + '</span>' + lock;
   }
   function statusHtml(r, today) { return stChip(r, today); }
   function lvlHtml(r) {
@@ -164,7 +181,7 @@
   }
 
   function tarikhLabel(r) { return r.tarikh === r.tamat ? M.fmtDate(r.tarikh) : M.fmtDate(r.tarikh) + ' – ' + M.fmtDate(r.tamat); }
-  /* */
+  /* Versi tenang: satu blok utama (bila, di mana, siapa), satu tindakan utama, butiran lain dilipat. */
   function openRecord(r) {
     var m = M.me(), mine = r.owner === m.name, hid = r.tahap === 'sulit' && !canSulit(r);
     var w = where(r), past = r.tamat < M.TODAY || r.status === 'selesai';
@@ -178,6 +195,7 @@
       if(r.mod==='hibrid')place='Hibrid · '+(online(r)?'penyertaan atas talian':place);
       var flag = '';
       if (r.status === 'dibatalkan') flag = '<p class="flag">Dibatalkan' + (r.batal ? ' — ' + M.esc(r.batal) : '') + '</p>';
+      else if (stKey(r) === 'pulang') flag = '<p class="flag warn">Dipulangkan — ' + M.esc(r.pulang.sebab) + '<br><span class="tiny">' + M.esc(r.pulang.oleh) + ' · ' + M.esc(r.pulang.tarikh) + '</span></p>';
       else if (past && r.laporan !== 'lengkap') flag = '<p class="flag warn">' + ST.need + '</p>';
       else if (r.tahap === 'umum') flag = '<p class="flag ok">' + ST.pub + ' · ppdk.ch dan Facebook</p>';
       else if (r.mohon) flag = '<p class="flag">' + ST.mohon + ' · ketua sektor ' + r.sek + '</p>';
@@ -195,6 +213,7 @@
     if (!hid && mine && ict(r)) foot = '<span class="tiny">Ubah melalui rekod ICT</span><button class="btn btn-line" data-close>Tutup</button>';
     else if (!hid && mine && r.status !== 'dibatalkan') {
       if (!past) foot = '<span class="links"><button class="text-btn" data-act="batal">Batal</button><a class="text-btn" href="rekod.html?salin=' + r.id + '">Salin</a></span><a class="btn btn-ink" href="rekod.html?ubah=' + r.id + '">Ubah</a>';
+      else if (stKey(r) === 'pulang') foot = '<a class="btn btn-ink" href="lapor.html?id=' + r.id + '">Ubah &amp; hantar semula</a>';
       else if (r.laporan !== 'lengkap') foot = '<span class="links"><a class="text-btn" href="rekod.html?salin=' + r.id + '">Salin</a></span><a class="btn btn-ink" href="lapor.html?id=' + r.id + '">Lengkapkan laporan</a>';
       else if (r.tahap === 'dalaman' && !r.mohon) foot = '<span class="links"><a class="text-btn" href="rekod.html?salin=' + r.id + '">Salin</a></span><a class="btn btn-ink" href="aktiviti.html?terbit=' + r.id + '">Mohon terbit</a>';
     }
@@ -202,18 +221,24 @@
       foot = '<button class="btn btn-line" data-close>Tutup</button><a class="btn btn-ink" href="aktiviti.html?terbit=' + r.id + '">Semak laporan</a>';
     /* Hari tugas: Mula → Tamat → terus ke laporan pada rekod yang sama. */
     if (!hid && mine && !ict(r) && r.status !== 'dibatalkan' && r.status !== 'selesai' && onDate(r, M.TODAY))
-      foot = r.dimula ? (r.tamat <= M.TODAY ? '<span class="tiny">Tugas sedang berjalan</span><button class="btn btn-ink" data-act="tamat">Tamatkan &amp; tulis laporan</button>' : '<span class="tiny">Tugas berbilang hari · sedang berjalan</span><button class="btn btn-line" data-close>Tutup</button>')
-        : '<a class="text-btn" href="rekod.html?ubah=' + r.id + '">Ubah rancangan</a><button class="btn btn-ink" data-act="mula">Mula tugas</button>';
+      /* Batal kekal tersedia pada hari tugas, sebelum dan selepas Mula; "Batal mula" mengundur Mula yang tersilap. */
+      foot = r.dimula ? (r.tamat <= M.TODAY ? '<span class="links"><button class="text-btn" data-act="batal">Batal</button><button class="text-btn" data-act="undo">Batal mula</button></span><button class="btn btn-ink" data-act="tamat">Tamatkan &amp; tulis laporan</button>' : '<span class="links"><button class="text-btn" data-act="batal">Batal</button><button class="text-btn" data-act="undo">Batal mula</button><span class="tiny">Tugas berbilang hari · sedang berjalan</span></span><button class="btn btn-line" data-close>Tutup</button>')
+        : '<span class="links"><button class="text-btn" data-act="batal">Batal</button><a class="text-btn" href="rekod.html?ubah=' + r.id + '">Ubah rancangan</a></span><button class="btn btn-ink" data-act="mula">Mula tugas</button>';
     var d = M.drawer({ pane: true, title: hid ? 'Tugas rasmi' : M.esc(r.tajuk), body: body, foot: foot });
     var st0 = d.querySelector('[data-act="mula"]'), en0 = d.querySelector('[data-act="tamat"]');
     if (st0) st0.addEventListener('click', function () { r.dimula = true; if (!persist()) { delete r.dimula; return; } M.closeDrawer(); document.dispatchEvent(new Event('datachange')); openRecord(r); M.toast('Tugas dimulakan'); });
     if (en0) en0.addEventListener('click', function () { r.status = 'selesai'; if (!persist()) { r.status = 'dirancang'; return; } M.closeDrawer(); location.href = 'lapor.html?id=' + encodeURIComponent(r.id); });
+    var un0 = d.querySelector('[data-act="undo"]');
+    if (un0) un0.addEventListener('click', function () { delete r.dimula; if (!persist()) { r.dimula = true; return; } M.closeDrawer(); document.dispatchEvent(new Event('datachange')); openRecord(r); M.toast('Tugas belum dimulakan'); });
     var b = d.querySelector('[data-act="batal"]');
     if (b) b.addEventListener('click', function () {
-      d.querySelector('.drawer-b').insertAdjacentHTML('beforeend', '<div class="restricted"><label class="lbl" for="sb">Sebab (pilihan)</label><input id="sb" type="text" placeholder="cth. Ditunda oleh sekolah"><div style="margin-top:10px"><button class="btn btn-dark btn-sm" data-act="sah">Sahkan batal</button></div></div>');
-      b.disabled = true;
+      d.querySelector('.drawer-b').insertAdjacentHTML('beforeend', '<div class="restricted"><label class="lbl" for="sb">Sebab (pilihan)</label><input id="sb" type="text" placeholder="cth. Ditunda oleh sekolah"><div style="margin-top:10px"><button class="btn btn-dark btn-sm" data-act="sah">Sahkan batal</button></div><div id="batal-err" hidden style="margin-top:10px"></div></div>');
+      b.disabled = true; d.querySelector('#sb').focus();
       d.querySelector('[data-act="sah"]').addEventListener('click', function () {
-        r.status = 'dibatalkan'; r.batal = d.querySelector('#sb').value || ''; persist();
+        var was = { status: r.status, batal: r.batal };
+        r.status = 'dibatalkan'; r.batal = d.querySelector('#sb').value || '';
+        /* Gagal simpan: pulihkan keadaan, laci kekal, banner Cuba semula (tiada toast kejayaan). */
+        if (!persist()) { r.status = was.status; r.batal = was.batal; saveFailure(d.querySelector('#batal-err'), function () { d.querySelector('[data-act="sah"]').click(); }); return; }
         M.closeDrawer(); M.toast('Rancangan dibatalkan'); document.dispatchEvent(new Event('datachange'));
       });
     });
@@ -224,7 +249,18 @@
     var body = '<dl class="dl"><dt>Pegawai</dt><dd>' + M.esc(c.owner) + ' ' + M.sk(c.sek) + '</dd><dt>Tempoh</dt><dd>' + tempoh + '</dd><dt>Jadual</dt><dd>' + M.icon('away') + ' Tidak di pejabat</dd></dl>' +
       (allow ? '<div class="restricted" id="rst"><div class="mono muted">Butiran terhad</div><p class="hint" style="margin:6px 0 10px">Akses direkod.</p><button class="btn btn-dark btn-sm" data-act="open">' + M.icon('lock') + 'Buka butiran terhad</button></div>'
         : '<p class="note box" style="margin-top:16px">' + M.icon('info') + '<span>Makluman sahaja.</span></p>');
-    var d = M.drawer({ kicker: 'Ketidakhadiran', title: 'Tidak di pejabat', body: body, foot: mine ? '<a class="btn btn-ink" href="rekod.html?jenis=cuti&cuti=' + c.id + '">Ubah makluman</a>' : '<button class="btn btn-line" data-close>Tutup</button>' });
+    var d = M.drawer({ kicker: 'Ketidakhadiran', title: 'Tidak di pejabat', body: body, foot: mine ? '<span class="links"><button class="text-btn" data-act="cbatal">Batal makluman</button></span><a class="btn btn-ink" href="rekod.html?jenis=cuti&cuti=' + c.id + '">Ubah makluman</a>' : '<button class="btn btn-line" data-close>Tutup</button>' });
+    /* Pemilik boleh membatalkan makluman: pengesahan, kemudian buang daripada Jadual dan Log Pergerakan. */
+    var cb = d.querySelector('[data-act="cbatal"]');
+    if (cb) cb.addEventListener('click', function () {
+      cb.disabled = true;
+      d.querySelector('.drawer-b').insertAdjacentHTML('beforeend', '<div class="restricted"><p id="csah-t" style="margin:0 0 10px">Batal makluman ini? Anda akan dipapar sebagai berada di pejabat pada tarikh tersebut.</p><button class="btn btn-dark btn-sm" data-act="csah" aria-describedby="csah-t">Sahkan batal</button><div id="cbatal-err" hidden style="margin-top:10px"></div></div>'); d.querySelector('[data-act="csah"]').focus();
+      d.querySelector('[data-act="csah"]').addEventListener('click', function () {
+        var i = CUTI.indexOf(c); if (i >= 0) CUTI.splice(i, 1);
+        if (!persist()) { if (i >= 0) CUTI.splice(i, 0, c); saveFailure(d.querySelector('#cbatal-err'), function () { d.querySelector('[data-act="csah"]').click(); }); return; }
+        M.closeDrawer(); M.toast('Makluman dibatalkan'); document.dispatchEvent(new Event('datachange'));
+      });
+    });
     var b = d.querySelector('[data-act="open"]');
     if (b) b.addEventListener('click', function () {
       d.querySelector('#rst').innerHTML = '<div class="mono muted">Butiran terhad</div><dl class="dl" style="margin-top:10px"><dt>Jenis</dt><dd><b>' + c.jenis + '</b></dd><dt>Sumber</dt><dd>Makluman pegawai</dd></dl><p class="hint" style="margin-top:10px">Tiada diagnosis, destinasi atau lampiran disimpan. Panel ditutup bila anda tukar rekod.</p>';
@@ -292,7 +328,7 @@
   }
   function bold(t) { return t.replace(/[A-Z]/g, function (c) { return String.fromCodePoint(0x1D400 + c.charCodeAt(0) - 65); }).replace(/[a-z]/g, function (c) { return String.fromCodePoint(0x1D41A + c.charCodeAt(0) - 97); }); }
 
-  window.D = { persist: persist, post: post, aka: aka, KHAS: KHAS, ict: ict, ictTag: ictTag, online: online, physical: physical, summary: summary, STAF: STAF, ini: ini, emel: emel, openKad: openKad, tarikhLabel: tarikhLabel, openRecord: openRecord, openCuti: openCuti, REKOD: REKOD, CUTI: CUTI, onDate: onDate, involves: involves, staf: staf,
+  window.D = { saveFailure: saveFailure, persist: persist, post: post, aka: aka, KHAS: KHAS, ict: ict, ictTag: ictTag, online: online, physical: physical, summary: summary, STAF: STAF, ini: ini, emel: emel, openKad: openKad, tarikhLabel: tarikhLabel, openRecord: openRecord, openCuti: openCuti, REKOD: REKOD, CUTI: CUTI, onDate: onDate, involves: involves, staf: staf,
     canSulit: canSulit, canCutiType: canCutiType, where: where, zones: zones, zoneBadges: zoneBadges,
     timeLabel: timeLabel, ST: ST, stKey: stKey, stChip: stChip, statusHtml: statusHtml, lvlHtml: lvlHtml, modIcon: modIcon };
 })();

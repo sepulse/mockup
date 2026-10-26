@@ -6,9 +6,9 @@
 <meta name="robots" content="noindex">
 <title>Ringkasan Bulanan · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=eb478dd3">
-<link rel="stylesheet" href="gaya.css?v=cbbbdafc">
-<link rel="stylesheet" href="bahasa.css?v=c8d377cd">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="tenang.css">
+<link rel="stylesheet" href="bahasa.css">
 <style>
 :root{--ac:var(--petrol)}
 .wrap-s{max-width:760px}
@@ -108,9 +108,9 @@ button.bar-r:hover{background:var(--paper-2)}
   <div class="show-m" style="margin-top:28px"><button class="btn btn-line" type="button" id="pres2"><svg class="i" viewBox="0 0 24 24"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Mod Pembentangan</button></div>
 </div>
 
-<script src="shared.js?v=61d306a6"></script>
-<script src="gerak.js?v=3d1be233"></script>
-<script src="data.js?v=341eafbf"></script>
+<script src="shared.js"></script>
+<script src="gerak.js"></script>
+<script src="data.js"></script>
 <script>
 (function () {
   M.mount({ page: 'ringkasan' });
@@ -174,7 +174,7 @@ button.bar-r:hover{background:var(--paper-2)}
   function liputH(d) {
     var c = schools(d), low = 0, high = 0; Object.keys(c).forEach(function (s) { if (/^SMK|^SM /i.test(s)) high++; else low++; });
     return '<p class="cov"><b>' + d.s + '</b> daripada <b>' + M.SEKOLAH.length + '</b> sekolah dalam senarai</p>' +
-      [['Sekolah rendah', low, 'r'], ['Sekolah menengah', high, 'm']].map(function (x) { return '<button type="button" class="bar-r" data-dd="s"><span>' + x[0] + '</span><span class="bar"><i style="width:' + (d.s ? x[1] / d.s * 100 : 0) + '%"></i></span><b>' + x[1] + '</b></button>'; }).join('');
+      [['Sekolah rendah', low, 'r'], ['Sekolah menengah', high, 'm']].map(function (x) { return '<button type="button" class="bar-r" data-dd="s" data-j="' + x[2] + '"><span>' + x[0] + '</span><span class="bar"><i style="width:' + (d.s ? x[1] / d.s * 100 : 0) + '%"></i></span><b>' + x[1] + '</b></button>'; }).join('');
   }
   function jenisH(d, still) {
     var k = Object.keys(d.jenis).sort(function (a, b) { return d.jenis[b] - d.jenis[a]; });
@@ -226,14 +226,16 @@ button.bar-r:hover{background:var(--paper-2)}
     if (kind === 'a') { title = d.a + ' aktiviti selesai'; body = rec(rows); }
     else if (kind === 'j') { var l = rows.filter(function (r) { return r.jenis === j; }); title = M.esc(j) + ' · ' + l.length; body = rec(l); }
     else {
-      var c = schools(d); title = d.s + ' sekolah terlibat';
-      body = '<div class="list">' + Object.keys(c).sort().map(function (s) { return '<button class="li" data-sch="' + M.esc(s) + '"><span class="t">' + c[s] + ' akt.</span><span><span class="n">' + M.esc(s) + '</span></span><span></span></button>'; }).join('') + '</div>';
+      /* j = 'r' (rendah) / 'm' (menengah) daripada bar Liputan; tanpa j = semua sekolah. */
+      var c = schools(d), keys = Object.keys(c).filter(function (s) { return !j || (j === 'm') === /^SMK|^SM /i.test(s); });
+      title = keys.length + (j === 'r' ? ' sekolah rendah' : j === 'm' ? ' sekolah menengah' : ' sekolah') + ' terlibat';
+      body = '<div class="list">' + keys.sort().map(function (s) { return '<button class="li" data-sch="' + M.esc(s) + '"><span class="t">' + c[s] + ' akt.</span><span><span class="n">' + M.esc(s) + '</span></span><span></span></button>'; }).join('') + '</div>';
     }
     var dr = M.drawer({ kicker: label(), title: title, body: body });
     dr.addEventListener('click', function (e) {
       var r = e.target.closest('[data-r]'), s = e.target.closest('[data-sch]');
       if (r) { var x = D.REKOD.filter(function (y) { return y.id === r.getAttribute('data-r'); })[0]; M.closeDrawer(); D.openRecord(x); }
-      if (s) { var n = s.getAttribute('data-sch'), l = rows.filter(function (y) { return y.sekolah.indexOf(n) >= 0; }); M.closeDrawer(); var d2 = M.drawer({ title: M.esc(n), body: rec(l) }); d2.addEventListener('click', function (e2) { var r2 = e2.target.closest('[data-r]'); if (r2) { M.closeDrawer(); D.openRecord(D.REKOD.filter(function (y) { return y.id === r2.getAttribute('data-r'); })[0]); } }); }
+      if (s) { var n = s.getAttribute('data-sch'), l = rows.filter(function (y) { return y.sekolah.indexOf(n) >= 0; }); M.closeDrawer(); var d2 = M.drawer({ title: M.esc(n), body: '<button type="button" class="text-btn" data-back style="margin-bottom:8px">← Kembali ke senarai sekolah</button>' + rec(l) }); d2.addEventListener('click', function (e2) { if (e2.target.closest('[data-back]')) { M.closeDrawer(); drill(kind, j); return; } var r2 = e2.target.closest('[data-r]'); if (r2) { M.closeDrawer(); D.openRecord(D.REKOD.filter(function (y) { return y.id === r2.getAttribute('data-r'); })[0]); } }); }
     });
   }
   $('body').addEventListener('click', function (e) { var b = e.target.closest('[data-dd]'); if (b) drill(b.getAttribute('data-dd'), b.getAttribute('data-j')); });
@@ -270,13 +272,18 @@ button.bar-r:hover{background:var(--paper-2)}
     if (e.key === 'ArrowLeft' && st.i > 0) { st.i--; show(f, '-1'); }
   });
 
-  $('csek').innerHTML = '<option value="ALL">Semua sektor</option>' + M.SEKTOR.map(function (s) { return '<option value="' + s.k + '">' + s.n.replace(/^Sektor /, '') + '</option>'; }).join('');
+  /* Pemilih sektor ikut peranan: KPPD semua sektor; staf dan ketua sektor sendiri sahaja (selaras senarai kebenaran Profil). */
+  function fillSek() {
+    var k = M.role() === 'kppd';
+    $('csek').innerHTML = (k ? '<option value="ALL">Semua sektor</option>' : '') + M.SEKTOR.filter(function (s) { return k || s.k === M.me().sek; }).map(function (s) { return '<option value="' + s.k + '">' + s.n.replace(/^Sektor /, '') + '</option>'; }).join('');
+    $('csek').disabled = !k;
+  }
   $('cbln').innerHTML = MONTHS.slice().reverse().map(function (m) { return '<option value="' + m + '">' + bulan(m) + ' 2026' + '</option>'; }).join('');
   $('csek').addEventListener('change', function () { st.sek = this.value; render(); });
   $('cbln').addEventListener('change', function () { st.month = this.value; render(); });
   $('cver').addEventListener('click', function (e) { var b = e.target.closest('button'); if (!b) return; st.ver = b.getAttribute('data-v'); render(); });
   $('pres').addEventListener('click', pres); $('pres2').addEventListener('click', pres);
-  function init() { st.sek = M.role() === 'kppd' ? 'ALL' : M.me().sek; render(); }
+  function init() { fillSek(); st.sek = M.role() === 'kppd' ? 'ALL' : M.me().sek; render(); }
   document.addEventListener('rolechange', init);
   document.addEventListener('datachange', render);
   init();

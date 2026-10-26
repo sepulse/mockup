@@ -1,0 +1,444 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Peta Senario · ADR-005</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<style>
+/* Peta senario: audit UX gaya "flow map". Setiap cabang keputusan berakhir pada skrin sebenar mockup-agenda
+   (iframe, disimulasi), toast, atau kotak "Tiada skrin" = dapatan. Alat audit sahaja; tiada kod produksi. */
+:root{--bg:#f6f6f4;--card:#fff;--ink:#16181a;--ink2:#4a4f55;--mut:#8a8f95;--line:#c9ccd0;--line2:#e3e5e8;--fail:#d4504a;--fail-bg:#fdf0ef;--ok:#2f7d6d;--warn:#b7791f;--sel:#1f6f8b;--bar:rgba(246,246,244,.92)}
+:root[data-theme="dark"]{--bg:#0d0e0f;--card:#17191b;--ink:#eceef0;--ink2:#b9bec4;--mut:#80868d;--line:#3a3e43;--line2:#24272a;--fail:#ec6b64;--fail-bg:#2a1615;--ok:#5fb8a4;--warn:#e0a743;--sel:#5fb3cf;--bar:rgba(13,14,15,.9)}
+*{box-sizing:border-box;margin:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:13px/1.4 "IBM Plex Sans",system-ui,sans-serif;overflow:hidden}
+button,select{font:inherit;color:inherit}
+.top{position:fixed;inset:0 0 auto 0;height:44px;display:flex;align-items:center;gap:12px;padding:0 14px;background:var(--bar);backdrop-filter:blur(8px);border-bottom:1px solid var(--line2);z-index:20}
+.top select{border:0;background:transparent;font-weight:600;padding:4px 2px;cursor:pointer;min-width:0}
+.top .meta{color:var(--mut)}
+.top .sp{flex:1}
+.cnt{display:flex;gap:12px;color:var(--ink2);font-size:12px}
+.cnt i{display:inline-block;width:9px;height:9px;margin-right:5px;vertical-align:0;border:1px solid var(--line)}
+.cnt .c-toast i{background:var(--warn);border-color:var(--warn)}
+.cnt .c-gap i{border:1px dashed var(--fail)}
+.tb{border:1px solid var(--line);background:var(--card);padding:4px 10px;cursor:pointer;min-height:28px}
+.tb[aria-pressed="true"]{border-color:var(--ink)}
+#stage{position:fixed;inset:44px 0 0 0;cursor:grab;touch-action:none}
+#stage.drag{cursor:grabbing}
+#world{position:absolute;left:0;top:0;transform-origin:0 0}
+svg.edges{position:absolute;left:0;top:0;overflow:visible;pointer-events:none}
+.edges path{fill:none;stroke:var(--line);stroke-width:1.2}
+.edges path.fail{stroke:var(--fail)}
+.elbl{position:absolute;transform:translate(-50%,-50%);background:var(--bg);color:var(--mut);font-size:10.5px;padding:0 4px;white-space:nowrap;pointer-events:none}
+.elbl.fail{color:var(--fail)}
+.n{position:absolute}
+.n.dec,.n.start{width:150px;padding:8px 10px;border:1px solid var(--line);background:var(--card);text-align:center;font-size:11.5px;font-weight:600}
+.n.start{border-radius:20px;border-color:var(--ink)}
+.n.dec small,.n.gap small{display:block;font-weight:400;color:var(--mut);font-size:10.5px;margin-top:2px}
+.n.scr{width:172px;cursor:pointer}
+.n .ttl{font-size:11.5px;font-weight:600;line-height:1.25}
+.n .sub{font-size:10.5px;color:var(--mut);margin:1px 0 6px}
+.n .role{display:inline-block;font:500 9.5px/1 "IBM Plex Mono",monospace;padding:2px 4px;border:1px solid var(--line);color:var(--ink2);margin-left:4px;vertical-align:1px}
+.thumb{width:164px;height:328px;overflow:hidden;border:1px solid var(--line);border-radius:14px;background:var(--card);position:relative}
+.thumb iframe{width:390px;height:780px;border:0;transform:scale(.4205);transform-origin:0 0;pointer-events:none;background:#fff}
+.n.scr:hover .thumb,.n.hl .thumb,.n.hl.gap{outline:2px solid var(--sel);outline-offset:3px}
+.n.has-f .ttl::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--warn);margin-right:5px;vertical-align:1px}
+.n.has-f.sev-tinggi .ttl::before{background:var(--fail)}
+.n.gap{width:172px;padding:10px 12px 12px;border:1.5px dashed var(--fail);background:var(--fail-bg);cursor:pointer}
+.n.gap .ttl{color:var(--fail)}
+.n.gap .ttl::before{display:none}
+.n.gap p{font-size:11px;color:var(--ink2);margin-top:6px;line-height:1.4}
+.ctl{position:fixed;right:14px;bottom:14px;display:flex;align-items:center;gap:2px;background:var(--card);border:1px solid var(--line2);padding:3px;z-index:20}
+.ctl button{border:0;background:transparent;min-width:30px;height:28px;cursor:pointer}
+.ctl span{min-width:44px;text-align:center;color:var(--ink2);font-size:12px}
+.legend{position:fixed;left:14px;bottom:14px;background:var(--card);border:1px solid var(--line2);padding:8px 10px;font-size:11.5px;color:var(--ink2);z-index:20;max-width:calc(100vw - 230px)}
+.legend b{color:var(--ink)}
+.side{position:fixed;top:44px;right:0;bottom:0;width:340px;background:var(--card);border-left:1px solid var(--line2);z-index:15;overflow:auto;padding:16px 16px 70px;transform:translateX(100%);transition:transform .2s}
+.side.on{transform:none}
+.side h2{font-size:15px}
+.side .lead{color:var(--mut);font-size:12px;margin:4px 0 12px}
+.fi{display:block;width:100%;text-align:left;border:0;border-top:1px solid var(--line2);background:transparent;padding:10px 0;cursor:pointer}
+.fi:hover b{text-decoration:underline}
+.fi b{display:block;font-size:12.5px}
+.fi span{display:block;font-size:12px;color:var(--ink2);margin-top:3px}
+.fi .sev{display:inline-block;color:#fff;margin-top:0}
+.sev{display:inline-block;font:500 9.5px/1 "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.05em;padding:3px 5px;margin-right:6px;color:#fff;background:var(--warn);vertical-align:1px}
+.sev.tinggi{background:var(--fail)}
+.sev.rendah{background:var(--mut)}
+.sev.fixed{background:var(--ok);color:var(--card)}
+.n.has-f.fixed .ttl::before{background:var(--ok)}
+.minfo .fn.fixed{border-left-color:var(--ok)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:40;display:none;align-items:center;justify-content:center;padding:16px}
+.modal.on{display:flex}
+.mbox{background:var(--card);display:flex;gap:22px;padding:16px;max-height:100%;max-width:100%}
+.mbox iframe{width:390px;height:min(780px,calc(100vh - 64px));border:1px solid var(--line);border-radius:18px;background:#fff;flex:none}
+.minfo{width:300px;overflow:auto;display:flex;flex-direction:column;gap:10px}
+.minfo h3{font-size:17px;line-height:1.25}
+.minfo .k{font:500 10.5px/1 "IBM Plex Mono",monospace;text-transform:uppercase;letter-spacing:.06em;color:var(--mut);margin-top:6px}
+.minfo p{font-size:13px;color:var(--ink2)}
+.minfo code{font:12px "IBM Plex Mono",monospace;word-break:break-all}
+.minfo .okn{border-left:3px solid var(--ok);padding:6px 10px;font-size:12.5px}
+.minfo .fn{border-left:3px solid var(--fail);padding:6px 10px;font-size:12.5px}
+.minfo .act{display:flex;gap:8px;margin-top:auto;padding-top:10px}
+.minfo a{color:var(--sel)}
+.warnbar{position:fixed;top:52px;left:50%;transform:translateX(-50%);background:var(--fail-bg);border:1px solid var(--fail);color:var(--ink);padding:8px 12px;z-index:30;font-size:12.5px;display:none;max-width:calc(100vw - 32px)}
+@media (max-width:760px){.top .meta,.cnt{display:none}.legend{display:none}.side{width:100%}.mbox{flex-direction:column;overflow:auto}.mbox iframe{width:100%;height:70vh}.minfo{width:auto}}
+</style>
+</head>
+<body>
+<div class="top">
+  <select id="flow" aria-label="Aliran"></select>
+  <span class="meta">Telefon 390px · Senario disimulasi pada mockup-agenda</span>
+  <span class="sp"></span>
+  <span class="cnt" id="cnt"></span>
+  <button class="tb" id="fbtn" aria-pressed="false">Dapatan</button>
+  <button class="tb" id="theme">Gelap</button>
+</div>
+<div class="warnbar" id="warnbar">Simulasi skrin perlukan pelayan setempat: jalankan pelayan statik pada folder <code>docs/adr-005</code> dan buka <code>mockup-agenda/peta-senario.html</code>.</div>
+<div id="stage"><div id="world"><svg class="edges" id="edges" width="1" height="1"><defs><marker id="ar" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8" style="fill:none;stroke:var(--line);stroke-width:1.4"/></marker><marker id="arf" viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L8,4 L0,8" style="fill:none;stroke:var(--fail);stroke-width:1.4"/></marker></defs></svg></div></div>
+<div class="legend"><b>Cara baca:</b> kotak = keputusan · kad = skrin sebenar (klik untuk buka) · garis merah = laluan gagal · kotak putus-putus merah = <b>tiada skrin</b> · titik = dapatan. Seret untuk gerak, roda untuk zum.</div>
+<div class="ctl"><button id="zo" aria-label="Zum keluar">−</button><span id="zv">65%</span><button id="zi" aria-label="Zum masuk">+</button><button id="fit" style="padding:0 8px">Muat skrin</button></div>
+<aside class="side" id="side" aria-label="Dapatan audit"></aside>
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="mbox"><iframe id="mfr" title="Skrin"></iframe><div class="minfo" id="minfo"></div></div></div>
+
+<script>
+(function () {
+  /* ---------- Data aliran ----------
+     Nod: k = start | dec | scr | gap; c,r = lajur/baris grid (pusat menegak); u = halaman mockup; run = simulasi;
+     toast = mesej sebenar dari kod (dipapar dalam skrin); f = dapatan {sev, t, fixed}; ok = keadaan yang sudah betul.
+     Tepi: [dari, ke, label, {fail, lane}] — lane = laluan mendatar pada y tertentu (atas/bawah). */
+  var EM = 'nur.aina@moe.gov.my';
+  var LOGIN = [['js', function (w) { w.sessionStorage.removeItem('ppdk-demo-mula'); }], ['type', '#em', EM], ['click', 'button[type=submit]']];
+  var FLOWS = [
+    { id: 'masuk', name: 'Log masuk staf', nodes: [
+      { id: 's', k: 'start', c: 0, r: 4, t: 'Staf buka aplikasi' },
+      { id: 'd1', k: 'dec', c: 1, r: 4, t: 'Peranti sudah log masuk?', s: 'Token peranti 365 hari' },
+      { id: 'login', k: 'scr', c: 2, r: 4, t: 'Log masuk', s: 'E-mel rasmi + kata laluan', u: 'log-masuk.html?sim=peta' },
+      { id: 'lupa', k: 'scr', c: 2, r: 8, t: 'Lupa kata laluan', s: 'Reset melalui Unit ICT', u: 'log-masuk.html?sim=lupa', f: { fixed: true, sev: 'sedang', t: 'Lupa kata laluan tiada jalan keluar dalam aplikasi: hanya ayat "Hubungi Unit ICT". Beri sekurang-kurangnya pautan terus (e-mel/WhatsApp ICT) dan anggaran masa reset.' } },
+      { id: 'dem', k: 'dec', c: 3, r: 4, t: 'E-mel @moe.gov.my?' },
+      { id: 'tem', k: 'scr', c: 3, r: 8, t: 'Log masuk · E-mel ditolak', s: 'Ralat di bawah e-mel', u: 'log-masuk.html?sim=peta', run: [['type', '#em', 'nur.aina@gmail.com'], ['click', 'button[type=submit]']], f: { fixed: true, sev: 'rendah', t: 'Ralat e-mel hanya toast (hilang selepas 4.2 s), bukan di bawah medan. Medan difokus, tetapi mesej hilang sebelum pengguna perlahan sempat membaca.' } },
+      { id: 'dpw', k: 'dec', c: 4, r: 4, t: 'Kata laluan betul?' },
+      { id: 'gpw', k: 'scr', c: 4, r: 8, t: 'Kata laluan salah', s: 'Ralat kekal + baki cubaan', u: 'log-masuk.html?sim=peta', run: [['type', '#em', EM], ['type', '#pw', 'salah'], ['click', 'button[type=submit]']], f: { fixed: true, sev: 'tinggi', t: 'Kata laluan salah tidak dimodelkan. Perlu: mesej yang tidak mendedahkan sama ada e-mel wujud, had cubaan, dan jalan keluar (lupa kata laluan).' } },
+      { id: 'kunci', k: 'scr', c: 4, r: 11.5, t: 'Dikunci selepas 5 cubaan', s: 'Terus dikunci · butang dilumpuhkan', u: 'log-masuk.html?sim=peta', run: [['type', '#em', EM], ['type', '#pw', 'salah'], ['click', 'button[type=submit]'], ['click', 'button[type=submit]'], ['click', 'button[type=submit]'], ['click', 'button[type=submit]'], ['click', 'button[type=submit]']], f: { p: 2, fixed: true, sev: 'sedang', t: 'Kunci hanya kelihatan selepas menekan Log masuk: selepas muat semula borang nampak biasa dan butang kekal aktif. Masa berbaki tidak dipapar, dan bila kunci tamat kiraan diset semula senyap. Tunjuk kunci terus (butang dilumpuhkan + "cuba lagi pada 09:12").' } },
+      { id: 'dgt', k: 'dec', c: 5, r: 4, t: 'Akaun aktif?', s: 'Gantung / reset (K1)' },
+      { id: 'ggt', k: 'scr', c: 5, r: 8, t: 'Akaun tidak aktif', s: 'Token dibatalkan + hubungi ICT', u: 'log-masuk.html?sim=gantung', f: { fixed: true, sev: 'tinggi', t: 'Akaun digantung/direset (K1) tiada skrin. Staf yang token perantinya dibatalkan akan "terkeluar" tanpa penjelasan. Perlu skrin ringkas: akaun tidak aktif + hubungi Unit ICT.' } },
+      { id: 'dfirst', k: 'dec', c: 6, r: 4, t: 'Log masuk pertama?' },
+      { id: 'sah', k: 'scr', c: 7, r: 4, t: 'Sahkan maklumat', s: 'Langkah 1/3', u: 'log-masuk.html?sim=peta', run: LOGIN },
+      { id: 'dinfo', k: 'dec', c: 8, r: 4, t: 'Maklumat betul?' },
+      { id: 'betul', k: 'scr', c: 8, r: 8, t: 'Mohon pembetulan', s: 'Langkah 1/3 · Ada yang salah', u: 'log-masuk.html?sim=peta', run: LOGIN.concat([['click', '#salah'], ['type', '#bt', 'Jawatan saya perlu dibetulkan.'], ['click', '#hantar']]), f: { fixed: true, sev: 'sedang', t: 'Selepas "Hantar", toast "Permohonan pembetulan dihantar" lalu terus ke kata laluan. Maklum balas hanya toast 4 saat dan aliran ini tidak menunjukkan di mana status permohonan boleh disemak; sementara itu nama/jawatan lama terus dipapar dalam laporan.' } },
+      { id: 'kata', k: 'scr', c: 9, r: 4, t: 'Kata laluan baharu', s: 'Langkah 2/3', u: 'log-masuk.html?sim=peta', run: LOGIN.concat([['click', '#ok']]) },
+      { id: 'dlen', k: 'dec', c: 10, r: 4, t: '≥10 aksara & sepadan?' },
+      { id: 'tlen', k: 'scr', c: 10, r: 8, t: 'Kata laluan ditolak', s: 'Ralat berasingan pada medan', u: 'log-masuk.html?sim=peta', run: LOGIN.concat([['click', '#ok'], ['type', '#p1', 'abc'], ['click', '#nx']]), f: { fixed: true, sev: 'sedang', t: 'Satu mesej untuk dua ralat berbeza (terlalu pendek / tidak sepadan), toast sahaja. Tunjuk ralat pada medan berkaitan.' } },
+      { id: 'notif', k: 'scr', c: 11, r: 4, t: 'Peringatan', s: 'Langkah 3/3', u: 'log-masuk.html?sim=peta', run: LOGIN.concat([['click', '#ok'], ['type', '#p1', 'kataLaluan2026'], ['type', '#p2', 'kataLaluan2026'], ['click', '#nx']]) },
+      { id: 'hari', k: 'scr', c: 12, r: 4, t: 'Hari ini', s: 'Skrin utama staf', u: 'hari-ini.html', ok: 'Destinasi semua laluan berjaya.' }
+    ], edges: [
+      ['s', 'd1'], ['d1', 'login', 'Tidak'], ['d1', 'hari', 'Ya', { lane: -40 }],
+      ['login', 'dem'], ['login', 'lupa', 'Lupa', { fail: true }],
+      ['dem', 'tem', 'Tidak', { fail: true }], ['dem', 'dpw', 'Ya'],
+      ['dpw', 'gpw', 'Tidak', { fail: true }], ['dpw', 'dgt', 'Ya'], ['gpw', 'kunci', 'Cubaan ke-5', { fail: true }],
+      ['dgt', 'ggt', 'Digantung', { fail: true }], ['dgt', 'dfirst', 'Aktif'],
+      ['dfirst', 'sah', 'Ya'], ['dfirst', 'hari', 'Tidak', { lane: 20 }],
+      ['sah', 'dinfo'], ['dinfo', 'kata', 'Betul'], ['dinfo', 'betul', 'Ada yang salah', { fail: true }], ['betul', 'kata', 'Hantar'],
+      ['kata', 'dlen'], ['dlen', 'tlen', 'Tidak', { fail: true }], ['dlen', 'notif', 'Ya'], ['notif', 'hari', 'Mula guna']
+    ] },
+
+    { id: 'lapor', name: 'Rekod → laporan → terbit', nodes: [
+      { id: 's', k: 'start', c: 0, r: 4, t: 'Pegawai ada tugas baharu' },
+      { id: 'rekod', k: 'scr', c: 1, r: 4, t: '+ Rekod', s: 'Tugas rasmi / Tidak di pejabat', u: 'rekod.html' },
+      { id: 'djen', k: 'dec', c: 2, r: 4, t: 'Jenis rekod?' },
+      { id: 'cuti', k: 'scr', c: 2, r: 8, t: 'Tidak di pejabat', s: 'Cuti / urusan', u: 'rekod.html', run: [['click', '#kind button:nth-child(2)']], ok: 'Ralat tarikh ditunjuk dalam halaman (role="alert"), bukan toast.' },
+      { id: 'dsimpan', k: 'dec', c: 3, r: 4, t: 'Simpan berjaya?' },
+      { id: 'gsimpan', k: 'scr', c: 3, r: 8, t: 'Simpan gagal (rangkaian)', s: 'Input kekal + Cuba semula', u: 'rekod.html?sim=rangkaian', run: [['click', '#mod [data-v=lain]'], ['type', '#lokasi', 'Pejabat PPD Kuching'], ['click', '#save']], f: { fixed: true, sev: 'tinggi', t: 'Gagal simpan kerana rangkaian/luar talian tidak dimodelkan. Mockup hanya ada toast storan sesi penuh. Perlu keadaan "belum dihantar · cuba semula" tanpa hilang input — penting untuk lawatan sekolah luar bandar.' } },
+      { id: 'jadual', k: 'scr', c: 4, r: 4, t: 'Jadual', s: 'Status: Dirancang', u: 'jadual.html' },
+      { id: 'hari', k: 'scr', c: 5, r: 4, t: 'Hari ini', s: 'Mula / Tamat dari kad', u: 'hari-ini.html' },
+      { id: 'dlepas', k: 'dec', c: 6, r: 4, t: 'Tugas tamat?', s: 'Tamat ditekan atau tarikh lepas' },
+      { id: 'akt', k: 'scr', c: 7, r: 4, t: 'Rekod Aktiviti', s: 'Perlu tindakan: Perlu laporan', u: 'aktiviti.html' },
+      { id: 'lap', k: 'scr', c: 8, r: 4, t: 'Laporan · Langkah 1', s: 'Maklumat', u: 'lapor.html?id=A102' },
+      { id: 'dai', k: 'dec', c: 9, r: 4, t: 'Guna Draf AI?', s: 'Anggaran 30–50 s' },
+      { id: 'gai', k: 'scr', c: 9, r: 8, t: 'Draf AI gagal / lambat', s: 'Ralat inline; ai-lambat = timeout', u: 'lapor.html?id=A102&sim=ai-gagal', run: [['click', '#next'], ['type', '#cat', 'Guru memerlukan bimbingan susulan.'], ['click', '#ai']], f: { fixed: true, sev: 'sedang', t: 'Draf AI tiada keadaan gagal (kuota Gemini habis, masa tamat, rangkaian putus). Perlu mesej + catatan asal kekal + boleh tulis sendiri.' } },
+      { id: 'dsah', k: 'dec', c: 10, r: 4, t: '"Sahkan semakan" ditanda?' },
+      { id: 'tsah', k: 'scr', c: 10, r: 8, t: 'Belum disahkan', s: 'Ralat kekal + fokus kotak semak', u: 'lapor.html?id=A102', run: [['click', '#next'], ['type', '#rum', 'Rumusan contoh untuk semakan.'], ['click', '#next'], ['click', '#save']], f: { fixed: true, sev: 'rendah', t: '"Sahkan semakan dahulu" = toast; kotak semak difokus (baik), tetapi tiada teks ralat kekal di sebelahnya.' } },
+      { id: 'siap', k: 'scr', c: 11, r: 4, t: 'Laporan lengkap', s: 'Kekal dalaman', u: 'lapor.html?id=A101' },
+      { id: 'dboleh', k: 'dec', c: 12, r: 4, t: 'Boleh terbit?', s: 'Bukan SPsK / SPP / Sulit' },
+      { id: 'dalam', k: 'scr', c: 12, r: 8, t: 'Kekal dalaman', s: 'Sektor sensitif', u: 'aktiviti.html?terbit=C307', ok: 'Ada mesej jelas: "penerbitan awam belum dibuka".' },
+      { id: 'mohon', k: 'scr', c: 13, r: 4, t: 'Mohon terbit', s: 'Laporan tanpa gambar', u: 'aktiviti.html?terbit=A102' },
+      { id: 'dgam', k: 'dec', c: 14, r: 4, t: 'Semakan ditanda & ada gambar?' },
+      { id: 'ggam', k: 'scr', c: 14, r: 8, t: 'Gambar diperlukan', s: 'Sebab + pautan langkah gambar', u: 'aktiviti.html?role=staf&terbit=A102', f: { fixed: true, sev: 'sedang', t: 'Tiada gambar melumpuhkan "Hantar untuk semakan" tanpa sebab ditulis (sektor sensitif ada mesej, tiada gambar tidak). Tulis "Tambah sekurang-kurangnya satu gambar" + pautan ke Langkah gambar.' } },
+      { id: 'ketua', k: 'scr', c: 15, r: 4, t: 'Semak laporan', s: 'Menunggu semakan', role: 'Ketua', u: 'aktiviti.html?role=ketua&terbit=A103' },
+      { id: 'dlulus', k: 'dec', c: 16, r: 4, t: 'Ketua lulus?' },
+      { id: 'gpul', k: 'scr', c: 16, r: 8, t: 'Dipulangkan dengan sebab', s: 'Pegawai ubah dan hantar semula', u: 'aktiviti.html?role=staf&f=pulang', run: [['js', function (w) { var r = w.D.REKOD.filter(function (r) { return r.id === 'A110'; })[0]; if (r) w.D.openRecord(r); }]], f: { fixed: true, sev: 'tinggi', t: '"Pulangkan" tiada medan sebab, dan senarai peringatan tidak ada "laporan dipulangkan". Pegawai tidak tahu laporannya ditolak, apatah lagi apa perlu dibaiki.' } },
+      { id: 'gterbit', k: 'scr', c: 15, r: 8, t: 'Terbit gagal (rangkaian)', s: 'Perubahan dibatalkan + Cuba semula', role: 'Ketua', u: 'aktiviti.html?role=ketua&terbit=A103&sim=rangkaian', run: [['js', function (w) { [].forEach.call(w.document.querySelectorAll('#drawer .ck'), function (c) { c.click(); }); }], ['click', '#drawer [data-act=pub]']], f: { fixed: true, sev: 'tinggi', t: 'Ditemui semakan bebas pusingan 1: Terbit / Hantar / Pulangkan semasa simpan gagal menutup laci dan memaparkan "Diterbitkan" walaupun tiada apa disimpan. Kini perubahan dibatalkan, laci kekal dan banner Cuba semula dipapar.' } },
+      { id: 'semula', k: 'scr', c: 16, r: 11.5, t: 'Ubah & hantar semula', s: 'Satu tindakan + gambar wajib', u: 'lapor.html?id=A110', run: [['click', '#next'], ['click', '#next']], f: { p: 2, fixed: true, sev: 'sedang', t: 'Butang "Ubah & hantar semula" membawa ke laporan, tetapi Simpan hanya berkata "Kekal dalaman" dan status kekal Dipulangkan. Pegawai perlu tekan Mohon terbit, tanda semakan dan Hantar lagi — label menjanjikan satu langkah. Gabungkan: "Simpan & hantar semula" terus ke Menunggu semakan.' } },
+      { id: 'portal', k: 'scr', c: 17, r: 4, t: 'Portal ppdk.ch', s: 'Diterbitkan', role: 'Awam', u: 'portal.html' },
+      { id: 'awam', k: 'scr', c: 18, r: 4, t: 'Laporan awam', s: 'Halaman laporan', role: 'Awam', u: 'laporan.html?id=C304' }
+    ], edges: [
+      ['s', 'rekod'], ['rekod', 'djen'], ['djen', 'cuti', 'Tidak di pejabat'], ['djen', 'dsimpan', 'Tugas rasmi'],
+      ['dsimpan', 'gsimpan', 'Gagal', { fail: true }], ['dsimpan', 'jadual', 'Ya'], ['jadual', 'hari', 'Hari tugas'], ['hari', 'dlepas'],
+      ['dlepas', 'akt', 'Perlu laporan'], ['akt', 'lap', 'Tulis laporan'], ['lap', 'dai'], ['dai', 'gai', 'Gagal', { fail: true }], ['dai', 'dsah', 'Ya / tulis sendiri'],
+      ['dsah', 'tsah', 'Tidak', { fail: true }], ['dsah', 'siap', 'Ya'], ['siap', 'dboleh'], ['dboleh', 'dalam', 'Tidak'], ['dboleh', 'mohon', 'Ya'],
+      ['mohon', 'dgam'], ['dgam', 'ggam', 'Tiada gambar', { fail: true }], ['dgam', 'ketua', 'Hantar'], ['ketua', 'dlulus'],
+      ['dlulus', 'gpul', 'Pulangkan', { fail: true }], ['dlulus', 'portal', 'Terbit'], ['portal', 'awam'],
+      ['ketua', 'gterbit', 'Simpan gagal', { fail: true }], ['gpul', 'semula', 'Ubah & hantar semula']
+    ] },
+
+    { id: 'awam', name: 'Orang awam di ppdk.ch', nodes: [
+      { id: 's', k: 'start', c: 0, r: 4, t: 'Buka ppdk.ch' },
+      { id: 'portal', k: 'scr', c: 1, r: 4, t: 'Portal', s: 'Laporan utama + lain', role: 'Awam', u: 'portal.html' },
+      { id: 'dsek', k: 'dec', c: 2, r: 4, t: 'Sektor ada laporan diterbitkan?' },
+      { id: 'kosong', k: 'scr', c: 2, r: 8, t: 'Sektor kosong', s: 'SPsK belum terbit', role: 'Awam', u: 'sektor.html?s=SPsK', ok: 'Keadaan kosong ada ayat jelas.' },
+      { id: 'sek', k: 'scr', c: 3, r: 4, t: 'Sektor', s: 'SPb', role: 'Awam', u: 'sektor.html?s=SPb' },
+      { id: 'lap', k: 'scr', c: 4, r: 4, t: 'Laporan', s: 'Dibuka dari sektor', role: 'Awam', u: 'laporan.html?id=C304' },
+      { id: 'tiada', k: 'scr', c: 4, r: 8, t: 'Laporan tidak ditemui', s: 'Pautan lama / ditarik balik', role: 'Awam', u: 'laporan.html?id=TIADA', ok: 'Ada mesej + jalan kembali.' },
+      { id: 'dkon', k: 'dec', c: 5, r: 4, t: 'Salin pautan berjaya?' },
+      { id: 'kon', k: 'scr', c: 6, r: 4, t: 'Pautan disalin', s: 'Toast', role: 'Awam', u: 'laporan.html?id=C304&sim=salin', run: [['click', '#cp']], toast: 'Pautan disalin' },
+      { id: 'konx', k: 'scr', c: 5, r: 8, t: 'Salin gagal', s: 'Pautan boleh dipilih', role: 'Awam', u: 'laporan.html?id=C304&sim=kongsi-gagal', run: [['click', '#cp']], f: { fixed: true, sev: 'rendah', t: 'Salin gagal → "Salin pautan dari bar alamat pelayar" (toast). Di telefon bar alamat selalu tersorok; guna kongsi asli telefon (navigator.share) dahulu.' } }
+    ], edges: [
+      ['s', 'portal'], ['portal', 'dsek'], ['dsek', 'kosong', 'Belum'], ['dsek', 'sek', 'Ada'], ['sek', 'lap'],
+      ['lap', 'tiada', 'Pautan tidak sah', { fail: true }], ['lap', 'dkon', 'Salin pautan'], ['dkon', 'kon', 'Ya'], ['dkon', 'konx', 'Tidak', { fail: true }]
+    ] },
+
+    /* ---------- Pusingan 2 (26 Okt): aliran baharu ---------- */
+    { id: 'cuti', name: 'Jadual & Tidak di pejabat', nodes: [
+      { id: 's', k: 'start', c: 0, r: 4, t: 'Pegawai tidak di pejabat' },
+      { id: 'rek', k: 'scr', c: 1, r: 4, t: 'Tidak di pejabat', s: 'Borang + pratonton', u: 'rekod.html?jenis=cuti', ok: 'Pratonton jelas: rakan nampak "Tidak di pejabat", jenis cuti tidak dipapar.' },
+      { id: 'dtarikh', k: 'dec', c: 2, r: 4, t: 'Tarikh sah?' },
+      { id: 'gtarikh', k: 'scr', c: 2, r: 8, t: 'Tarikh salah', s: 'Ralat dalam halaman', u: 'rekod.html?jenis=cuti', run: [['type', '#cdari', '2026-10-20'], ['type', '#chingga', '2026-10-19'], ['click', '#save'], ['js', function (w) { w.document.getElementById('error').scrollIntoView({ block: 'center' }); }]], ok: 'Ralat dalam halaman: "Belum disimpan."' },
+      { id: 'dtindih', k: 'dec', c: 3, r: 4, t: 'Bertindih dengan tugas sendiri?' },
+      { id: 'gtindih', k: 'scr', c: 3, r: 8, t: 'Bertindih tanpa amaran', s: 'Amaran + Simpan juga', u: 'rekod.html?jenis=cuti', run: [['type', '#cdari', '2026-10-15'], ['type', '#chingga', '2026-10-15'], ['click', '#save']], f: { p: 2, fixed: true, sev: 'tinggi', t: 'Cuti 15 Okt diterima tanpa amaran walaupun pegawai ada dua tugas pada hari itu (A104, A105). Tiada semakan pertindihan cuti↔tugas, cuti↔cuti atau tugas↔tugas. Tugas kekal "Mula tugas" di Hari ini sementara Jadual menunjukkan Tidak di pejabat. Tunjuk amaran + pilihan batal/ubah tugas berkaitan.' } },
+      { id: 'jad', k: 'scr', c: 4, r: 4, t: 'Disimpan → Jadual', s: 'Minggu rekod + disorot', u: 'jadual.html?v=semua&d=2026-10-15&baru=L1', f: { p: 2, fixed: true, sev: 'sedang', t: 'Selepas Simpan, terus ke Jadual minggu semasa tanpa mesej. Tarikh lalai borang ialah 19 Okt (minggu depan), jadi rekod baharu tidak kelihatan dan pegawai tidak pasti ia tersimpan. Buka Jadual pada minggu rekod itu dan sorot rekod baharu.' } },
+      { id: 'dubah', k: 'dec', c: 5, r: 4, t: 'Rancangan berubah?' },
+      { id: 'laci', k: 'scr', c: 6, r: 4, t: 'Butiran makluman', s: 'Batal makluman · Ubah makluman', u: 'jadual.html', run: [['js', function (w) { var m = w.M.me(), c = { id: 'LPETA', owner: m.name, sek: m.sek, dari: '2026-10-16', hingga: '2026-10-16', jenis: 'Cuti rehat', bahagian: 'petang' }; w.D.CUTI.push(c); w.D.openCuti(c); }]], f: { p: 2, fixed: true, sev: 'tinggi', t: 'Makluman Tidak di pejabat tidak boleh dibatalkan atau dipadam: laci hanya ada "Ubah makluman", borang juga tiada Batal. Jika urusan dibatalkan, pegawai kekal "Tidak di pejabat" pada Jadual dan Log Pergerakan.' } },
+      { id: 'ubah', k: 'scr', c: 6, r: 8, t: 'Ubah makluman', s: 'Bahagian hari dipulihkan', u: 'rekod.html?jenis=cuti', f: { p: 2, fixed: true, sev: 'sedang', t: 'Semasa ubah, Dari / Hingga / Jenis diisi semula tetapi Bahagian hari (Pagi / Petang) tidak: borang kembali ke "Sehari" dan Simpan menulis ganti. Cuti separuh hari senyap menjadi sehari penuh.' } }
+    ], edges: [
+      ['s', 'rek'], ['rek', 'dtarikh'], ['dtarikh', 'gtarikh', 'Tidak', { fail: true }], ['dtarikh', 'dtindih', 'Ya'],
+      ['dtindih', 'gtindih', 'Ya', { fail: true }], ['dtindih', 'jad', 'Tidak'], ['jad', 'dubah'], ['dubah', 'laci', 'Ya'], ['laci', 'ubah', 'Ubah makluman']
+    ] },
+
+    { id: 'tugas', name: 'Hari ini → tugas', nodes: [
+      { id: 's', k: 'start', c: 0, r: 4, t: 'Pegawai buka Hari ini' },
+      { id: 'hari', k: 'scr', c: 1, r: 4, t: 'Hari ini', s: 'Kad Sekarang', u: 'hari-ini.html' },
+      { id: 'peserta', k: 'scr', c: 1, r: 8, t: 'Peserta: baca sahaja', s: 'Ingatkan pemilik', u: 'lapor.html?id=A111', f: { p: 2, fixed: true, sev: 'sedang', t: 'Peserta tugas bersama hanya nampak "Paparan baca sahaja". Jika pemilik tidak menamatkan atau melapor, peserta tiada tindakan (ingatkan pemilik / minta ambil alih) dan tugas itu tidak dikira dalam Ringkasan.' } },
+      { id: 'dbila', k: 'dec', c: 2, r: 4, t: 'Bila tugas?' },
+      { id: 'depan', k: 'scr', c: 2, r: 8, t: 'Tugas akan datang', s: 'Batal · Salin · Ubah', u: 'hari-ini.html', run: [['js', function (w) { w.D.openRecord(w.D.REKOD.filter(function (r) { return r.id === 'A108'; })[0]); }]], ok: 'Batal ada sebab (pilihan) dan langkah pengesahan.' },
+      { id: 'gbatal', k: 'scr', c: 2, r: 11.5, t: 'Batal semasa luar talian', s: 'Banner Cuba semula, tiada toast', u: 'hari-ini.html?sim=rangkaian', run: [['js', function (w) { w.D.openRecord(w.D.REKOD.filter(function (r) { return r.id === 'A108'; })[0]); }], ['click', '#drawer [data-act=batal]'], ['click', '#drawer [data-act=sah]']], f: { p: 2, fixed: true, sev: 'sedang', t: '"Sahkan batal" tidak menyemak keputusan simpan: semasa sambungan terputus toast "Rancangan dibatalkan" tetap muncul dan laci ditutup, tetapi tiada apa disimpan. Guna corak banner Cuba semula yang sama seperti Laporan.' } },
+      { id: 'kini', k: 'scr', c: 3, r: 4, t: 'Hari tugas', s: 'Batal · Ubah rancangan · Mula', u: 'hari-ini.html', run: [['js', function (w) { w.D.openRecord(w.D.REKOD.filter(function (r) { return r.id === 'A104'; })[0]); }]], f: { p: 2, fixed: true, sev: 'tinggi', t: 'Pada hari tugas, laci hanya ada "Ubah rancangan" dan "Mula tugas" — tiada Batal. Selepas Mula, tiada cara undur atau batal. Lawatan yang ditunda oleh sekolah pagi itu terpaksa "ditamatkan" dan dilaporkan, atau dibiarkan tertunggak.' } },
+      { id: 'mula', k: 'scr', c: 4, r: 4, t: 'Tugas dimulakan', s: 'Tamatkan & tulis laporan', u: 'hari-ini.html', run: [['js', function (w) { var r = w.D.REKOD.filter(function (r) { return r.id === 'A104'; })[0]; r.dimula = true; w.D.openRecord(r); }]], toast: 'Tugas dimulakan', ok: 'Tamat terus membuka laporan rekod yang sama.' },
+      { id: 'selesai', k: 'scr', c: 5, r: 4, t: 'Jadual hari ini telah tamat', s: 'Kini dalam Perlu tindakan', u: 'hari-ini.html', run: [['js', function (w) { var m = w.M.me().name; w.D.REKOD.forEach(function (r) { if (w.D.onDate(r, w.M.TODAY) && w.D.involves(r, m)) r.status = 'selesai'; }); w.document.dispatchEvent(new w.Event('datachange')); }]], f: { p: 2, fixed: true, sev: 'sedang', t: 'Kad berkata "Laporan boleh dilengkapkan di bawah", tetapi tugas yang tamat hari ini tidak masuk "Perlu tindakan" (hanya tarikh lepas). Pegawai tidak nampak laporan yang perlu ditulis sehingga esok.' } }
+    ], edges: [
+      ['s', 'hari'], ['hari', 'dbila'], ['hari', 'peserta', 'Tugas bersama'], ['dbila', 'depan', 'Akan datang'], ['dbila', 'kini', 'Hari ini'],
+      ['depan', 'gbatal', 'Batal · luar talian', { fail: true }], ['kini', 'mula', 'Mula tugas'], ['mula', 'selesai', 'Tamat semua']
+    ] },
+
+    { id: 'ringkasan', name: 'Ringkasan Bulanan', nodes: [
+      { id: 's', k: 'start', c: 0, r: 4, t: 'Buka Ringkasan Bulanan' },
+      { id: 'ring', k: 'scr', c: 1, r: 4, t: 'Ringkasan · sektor sendiri', s: 'Banding bulan lepas', role: 'Staf', u: 'ringkasan.html?role=staf' },
+      { id: 'dperan', k: 'dec', c: 2, r: 4, t: 'Pilih Semua sektor?' },
+      { id: 'semua', k: 'scr', c: 2, r: 8, t: 'Staf lihat semua sektor', s: 'Sektor sendiri sahaja', role: 'Staf', u: 'ringkasan.html?role=staf', f: { p: 2, fixed: true, sev: 'sedang', t: 'Staf boleh pilih "Semua sektor" dan mana-mana sektor, sedangkan Profil menyenaraikan "Ringkasan Bulanan semua sektor" untuk KPPD sahaja. Perlu keputusan: hadkan pemilih ikut peranan, atau betulkan senarai kebenaran di Profil.' } },
+      { id: 'dbulan', k: 'dec', c: 3, r: 4, t: 'Bulan ada data?' },
+      { id: 'kosong', k: 'scr', c: 3, r: 8, t: 'Belum ada data', s: 'SPsK · September', u: 'ringkasan.html?role=kppd', run: [['js', function (w) { var d = w.document, s = d.getElementById('csek'), b = d.getElementById('cbln'); s.value = 'SPsK'; s.dispatchEvent(new w.Event('change')); b.value = '2026-09'; b.dispatchEvent(new w.Event('change')); }]], ok: 'Membezakan "belum ada data" daripada sifar; angka dipapar "—".' },
+      { id: 'drill', k: 'scr', c: 4, r: 4, t: 'Senarai sekolah', s: 'Sekolah menengah sahaja + Kembali', u: 'ringkasan.html?role=staf', run: [['click', '[data-dd=s][data-j=m]']], f: { p: 2, fixed: true, sev: 'rendah', t: 'Bar "Sekolah rendah" dan "Sekolah menengah" membuka senarai yang sama (tiada tapisan), dan tiada butang kembali dari senarai ke ringkasan.' } },
+      { id: 'pres', k: 'scr', c: 5, r: 4, t: 'Mod Pembentangan', s: 'Slaid + anak panah', role: 'KPPD', u: 'ringkasan.html?role=kppd', run: [['click', '#pres2']], ok: 'Satu ayat ringkas pada slaid pertama; Tutup/Esc.' }
+    ], edges: [
+      ['s', 'ring'], ['ring', 'dperan'], ['dperan', 'semua', 'Ya (staf)', { fail: true }], ['dperan', 'dbulan', 'Sektor sendiri'],
+      ['dbulan', 'kosong', 'Belum'], ['dbulan', 'drill', 'Ada'], ['drill', 'pres', 'Bentang']
+    ] },
+
+    { id: 'profil', name: 'Profil & sesi', nodes: [
+      { id: 's', k: 'start', c: 0, r: 4, t: 'Buka Profil' },
+      { id: 'prof', k: 'scr', c: 1, r: 4, t: 'Profil', s: 'Maklumat + kebenaran', u: 'profil.html' },
+      { id: 'dkl', k: 'dec', c: 2, r: 4, t: 'Tukar kata laluan?' },
+      { id: 'kl', k: 'scr', c: 2, r: 8, t: 'Medan kosong → "ditukar"', s: 'Ralat pada setiap medan', u: 'profil.html', run: [['click', '#kl'], ['click', '#drawer .btn-ink']], f: { p: 2, fixed: true, sev: 'tinggi', t: 'Medan kosong, kurang 10 aksara atau kata laluan semasa salah tetap memaparkan "Kata laluan ditukar". Guna semula semakan langkah 2/3 log masuk (ralat pada medan) dan sahkan kata laluan semasa.' } },
+      { id: 'notif', k: 'scr', c: 3, r: 4, t: 'Peringatan', s: 'Disimpan serta-merta', u: 'profil.html', run: [['js', function (w) { var n = w.document.getElementById('notif'); n.scrollIntoView(); n.querySelector('input').click(); }]], f: { p: 2, fixed: true, sev: 'sedang', t: 'Togol peringatan tiada butang simpan atau maklum balas, dan kembali ke asal bila halaman dipapar semula (cth. tukar tema). Pegawai sangka sudah mematikan e-mel.' } },
+      { id: 'peranti', k: 'scr', c: 4, r: 4, t: 'Log keluar peranti', s: 'Pengesahan dahulu', u: 'profil.html', run: [['click', '[data-out]']], f: { p: 2, fixed: true, sev: 'rendah', t: 'Satu ketik terus log keluar peranti lain tanpa pengesahan atau undo. Peranti yang salah dipilih perlu log masuk semula.' } },
+      { id: 'sesi', k: 'scr', c: 5, r: 4, t: 'Token dibatalkan semasa digunakan', s: 'Draf disimpan pada peranti', u: 'lapor.html?id=A102&sim=token-batal', run: [['click', '#draf']], f: { p: 2, fixed: true, sev: 'sedang', t: 'Bila admin gantung/reset akaun semasa staf sedang menulis laporan, tiada keadaan dalam aplikasi. Perlu: simpan draf setempat dahulu, kemudian tunjuk "Akaun tidak aktif" (skrin log masuk sudah ada).' } }
+    ], edges: [
+      ['s', 'prof'], ['prof', 'dkl'], ['dkl', 'kl', 'Ya · medan kosong', { fail: true }], ['dkl', 'notif', 'Tidak'], ['notif', 'peranti'], ['peranti', 'sesi', 'Admin gantung akaun', { fail: true }]
+    ] }
+  ];
+
+  var CW = 205, RH = 120, OX = 40, OY = 40;
+  var $ = function (id) { return document.getElementById(id); };
+  var world = $('world'), svg = $('edges'), stage = $('stage');
+  var cur, nodes = {}, view = { x: 0, y: 0, z: .65 }, canSim = true;
+
+  /* ---------- Tema (sama kunci dengan suis Demo mockup) ---------- */
+  function getTheme() { try { var t = localStorage.getItem('ppdk-demo-tema'); if (t) return t; } catch (e) {} return matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'; }
+  function setTheme(t) {
+    try { localStorage.setItem('ppdk-demo-tema', t); } catch (e) {}
+    document.documentElement.setAttribute('data-theme', t);
+    $('theme').textContent = t === 'dark' ? 'Cerah' : 'Gelap';
+    [].forEach.call(document.querySelectorAll('iframe'), function (f) { try { f.contentDocument.documentElement.setAttribute('data-theme', t); } catch (e) {} });
+  }
+  $('theme').addEventListener('click', function () { setTheme(getTheme() === 'dark' ? 'light' : 'dark'); });
+
+  /* ---------- Simulasi dalam iframe (asal sama sahaja) ---------- */
+  function simulate(fr, n, live) {
+    var w, d; try { w = fr.contentWindow; d = w.document; d.body; } catch (e) { canSim = false; $('warnbar').style.display = 'block'; return; }
+    var steps = (n.run || []).slice();
+    (function next() {
+      var s = steps.shift();
+      if (!s) {
+        if (n.toast && w.M) { w.M.toast(n.toast); if (!live) { var t = d.querySelector('.toast'); if (t) d.body.appendChild(t.cloneNode(true)); } }
+        return;
+      }
+      try {
+        if (s[0] === 'js') s[1](w);
+        else { var el = d.querySelector(s[1]); if (el) { if (s[0] === 'type') { Object.getOwnPropertyDescriptor(el.tagName === 'TEXTAREA' ? w.HTMLTextAreaElement.prototype : w.HTMLInputElement.prototype, 'value').set.call(el, s[2]); el.dispatchEvent(new w.Event('input', { bubbles: true })); } else el.click(); } }
+      } catch (e) {}
+      setTimeout(next, 120);
+    })();
+  }
+  function frame(n, live) {
+    var f = document.createElement('iframe');
+    f.title = n.t; f.tabIndex = live ? 0 : -1;
+    f.addEventListener('load', function () { setTimeout(function () { simulate(f, n, live); }, 150); });
+    f.src = n.u;
+    return f;
+  }
+
+  /* ---------- Lukis aliran ---------- */
+  function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function render(fl) {
+    cur = fl; nodes = {};
+    [].forEach.call(world.querySelectorAll('.n,.elbl'), function (x) { x.remove(); });
+    [].forEach.call(svg.querySelectorAll('path:not(marker path)'), function (x) { x.remove(); });
+    fl.nodes.forEach(function (n) {
+      var el = document.createElement('div');
+      el.className = 'n ' + n.k + (n.f ? ' has-f sev-' + n.f.sev + (n.f.fixed ? ' fixed' : '') : '');
+      if (n.k === 'scr') {
+        el.innerHTML = '<div class="ttl">' + esc(n.t) + (n.role ? '<span class="role">' + esc(n.role) + '</span>' : '') + '</div><div class="sub">' + esc(n.s || '') + '</div><div class="thumb"></div>';
+        el.querySelector('.thumb').appendChild(frame(n, false));
+      } else if (n.k === 'gap') {
+        el.innerHTML = '<div class="ttl">Tiada skrin · ' + esc(n.t) + '</div><p>' + esc(n.p) + '</p>';
+      } else el.innerHTML = esc(n.t) + (n.s ? '<small>' + esc(n.s) + '</small>' : '');
+      if (n.k === 'scr' || n.k === 'gap') { el.dataset.id = n.id; el.setAttribute('role', 'button'); el.tabIndex = 0; el.setAttribute('aria-label', n.t); }
+      world.appendChild(el);
+      var h = el.offsetHeight, w = el.offsetWidth;
+      var x = OX + n.c * CW + (CW - w) / 2 - 20, y = OY + n.r * RH - h / 2 + 300;
+      el.style.left = x + 'px'; el.style.top = y + 'px';
+      nodes[n.id] = { n: n, el: el, x: x, y: y, w: w, h: h };
+    });
+    fl.edges.forEach(edge);
+    counts(); side(); fit();
+  }
+  function edge(e) {
+    var a = nodes[e[0]], b = nodes[e[1]], o = e[3] || {}, d, lx, ly;
+    var acx = a.x + a.w / 2, bcx = b.x + b.w / 2, acy = a.y + a.h / 2, bcy = b.y + b.h / 2;
+    if (o.lane != null) {
+      var top = o.lane < 0, yl = top ? Math.min(a.y, b.y) + o.lane : Math.max(a.y + a.h, b.y + b.h) + o.lane;
+      d = 'M' + acx + ',' + (top ? a.y : a.y + a.h) + ' V' + yl + ' H' + bcx + ' V' + (top ? b.y : b.y + b.h);
+      lx = acx + 40; ly = yl;
+    } else if (b.x > a.x + a.w) {
+      var ax = a.x + a.w, bx = b.x, mx = (ax + bx) / 2;
+      d = 'M' + ax + ',' + acy + ' H' + mx + ' V' + bcy + ' H' + bx;
+      if (Math.abs(acy - bcy) < 2) { lx = mx; ly = acy; } else { lx = mx; ly = (acy + bcy) / 2; }
+    } else {
+      var ay = a.y + a.h, by = b.y, my = (ay + by) / 2;
+      d = 'M' + acx + ',' + ay + ' V' + my + ' H' + bcx + ' V' + by;
+      lx = acx; ly = (ay + my) / 2;
+    }
+    var p = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    p.setAttribute('d', d); p.setAttribute('marker-end', o.fail ? 'url(#arf)' : 'url(#ar)'); if (o.fail) p.setAttribute('class', 'fail');
+    svg.appendChild(p);
+    if (e[2]) { var l = document.createElement('div'); l.className = 'elbl' + (o.fail ? ' fail' : ''); l.textContent = e[2]; l.style.left = lx + 'px'; l.style.top = ly + 'px'; world.appendChild(l); }
+  }
+  function all() { var r = []; FLOWS.forEach(function (fl) { fl.nodes.forEach(function (n) { r.push({ fl: fl, n: n }); }); }); return r; }
+  function counts() {
+    var ns = cur.nodes, sc = ns.filter(function (n) { return n.k === 'scr'; }).length, to = ns.filter(function (n) { return n.toast; }).length, gp = ns.filter(function (n) { return n.k === 'gap'; }).length;
+    var open = ns.filter(function (n) { return n.f && !n.f.fixed; }).length;
+    $('cnt').innerHTML = '<span><i></i>' + sc + ' skrin</span><span class="c-toast"><i></i>' + to + ' toast</span><span class="c-gap"><i></i>' + gp + ' tiada skrin</span><span>' + open + ' terbuka · ' + ns.filter(function (n) { return n.f && n.f.fixed; }).length + ' dibaiki</span>';
+    var findings = all().filter(function (x) { return x.n.f; });
+    $('fbtn').textContent = 'Dapatan (' + findings.filter(function (x) { return !x.n.f.fixed; }).length + ' terbuka · ' + findings.filter(function (x) { return x.n.f.fixed; }).length + ' dibaiki)';
+    [].forEach.call($('flow').options, function (o) { var fl = FLOWS.filter(function (f) { return f.id === o.value; })[0], k = fl.nodes.filter(function (n) { return n.f && !n.f.fixed; }).length; o.textContent = fl.name + (k ? ' · ' + k + ' terbuka' : ''); });
+  }
+  var RANK = { tinggi: 0, sedang: 1, rendah: 2 };
+  /* Terbuka dahulu (ikut keterukan), kemudian yang sudah dibaiki. p = pusingan audit yang menemui dapatan. */
+  function side() {
+    var list = all().filter(function (x) { return x.n.f; }).sort(function (a, b) { return (a.n.f.fixed ? 1 : 0) - (b.n.f.fixed ? 1 : 0) || RANK[a.n.f.sev] - RANK[b.n.f.sev]; });
+    var item = function (x) {
+      return '<button class="fi" data-fl="' + x.fl.id + '" data-id="' + x.n.id + '"><b><span class="sev ' + x.n.f.sev + '">' + x.n.f.sev + '</span>' + esc(x.n.t) + (x.n.f.fixed ? ' <span class="sev fixed">Dibaiki</span>' : '') + '</b><span>P' + (x.n.f.p || 1) + ' · ' + esc(x.fl.name) + ' — ' + esc(x.n.f.t) + '</span></button>';
+    };
+    var op = list.filter(function (x) { return !x.n.f.fixed; }), fx = list.filter(function (x) { return x.n.f.fixed; });
+    $('side').innerHTML = '<h2>Dapatan audit</h2><p class="lead">Pusingan 2 (26 Okt): semakan semula selepas pembaikan + 4 aliran baharu; 16 dapatan P2 kemudian dibaiki. Klik untuk pergi ke titik itu pada peta.</p>' +
+      '<div class="k" style="margin:14px 0 4px;font:500 10.5px/1 \'IBM Plex Mono\',monospace;letter-spacing:.06em;color:var(--mut)">TERBUKA (' + op.length + ')</div>' + op.map(item).join('') +
+      '<div class="k" style="margin:22px 0 4px;font:500 10.5px/1 \'IBM Plex Mono\',monospace;letter-spacing:.06em;color:var(--mut)">DIBAIKI (' + fx.length + ')</div>' + fx.map(item).join('');
+  }
+  $('side').addEventListener('click', function (e) {
+    var b = e.target.closest('.fi'); if (!b) return;
+    var fl = FLOWS.filter(function (f) { return f.id === b.dataset.fl; })[0];
+    if (fl !== cur) { $('flow').value = fl.id; render(fl); }
+    focusNode(b.dataset.id);
+  });
+  $('fbtn').addEventListener('click', function () { var on = !$('side').classList.contains('on'); $('side').classList.toggle('on', on); this.setAttribute('aria-pressed', on); });
+
+  /* ---------- Kamera ---------- */
+  function apply() { world.style.transform = 'translate(' + view.x + 'px,' + view.y + 'px) scale(' + view.z + ')'; $('zv').textContent = Math.round(view.z * 100) + '%'; }
+  function bounds() { var x0 = 1e9, y0 = 1e9, x1 = -1e9, y1 = -1e9; Object.keys(nodes).forEach(function (k) { var n = nodes[k]; x0 = Math.min(x0, n.x); y0 = Math.min(y0, n.y - 60); x1 = Math.max(x1, n.x + n.w); y1 = Math.max(y1, n.y + n.h + 30); }); return { x0: x0, y0: y0, x1: x1, y1: y1 }; }
+  function fit() {
+    var b = bounds(), W = stage.clientWidth - ($('side').classList.contains('on') ? 340 : 0), H = stage.clientHeight - 60;
+    view.z = Math.max(.2, Math.min(1, Math.min(W / (b.x1 - b.x0 + 80), H / (b.y1 - b.y0 + 80))));
+    view.x = (W - (b.x1 - b.x0) * view.z) / 2 - b.x0 * view.z; view.y = (H - (b.y1 - b.y0) * view.z) / 2 - b.y0 * view.z + 10; apply();
+  }
+  function zoomAt(f, cx, cy) { var z = Math.max(.15, Math.min(2, view.z * f)); view.x = cx - (cx - view.x) * z / view.z; view.y = cy - (cy - view.y) * z / view.z; view.z = z; apply(); }
+  function focusNode(id) {
+    var n = nodes[id]; if (!n) return;
+    var W = stage.clientWidth - ($('side').classList.contains('on') ? 340 : 0), H = stage.clientHeight;
+    view.z = .9; view.x = W / 2 - (n.x + n.w / 2) * view.z; view.y = H / 2 - (n.y + n.h / 2) * view.z; apply();
+    [].forEach.call(world.querySelectorAll('.hl'), function (x) { x.classList.remove('hl'); }); n.el.classList.add('hl');
+  }
+  $('zi').addEventListener('click', function () { zoomAt(1.2, stage.clientWidth / 2, stage.clientHeight / 2); });
+  $('zo').addEventListener('click', function () { zoomAt(1 / 1.2, stage.clientWidth / 2, stage.clientHeight / 2); });
+  $('fit').addEventListener('click', fit);
+  stage.addEventListener('wheel', function (e) { e.preventDefault(); var r = stage.getBoundingClientRect(); zoomAt(Math.exp(-e.deltaY * (e.ctrlKey ? .01 : .0015)), e.clientX - r.left, e.clientY - r.top); }, { passive: false });
+  var drag = null;
+  stage.addEventListener('pointerdown', function (e) { if (e.button) return; drag = { x: e.clientX, y: e.clientY, vx: view.x, vy: view.y, moved: false }; });
+  window.addEventListener('pointermove', function (e) {
+    if (!drag) return; var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (!drag.moved && Math.abs(dx) + Math.abs(dy) > 4) { drag.moved = true; stage.classList.add('drag'); }
+    if (drag.moved) { view.x = drag.vx + dx; view.y = drag.vy + dy; apply(); }
+  });
+  window.addEventListener('pointerup', function (e) {
+    if (!drag) return; var moved = drag.moved; drag = null; stage.classList.remove('drag');
+    if (!moved) { var t = e.target.closest && e.target.closest('.n[data-id]'); if (t) open(t.dataset.id); }
+  });
+  world.addEventListener('keydown', function (e) { var t = e.target.closest('.n[data-id]'); if (t && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); open(t.dataset.id); } });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') return close();
+    if ($('modal').classList.contains('on') || e.target.tagName === 'SELECT') return;
+    if (e.key === '+' || e.key === '=') $('zi').click(); else if (e.key === '-') $('zo').click(); else if (e.key === '0') fit();
+  });
+
+  /* ---------- Modal skrin besar (boleh berinteraksi) ---------- */
+  var lastFocus;
+  function open(id) {
+    var n = nodes[id].n; lastFocus = document.activeElement;
+    var f = n.f ? '<div class="k">Dapatan</div><div class="fn' + (n.f.fixed ? ' fixed' : '') + '"><span class="sev ' + n.f.sev + '">' + n.f.sev + '</span>' + (n.f.fixed ? '<span class="sev fixed">Dibaiki</span>' : '') + esc(n.f.t) + '</div>' : '';
+    var ok = n.ok ? '<div class="k">Sudah baik</div><div class="okn">' + esc(n.ok) + '</div>' : '';
+    $('minfo').innerHTML = '<div class="k">' + esc(cur.name) + '</div><h3 id="mt">' + (n.k === 'gap' ? 'Tiada skrin · ' : '') + esc(n.t) + '</h3>' +
+      (n.s ? '<p>' + esc(n.s) + (n.role ? ' · ' + esc(n.role) : '') + '</p>' : '') + (n.p ? '<p>' + esc(n.p) + '</p>' : '') +
+      (n.toast ? '<div class="k">Maklum balas</div><p>Toast: “' + esc(n.toast) + '”</p>' : '') + f + ok +
+      (n.u ? '<div class="k">Halaman</div><p><code>' + esc(n.u) + '</code>' + (n.run ? ' + simulasi ' + n.run.length + ' langkah' : '') + '</p>' : '') +
+      '<div class="act">' + (n.u ? '<button class="tb" id="mre">Main semula</button><a class="tb" href="' + esc(n.u) + '" target="_blank" rel="noopener" style="text-decoration:none;display:inline-flex;align-items:center">Buka tab</a>' : '') + '<button class="tb" id="mx">Tutup</button></div>';
+    var old = $('mfr'), nf;
+    if (n.u) { nf = frame(n, true); nf.id = 'mfr'; old.replaceWith(nf); nf.hidden = false; } else old.hidden = true;
+    $('modal').classList.add('on');
+    $('mx').focus();
+    $('mx').addEventListener('click', close);
+    if ($('mre')) $('mre').addEventListener('click', function () { var g = frame(n, true); g.id = 'mfr'; $('mfr').replaceWith(g); });
+  }
+  function close() { if (!$('modal').classList.contains('on')) return; $('modal').classList.remove('on'); $('mfr').removeAttribute('src'); if (lastFocus) lastFocus.focus(); }
+  $('modal').addEventListener('click', function (e) { if (e.target === this) close(); });
+
+  /* ---------- Mula ---------- */
+  $('flow').innerHTML = FLOWS.map(function (f) { return '<option value="' + f.id + '">' + esc(f.name) + '</option>'; }).join('');
+  $('flow').addEventListener('change', function () { render(FLOWS.filter(function (f) { return f.id === $('flow').value; })[0]); });
+  if (location.protocol === 'file:') $('warnbar').style.display = 'block';
+  setTheme(getTheme());
+  var want = new URLSearchParams(location.search).get('aliran'), fl0 = FLOWS.filter(function (f) { return f.id === want; })[0] || FLOWS[0];
+  $('flow').value = fl0.id; render(fl0);
+  window.addEventListener('resize', function () { clearTimeout(window._rt); window._rt = setTimeout(fit, 150); });
+})();
+</script>
+</body>
+</html>

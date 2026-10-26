@@ -6,10 +6,10 @@
 <meta name="robots" content="noindex">
 <title>Jadual · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=eb478dd3">
-<link rel="stylesheet" href="gaya.css?v=cbbbdafc">
-<link rel="stylesheet" href="agenda.css?v=80604b75">
-<link rel="stylesheet" href="bahasa.css?v=c8d377cd">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="tenang.css">
+<link rel="stylesheet" href="agenda.css">
+<link rel="stylesheet" href="bahasa.css">
 <style>
 .wk{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:4px}
 .wk b{font:700 15px/1 var(--display)}
@@ -63,9 +63,9 @@
   <div id="out"></div>
 </div>
 
-<script src="shared.js?v=61d306a6"></script>
-<script src="gerak.js?v=3d1be233"></script>
-<script src="data.js?v=341eafbf"></script>
+<script src="shared.js"></script>
+<script src="gerak.js"></script>
+<script src="data.js"></script>
 <script>
 (function () {
   M.mount({ page: 'jadual' });
@@ -141,8 +141,15 @@
   });
   document.addEventListener('rolechange', function () { st.scope = def(); st.sek = ''; render(); });
   document.addEventListener('datachange', render);
-  /* Buka terus pada hari ini; hari lepas kekal di atas (skrol). */
-  st.scope = def(); render(); today(false);
+  /* Buka terus pada hari ini; hari lepas kekal di atas (skrol). Selepas simpan makluman (?d=&baru=): buka minggu itu dan sorot rekod baharu. */
+  var q = new URLSearchParams(location.search), qd = q.get('d'), baru = q.get('baru');
+  st.scope = def();
+  if (qd && /^\d{4}-\d{2}-\d{2}$/.test(qd)) {
+    st.wk = Math.max(-1, Math.min(2, Math.floor((new Date(qd + 'T00:00:00') - BASE) / 864e5 / 7))); render();
+    var el = baru && document.querySelector('[data-c="' + CSS.escape(baru) + '"]');
+    if (el) { el.style.outline = '2px solid var(--petrol)'; el.insertAdjacentHTML('beforebegin', '<p class="flag" role="status" style="margin:8px 0">Disimpan. Rakan nampak anda "Tidak di pejabat" pada tarikh ini.</p>'); el.scrollIntoView({ block: 'center' }); }
+    else jump('d' + qd, false);
+  } else { render(); today(false); }
 })();
 </script>
 </body>

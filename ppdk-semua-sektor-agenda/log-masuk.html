@@ -6,9 +6,9 @@
 <meta name="robots" content="noindex">
 <title>Log Masuk · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=eb478dd3">
-<link rel="stylesheet" href="gaya.css?v=cbbbdafc">
-<link rel="stylesheet" href="bahasa.css?v=c8d377cd">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="tenang.css">
+<link rel="stylesheet" href="bahasa.css">
 <style>
 body{display:flex;min-height:100vh;align-items:flex-start;justify-content:center}
 .box{width:min(420px,100%);padding:56px 20px 80px}
@@ -34,21 +34,66 @@ body{display:flex;min-height:100vh;align-items:flex-start;justify-content:center
   <div class="mono">Ruang staf · PPD Kuching</div>
   <div id="view"></div>
 </div>
-<script src="shared.js?v=61d306a6"></script>
-<script src="data.js?v=341eafbf"></script>
+<script src="shared.js"></script>
+<script src="data.js"></script>
 <script>
 (function () {
   M.mount({ bare: true });
   var $ = function (id) { return document.getElementById(id); };
   function steps(n, total) { var h = '<div class="steps" aria-label="Langkah ' + n + ' daripada ' + total + '">'; for (var i = 1; i <= total; i++) h += '<i class="' + (i <= n ? 'on' : '') + '"></i>'; return h + '</div>'; }
 
+  var attemptKey = 'ppdk-demo-log-masuk', attempts = {}, isolated = new URLSearchParams(location.search).get('sim') === 'peta';
+  try { if (!isolated) attempts = JSON.parse(sessionStorage.getItem(attemptKey)) || {}; } catch (e) {}
+  var failures = attempts.failures || 0, lockedUntil = attempts.lockedUntil || 0;
+  function keepAttempts() { if (!isolated) sessionStorage.setItem(attemptKey, JSON.stringify({ failures: failures, lockedUntil: lockedUntil })); }
+  /* Kunci: tunjuk terus semasa dimuat, lumpuhkan butang dan nyatakan masa buka; bila tamat, beritahu boleh cuba semula. */
+  function hm(t) { var d = new Date(t); return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0'); }
+  function lockView() {
+    if (!$('lf')) return; /* borang sudah diganti (Lupa kata laluan) */
+    var btn = $('lf').querySelector('[type=submit]'), err = $('login-error');
+    if (failures >= 5 && lockedUntil > Date.now()) {
+      btn.disabled = true; err.hidden = false;
+      err.textContent = 'Log masuk dikunci sehingga ' + hm(lockedUntil) + ' selepas 5 cubaan. Gunakan pautan Lupa kata laluan? untuk menghubungi Unit ICT.';
+      clearTimeout(lockView.t); lockView.t = setTimeout(lockView, lockedUntil - Date.now() + 50);
+    } else if (failures >= 5) {
+      failures = 0; lockedUntil = 0; keepAttempts(); btn.disabled = false; err.hidden = false; err.textContent = 'Kunci tamat. Anda boleh cuba log masuk semula.';
+    }
+  }
+  function contact() {
+    return '<p class="hint">Reset dibuat oleh Unit ICT PPD Kuching, biasanya dalam 1 hari bekerja.</p><div class="acts"><a class="btn btn-ink" href="mailto:unit.ict@example.invalid?subject=Permohonan%20reset%20kata%20laluan%20PPDK.CH">E-mel Unit ICT</a><a class="btn btn-line" href="tel:+60000000000">Telefon Unit ICT (ilustrasi)</a></div><p class="tiny">Alamat e-mel dan nombor telefon ialah ilustrasi. Gunakan saluran rasmi Unit ICT.</p>';
+  }
+  function help(inactive) {
+    if (inactive) sessionStorage.removeItem('ppdk-demo-mula');
+    $('view').innerHTML = '<h1 tabindex="-1" id="help-title">' + (inactive ? 'Akaun tidak aktif' : 'Lupa kata laluan?') + '</h1><p class="lead">' + (inactive ? 'Akaun anda digantung atau direset oleh pentadbir. Token peranti telah dibatalkan. Hubungi Unit ICT PPD Kuching untuk mengaktifkan semula akaun.' : 'Unit ICT PPD Kuching akan membantu anda menetapkan semula kata laluan.') + '</p>' + contact() + '<div class="acts"><button class="btn btn-line" id="back-login">Kembali ke log masuk</button></div>';
+    $('back-login').onclick = login; $('help-title').focus();
+  }
   function login() {
     $('view').innerHTML = '<h1>Log masuk</h1><p class="lead">Gunakan e-mel rasmi @moe.gov.my dan kata laluan PPDK.CH. Nama dan data paparan ini rekaan.</p>' +
-      '<form id="lf" novalidate><div class="field"><label class="lbl" for="em">E-mel rasmi</label><input id="em" type="email" inputmode="email" autocomplete="username" placeholder="nama@moe.gov.my"></div>' +
+      '<form id="lf" novalidate><div class="field"><label class="lbl" for="em">E-mel rasmi</label><input id="em" type="email" inputmode="email" autocomplete="username" placeholder="nama@moe.gov.my" aria-describedby="em-error"><p class="hint" id="em-error" role="alert"></p></div>' +
       '<div class="field"><label class="lbl" for="pw">Kata laluan PPDK.CH</label><input id="pw" type="password" autocomplete="current-password" style="width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--rule-2);background:var(--card)"></div>' +
-      '<button class="btn btn-ink btn-block" style="margin-top:18px" type="submit">Log masuk</button></form>' +
-      '<p class="tiny" style="margin-top:22px">Lupa kata laluan atau tiada akaun? Hubungi Unit ICT PPD Kuching.</p>';
-    $('lf').addEventListener('submit', function (e) { e.preventDefault(); var email=$('em').value.trim(); if(!/^[^@\s]+@moe\.gov\.my$/i.test(email)){M.toast('Gunakan e-mel rasmi @moe.gov.my.');$('em').focus();return;} if(sessionStorage.getItem('ppdk-demo-mula')) location.href='hari-ini.html'; else sah(); });
+      '<button class="btn btn-ink btn-block" style="margin-top:18px" type="submit">Log masuk</button><p class="flag warn" id="login-error" role="alert" tabindex="-1" hidden></p></form>' +
+      '<div style="margin-top:22px"><a class="text-btn" id="forgot" href="?sim=lupa">Lupa kata laluan?</a><p class="tiny">Tiada akaun? Hubungi Unit ICT PPD Kuching.</p></div>';
+    $('pw').setAttribute('aria-describedby', 'login-error');
+    $('forgot').onclick = function (e) { e.preventDefault(); help(false); };
+    lockView();
+    $('lf').addEventListener('submit', function (e) {
+      e.preventDefault(); var email = $('em').value.trim();
+      if (lockedUntil && Date.now() >= lockedUntil) { failures = 0; lockedUntil = 0; }
+      var locked = failures >= 5;
+      $('em-error').textContent = '';
+      if (!/^[^@\s]+@moe\.gov\.my$/i.test(email)) { $('em-error').textContent = 'Gunakan e-mel rasmi @moe.gov.my.'; $('em').setAttribute('aria-invalid', 'true'); $('em').focus(); return; }
+      $('em').removeAttribute('aria-invalid');
+      if (locked || $('pw').value === 'salah') {
+        if (!locked) { failures++; if (failures >= 5) lockedUntil = Date.now() + 15 * 60 * 1000; }
+        keepAttempts();
+        $('login-error').hidden = false;
+        $('login-error').textContent = failures >= 5 ? 'Log masuk dikunci. Cuba lagi dalam 15 minit atau gunakan pautan Lupa kata laluan? untuk menghubungi Unit ICT.' : 'E-mel atau kata laluan tidak betul. Cubaan berbaki: ' + (5 - failures) + '.';
+        lockView(); $('pw').setAttribute('aria-invalid', 'true'); $('login-error').focus(); return;
+      }
+      if (/^gantung/i.test(email)) { help(true); return; }
+      failures = 0; lockedUntil = 0; keepAttempts();
+      if (sessionStorage.getItem('ppdk-demo-mula')) location.href = 'hari-ini.html'; else sah();
+    });
   }
   function sah() {
     var m = M.me(), s = D.staf(m.name);
@@ -59,7 +104,8 @@ body{display:flex;min-height:100vh;align-items:flex-start;justify-content:center
     $('salah').addEventListener('click', function () {
       $('fix').innerHTML = '<div class="field" style="margin-top:16px"><label class="lbl" for="bt">Apa yang perlu dibetulkan?</label><textarea id="bt" rows="3" placeholder="cth. Jawatan saya sekarang Penolong PPD Kurikulum."></textarea><p class="hint">Dihantar kepada pentadbir sistem. Anda boleh teruskan menggunakan sistem sementara menunggu.</p></div><button class="btn btn-ink btn-block" id="hantar" style="margin-top:10px">Hantar &amp; teruskan</button>';
       $('salah').hidden = true;
-      $('hantar').addEventListener('click', function () { M.toast('Permohonan pembetulan dihantar'); kata(); });
+      $('bt').focus();
+      $('hantar').addEventListener('click', function () { sessionStorage.setItem('ppdk-demo-pembetulan', '1'); $('fix').innerHTML = '<p class="flag ok" role="status" tabindex="-1" id="fix-sent">Permohonan pembetulan dihantar. Status boleh disemak di Profil: Menunggu Unit ICT.</p><button class="btn btn-ink btn-block" id="fix-next">Teruskan</button>'; $('fix-sent').focus(); $('fix-next').onclick = kata; });
     });
   }
   function kata() {
@@ -67,19 +113,28 @@ body{display:flex;min-height:100vh;align-items:flex-start;justify-content:center
       '<div class="field"><label class="lbl" for="p1">Kata laluan baharu</label><input id="p1" type="password" autocomplete="new-password" style="width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--rule-2);background:var(--card)"><p class="hint">Sekurang-kurangnya 10 aksara.</p></div>' +
       '<div class="field"><label class="lbl" for="p2">Ulang kata laluan</label><input id="p2" type="password" autocomplete="new-password" style="width:100%;min-height:42px;padding:9px 12px;border:1px solid var(--rule-2);background:var(--card)"></div>' +
       '<button class="btn btn-ink btn-block" style="margin-top:18px" id="nx">Simpan</button>';
-    $('nx').addEventListener('click', function(){if($('p1').value.length<10||$('p1').value!==$('p2').value){M.toast('Kata laluan mesti sekurang-kurangnya 10 aksara dan sepadan.');return;}notif();});
+    ['p1', 'p2'].forEach(function (id) { $(id).setAttribute('aria-describedby', id + '-error'); $(id).insertAdjacentHTML('afterend', '<p class="hint" id="' + id + '-error" role="alert"></p>'); });
+    $('nx').addEventListener('click', function () {
+      var short = $('p1').value.length < 10, mismatch = $('p1').value !== $('p2').value;
+      $('p1-error').textContent = short ? 'Kata laluan mesti sekurang-kurangnya 10 aksara.' : '';
+      $('p2-error').textContent = mismatch ? 'Kata laluan tidak sepadan. Ulang kata laluan yang sama.' : '';
+      $('p1').setAttribute('aria-invalid', short); $('p2').setAttribute('aria-invalid', mismatch);
+      if (short || mismatch) { $(short ? 'p1' : 'p2').focus(); return; } notif();
+    });
   }
   function notif() {
     var pub = M.role() !== 'staf';
     $('view').innerHTML = steps(3, 3) + '<h1>Peringatan</h1><p class="lead">Dihantar ke e-mel rasmi. Boleh diubah kemudian di Profil.</p>' +
       '<label class="tg"><span>Perlu laporan<small>Sehari selepas tugas berakhir</small></span><input type="checkbox" checked></label>' +
       '<label class="tg"><span>Ringkasan jadual minggu depan<small>Setiap Jumaat petang</small></span><input type="checkbox"></label>' +
+      '<label class="tg"><span>Laporan dipulangkan<small>Sebab dan pautan untuk ubah laporan</small></span><input type="checkbox" checked></label>' +
       (pub ? '<label class="tg"><span>Laporan menunggu semakan<small>Untuk ketua sektor</small></span><input type="checkbox" checked></label>' : '') +
       '<button class="btn btn-ink btn-block" style="margin-top:22px" id="done">Mula guna</button>';
     $('done').addEventListener('click', function () { sessionStorage.setItem('ppdk-demo-mula','1'); location.href = 'hari-ini.html'; });
   }
   document.addEventListener('rolechange', login);
-  login();
+  var sim = new URLSearchParams(location.search).get('sim');
+  if (sim === 'gantung' || sim === 'lupa') help(sim === 'gantung'); else login();
 })();
 </script>
 </body>

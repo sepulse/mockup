@@ -1,4 +1,5 @@
-/* PPDK.CH semua sektor — paparan contoh. Data ilustrasi (nama, sekolah dan angka rekaan). */
+/* Paparan contoh PPDK.CH (15 Okt 2026).
+   Ilustrasi sahaja: tiada API, tiada data sebenar. */
 :root{
   --paper:#F2F0EA; --paper-2:#E9E6DE; --card:#FAF9F5;
   --ink:#111819; --ink-2:#3B4648; --muted:#5E6769; --rule:#D8D3C8; --rule-2:#C7C1B4;
@@ -33,7 +34,7 @@ button{cursor:pointer;background:none;border:0}
 svg.i{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;flex:none}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
 
-/* */
+/* ---------- BAR MOCKUP (bukan sebahagian UI) ---------- */
 .mock-bar{position:sticky;top:0;z-index:60;height:var(--mock-h);display:flex;align-items:center;gap:14px;padding:0 14px;
   background:repeating-linear-gradient(135deg,#1d2526 0 10px,#232c2d 10px 20px);color:#E9E6DE;font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;overflow-x:auto;white-space:nowrap}
 .mock-bar a{color:var(--mint)}
@@ -201,7 +202,7 @@ button.r:hover{background:var(--paper-2)}
 /* Hatch gambar placeholder */
 .ph{background:repeating-linear-gradient(135deg,var(--paper-2) 0 8px,var(--card) 8px 16px);border:1px solid var(--rule);display:grid;place-items:center;color:var(--muted);font:500 11px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase}
 
-/* */
+/* Callout reka bentuk (anotasi mockup) */
 .ann{display:block;border-left:3px solid #F59E0B;background:rgba(245,158,11,.10);padding:9px 12px;font-size:12.5px;line-height:1.45;color:var(--ink-2);margin:12px 0}
 .ann b{color:var(--ink)}
 body.no-ann .ann{display:none}

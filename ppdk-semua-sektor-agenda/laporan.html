@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Laporan · PPDK.CH</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=eb478dd3">
-<link rel="stylesheet" href="gaya.css?v=cbbbdafc">
-<link rel="stylesheet" href="awam.css?v=8dd10f54">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="tenang.css">
+<link rel="stylesheet" href="awam.css">
 <style>
 .art{max-width:720px}
 .art h1{font:800 clamp(26px,4vw,38px)/1.12 var(--display);letter-spacing:-.02em;margin-top:12px}
@@ -24,10 +24,10 @@
 </head>
 <body>
 <div id="content" class="pw"><div id="body"></div></div>
-<script src="shared.js?v=61d306a6"></script>
-<script src="gerak.js?v=3d1be233"></script>
-<script src="data.js?v=341eafbf"></script>
-<script src="awam.js?v=5b0f37fa"></script>
+<script src="shared.js"></script>
+<script src="gerak.js"></script>
+<script src="data.js"></script>
+<script src="awam.js"></script>
 <script>
 (function () {
   M.mount({ bare: true, noRole: true });
@@ -46,10 +46,17 @@
     (r.imp?'<h2>Impak</h2><p class="tx">'+M.esc(r.imp)+'</p>':'') +
     '<h2>Galeri</h2><div class="gal"><div class="ph">1</div><div class="ph">2</div><div class="ph">3</div></div>' +
     '<p class="hash" style="margin-top:18px">#PPDKuching #' + r.sek + '</p>' +
-    '<div class="share"><button class="btn btn-line btn-sm" id="cp">Salin pautan</button><span class="tiny">Hantaran Facebook PPD memaut ke halaman ini.</span></div></article>' +
+    '<div class="share"><button class="btn btn-line btn-sm" id="cp">Salin pautan</button><span class="tiny">Hantaran Facebook PPD memaut ke halaman ini.</span></div><div class="field" id="share-fallback" hidden><label class="lbl" for="share-url">Pautan laporan</label><p class="hint" id="share-hint" role="alert">Kongsi dan salin automatik gagal. Pilih pautan ini untuk salin sendiri.</p><input id="share-url" type="text" readonly aria-describedby="share-hint" style="width:100%"></div></article>' +
     (more.length ? '<div class="h2p"><h2>Lagi daripada ' + M.esc(AW.short(r.sek)) + '</h2></div><div class="feed">' + more.map(AW.item).join('') + '</div>' : '');
   Gerak.run(document.getElementById('body'));
-  document.getElementById('cp').addEventListener('click', function () { navigator.clipboard.writeText(location.href).then(function(){M.toast('Pautan disalin')},function(){M.toast('Salin pautan dari bar alamat pelayar')}); });
+  document.getElementById('cp').addEventListener('click', async function () {
+    var sim = new URLSearchParams(location.search).get('sim'), u = new URL(location.href); u.searchParams.delete('sim');
+    var url = u.href;
+    document.getElementById('share-fallback').hidden = true;
+    if (navigator.share && sim !== 'kongsi-gagal' && sim !== 'salin') { try { await navigator.share({ title: r.tajuk, url: url }); return; } catch (e) {} }
+    try { if (sim === 'kongsi-gagal') throw Error('Demo'); await navigator.clipboard.writeText(url); M.toast('Pautan disalin'); }
+    catch (e) { document.getElementById('share-fallback').hidden = false; var input = document.getElementById('share-url'); input.value = url; input.focus(); input.select(); }
+  });
   }
   document.addEventListener('datachange', function () {
     AW.pub = D.REKOD.filter(function (r) { return r.tahap === 'umum'; }).sort(function (a, b) { return a.tarikh < b.tarikh ? 1 : -1; });

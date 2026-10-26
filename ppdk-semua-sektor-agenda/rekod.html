@@ -6,9 +6,9 @@
 <meta name="robots" content="noindex">
 <title>Rekod · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=eb478dd3">
-<link rel="stylesheet" href="gaya.css?v=cbbbdafc">
-<link rel="stylesheet" href="bahasa.css?v=c8d377cd">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="tenang.css">
+<link rel="stylesheet" href="bahasa.css">
 <style>
 .picker{position:relative}
 .sug{position:absolute;left:0;right:0;top:100%;z-index:20;background:var(--card);border:1px solid var(--ink);max-height:240px;overflow:auto}
@@ -65,6 +65,7 @@
 .pv-see b{display:block;font-size:13.5px;color:var(--muted);font-weight:600;margin-bottom:3px}
 .pv-note{font-size:13.5px;color:var(--muted);margin-top:10px}
 .pv-act{display:flex;gap:10px;justify-content:flex-end;margin-top:14px}
+.pv-act{flex-wrap:wrap}.pv-act #save-error{flex-basis:100%;margin:0}
 .pv-act .btn{min-height:48px}
 .pv-act .btn-ink{flex:1}
 .flash{animation:gin .35s ease-out}
@@ -139,20 +140,21 @@
       <div class="fg"><div class="lbl2">Jenis <small>akses mengikut peranan</small></div><select id="cjenis" aria-label="Jenis"><option>Cuti rehat</option><option>Cuti sakit</option><option>Cuti lain</option></select></div>
       <p class="tiny" style="margin-top:12px">Makluman, bukan permohonan cuti (HRMIS). Ketua sektor melihat jenis bukan cuti sakit dalam sektor sendiri; cuti sakit hanya KPPD/HR berizin.</p>
     </div>
+    <div id="tindih" class="flag warn" role="alert" tabindex="-1" hidden style="margin-top:16px"></div>
     <p id="error" role="alert" style="color:var(--isd);margin-top:16px"></p>
   </form>
   </div>
 
   <aside class="pv" aria-label="Pratonton">
     <div class="pv-c" id="pvc" aria-live="polite"></div>
-    <div class="pv-act"><a class="btn btn-line" href="hari-ini.html">Batal</a><button class="btn btn-ink" type="submit" form="f" id="save">Simpan jadual</button></div>
+    <div class="pv-act"><div id="save-error" hidden></div><a class="btn btn-line" href="hari-ini.html">Batal</a><button class="btn btn-ink" type="submit" form="f" id="save">Simpan jadual</button></div>
   </aside>
   </div>
 </div>
 
-<script src="shared.js?v=61d306a6"></script>
-<script src="gerak.js?v=3d1be233"></script>
-<script src="data.js?v=341eafbf"></script>
+<script src="shared.js"></script>
+<script src="gerak.js"></script>
+<script src="data.js"></script>
 <script>
 (function () {
   M.mount({ page: 'rekod' });
@@ -284,11 +286,16 @@
   $('f').addEventListener('submit', function(e) {
     e.preventDefault(); var m=M.me();
     function fail(id,msg){ $('error').textContent=msg; $(id).focus(); }
+    $('tindih').hidden = true;
     if(st.kind==='cuti') {
       if(!$('cdari').value || !$('chingga').value || $('chingga').value < $('cdari').value) return fail('chingga','Semak tarikh mula dan akhir. Belum disimpan.');
       var old=D.CUTI.find(function(c){return c.id===params.get('cuti')&&c.owner===m.name}), c=old||{id:'L'+Date.now(),owner:m.name,sek:m.sek};
+      if (!st.tindihOk) { var kc = clashes({ id: old && old.id, dari: $('cdari').value, hingga: $('chingga').value, bahagian: $('cbhg').querySelector('[aria-pressed="true"]').dataset.v, cuti: true }); if (kc.length) return warnClash(kc, true); }
+      var before = JSON.stringify(c);
       c.dari=$('cdari').value;c.hingga=$('chingga').value;c.jenis=$('cjenis').value;c.sakit=c.jenis==='Cuti sakit';c.bahagian=$('cbhg').querySelector('[aria-pressed="true"]').dataset.v;
-      if(!old)D.CUTI.push(c);D.persist();location.href='jadual.html';return;
+      if(!old)D.CUTI.push(c);
+      if (!D.persist()) { if (!old) D.CUTI.splice(D.CUTI.indexOf(c), 1); else restore(c, before); D.saveFailure($('save-error'), retry); return; }
+      location.href='jadual.html?d='+c.dari+'&baru='+encodeURIComponent(c.id);return;
     }
     var date=$('tarikh').value, end=$('tamat').value||date;
     if(!date)return fail('tarikh','Pilih tarikh. Belum disimpan.');
@@ -298,16 +305,47 @@
     if(st.mod==='lain'&&!$('lokasi').value.trim())return fail('lokasi','Isi lokasi. Belum disimpan.');
     var old=D.REKOD.find(function(r){return r.id===params.get('ubah')&&r.owner===m.name});
     if(old&&old.tahap==='umum'){return fail('tajuk','Rekod diterbitkan perlu disemak semula oleh ketua sektor sebelum diubah.');}
+    if (!st.tindihOk) { var kt = clashes({ id: old && old.id, dari: date, hingga: end, mula: $('mula').value, akhir: $('akhir').value, sehari: $('sehari').checked }); if (kt.length) return warnClash(kt, false); }
     var r=old||{id:'N'+Date.now(),owner:m.name,sek:m.sek,status:'dirancang',laporan:'belum'};
+    var before = JSON.stringify(r);
     Object.assign(r,{jenis:st.jenis,tarikh:date,tamat:end,mula:$('mula').value,akhir:$('akhir').value,sehari:$('sehari').checked,mod:st.mod==='online'?'atas_talian':st.mod==='hibrid'?'hibrid':'fizikal',sekolah:['sekolah','hibrid'].includes(st.mod)?st.sekolah.slice():[],lokasi:st.mod==='lain'?$('lokasi').value.trim():st.mod==='online'||st.mod==='hibrid'?$('plat').value:'',peserta:st.peserta.slice(),tahap:$('sulit').checked?'sulit':'dalaman',catatan:$('catatan').value,kpi:$('kpi').value});
     r.tajuk=$('tajuk').value.trim()||r.jenis;r.penyertaan=r.penyertaan||{};if(r.mod==='hibrid')r.penyertaan[m.name]=$('joinmode').value;
-    if(!old)D.REKOD.push(r);D.persist();location.href=date<M.TODAY?'lapor.html?id='+r.id:'hari-ini.html';
+    if(!old)D.REKOD.push(r);
+    if (!D.persist()) { if (!old) D.REKOD.splice(D.REKOD.indexOf(r), 1); else restore(r, before); D.saveFailure($('save-error'), retry); return; }
+    location.href=date<M.TODAY?'lapor.html?id='+r.id:'hari-ini.html';
   });
+  /* Pertindihan dengan tugas/cuti sendiri: amaran dalam halaman, tidak menyekat ("Simpan juga"). */
+  function clashes(x) {
+    var me = M.me().name, out = [], over = function (a0, a1, b0, b1) { return a0 <= b1 && b0 <= a1; };
+    var half = function (bhg, mula, akhir) { return !bhg || bhg === 'penuh' || !mula || (bhg === 'pagi' ? mula < '13:00' : akhir > '13:00'); };
+    D.REKOD.forEach(function (r) {
+      if (r.id === x.id || r.status === 'dibatalkan' || !D.involves(r, me) || !over(x.dari, x.hingga, r.tarikh, r.tamat || r.tarikh)) return;
+      if (x.cuti ? !half(x.bahagian, r.sehari ? '' : r.mula, r.akhir) : !(x.sehari || r.sehari || (x.mula < r.akhir && r.mula < x.akhir))) return;
+      out.push({ t: r.tajuk, w: M.fmtDate(r.tarikh) + (r.sehari ? '' : ' · ' + r.mula + '–' + r.akhir), r: r });
+    });
+    D.CUTI.forEach(function (c) {
+      if (c.id === x.id || c.owner !== me || !over(x.dari, x.hingga, c.dari, c.hingga)) return;
+      /* Separuh hari: Pagi dan Petang tidak bertindih; tugas hanya bertindih dengan bahagian cuti yang sama. */
+      if (x.cuti ? (x.bahagian && x.bahagian !== 'penuh' && c.bahagian && c.bahagian !== 'penuh' && x.bahagian !== c.bahagian) : (!x.sehari && !half(c.bahagian, x.mula, x.akhir))) return;
+      out.push({ t: 'Tidak di pejabat', w: M.fmtDate(c.dari) + (c.hingga !== c.dari ? ' – ' + M.fmtDate(c.hingga) : ''), c: c }); });
+    return out;
+  }
+  function warnClash(list, cuti) {
+    var h = $('tindih');
+    h.innerHTML = '<b>Bertindih dengan jadual anda</b><ul style="margin:6px 0 10px 18px">' + list.map(function (k, i) { return '<li>' + M.esc(k.t) + ' · ' + M.esc(k.w) + ' <button type="button" class="text-btn" data-clash="' + i + '">' + (k.r && cuti ? 'Batal / ubah tugas' : 'Lihat') + '</button></li>'; }).join('') + '</ul><button type="button" class="btn btn-line btn-sm" id="tindih-ok">Simpan juga</button>';
+    h.hidden = false; h.scrollIntoView({ block: 'center' }); h.focus();
+    h.querySelector('#tindih-ok').onclick = function () { st.tindihOk = true; retry(); };
+    [].forEach.call(h.querySelectorAll('[data-clash]'), function (b) { b.onclick = function () { var k = list[+b.getAttribute('data-clash')]; if (k.r) D.openRecord(k.r); else D.openCuti(k.c); }; });
+  }
+  $('f').addEventListener('change', function () { st.tindihOk = false; });
+  document.addEventListener('datachange', function () { $('tindih').hidden = true; st.tindihOk = false; });
+  function restore(record, before) { Object.keys(record).forEach(function (k) { delete record[k]; }); Object.assign(record, JSON.parse(before)); }
+  function retry() { $('f').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })); }
 
   function init() {
     st.jenis = ''; st.salin = ''; katalog(); setMod('sekolah'); setKind(st.kind); chips(); dn(); ulang();
     var u = params.get('ubah'), s = params.get('salin'), r = D.REKOD.filter(function (x) { return x.id === (u || s); })[0];
-    var c=D.CUTI.find(function(c){return c.id===params.get('cuti')&&c.owner===M.me().name});if(c){$('cdari').value=c.dari;$('chingga').value=c.hingga;$('cjenis').value=c.jenis;}
+    var c=D.CUTI.find(function(c){return c.id===params.get('cuti')&&c.owner===M.me().name});if(c){$('cdari').value=c.dari;$('chingga').value=c.hingga;$('cjenis').value=c.jenis;[].forEach.call($('cbhg').children,function(b){b.setAttribute('aria-pressed',b.dataset.v===(c.bahagian||'penuh'));});}
     /* Ubah: jenis rekod tidak boleh ditukar; sembunyi kad pilihan. */
     $('kind').hidden = !!(u || c);
     if (u && r) { fill(r, true); $('h1').textContent = 'Ubah rekod'; }

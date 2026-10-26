@@ -6,10 +6,10 @@
 <meta name="robots" content="noindex">
 <title>Hari ini · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=eb478dd3">
-<link rel="stylesheet" href="gaya.css?v=cbbbdafc">
-<link rel="stylesheet" href="agenda.css?v=80604b75">
-<link rel="stylesheet" href="bahasa.css?v=c8d377cd">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="tenang.css">
+<link rel="stylesheet" href="agenda.css">
+<link rel="stylesheet" href="bahasa.css">
 <style>
 /* Susunan: Sekarang → Perlu tindakan → Kemudian → Log. Kad tanpa tindakan → Perlu tindakan naik dahulu. KPPD (telefon): Perlu semakan → Log → Sekarang. */
 .blocks{display:flex;flex-direction:column}
@@ -46,9 +46,9 @@
   </div>
 </div>
 
-<script src="shared.js?v=61d306a6"></script>
-<script src="gerak.js?v=3d1be233"></script>
-<script src="data.js?v=341eafbf"></script>
+<script src="shared.js"></script>
+<script src="gerak.js"></script>
+<script src="data.js"></script>
 <script>
 (function () {
   M.mount({ page: 'hari' });
@@ -101,7 +101,7 @@
 
     /* Perlu tindakan: laporan tertunggak (paling lama dahulu) + permohonan terbit (ketua: sektornya; KPPD: semua sektor). */
     var kppd = M.role() === 'kppd', act = !!document.querySelector('#mine [data-act]');
-    var need = D.REKOD.filter(function (r) { return r.owner === m.name && r.status !== 'dibatalkan' && r.tamat < T && r.laporan !== 'lengkap'; }).sort(function (a, b) { return a.tarikh < b.tarikh ? -1 : 1; });
+    var need = D.REKOD.filter(function (r) { return r.owner === m.name && r.status !== 'dibatalkan' && (((r.tamat < T || (r.tamat === T && (r.status === 'selesai' || (!r.sehari && r.akhir <= NOW)))) && r.laporan !== 'lengkap') || D.stKey(r) === 'pulang'); }).sort(function (a, b) { return a.tarikh < b.tarikh ? -1 : 1; });
     var mohon = M.role() === 'staf' ? [] : D.REKOD.filter(function (r) { return (kppd || r.sek === m.sek) && r.mohon && r.tahap === 'dalaman'; }).sort(function (a, b) { return a.tarikh < b.tarikh ? -1 : 1; });
     var nI = need.map(function (r) { return [r, 0]; }), mI = mohon.map(function (r) { return [r, 1]; });
     var items = kppd ? mI.concat(nI) : nI.concat(mI);
@@ -110,7 +110,7 @@
     var rows = items.slice(0, 3).map(function (x, i) {
       var r = x[0], b = 'btn ' + (i === 0 && tf ? 'btn-ink' : 'btn-line') + ' btn-sm';
       return x[1] ? '<div class="td rv"><button class="m" data-r="' + r.id + '"><span class="n">' + M.esc(r.tajuk) + '</span><span class="s">' + M.sk(r.sek) + ' Menunggu semakan · ' + M.esc(r.owner) + ' · ' + dm(r.tarikh) + '</span></button><a class="' + b + '" href="aktiviti.html?terbit=' + encodeURIComponent(r.id) + '">Semak laporan</a></div>'
-        : '<div class="td"><button class="m" data-r="' + r.id + '"><span class="n">' + M.esc(r.tajuk) + '</span><span class="s">' + M.dayName(r.tarikh) + ', ' + dm(r.tarikh) + ' · ' + M.esc(place(r)) + '</span></button><a class="' + b + '" href="lapor.html?id=' + encodeURIComponent(r.id) + '">Lengkapkan laporan</a></div>';
+        : '<div class="td"><button class="m" data-r="' + r.id + '"><span class="n">' + M.esc(r.tajuk) + '</span><span class="s">' + M.dayName(r.tarikh) + ', ' + dm(r.tarikh) + ' · ' + M.esc(place(r)) + (D.stKey(r) === 'pulang' ? '<br>Dipulangkan — ' + M.esc(r.pulang.sebab) : '') + '</span></button><a class="' + b + '" href="lapor.html?id=' + encodeURIComponent(r.id) + '">' + (D.stKey(r) === 'pulang' ? 'Ubah &amp; hantar semula' : 'Lengkapkan laporan') + '</a></div>';
     });
     $('blocks').classList.toggle('tf', tf);
     /* Perlu tindakan di atas → butang kad Sekarang jadi garis (kekal satu butang petrol pada skrin pertama). */

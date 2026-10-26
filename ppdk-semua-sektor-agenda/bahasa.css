@@ -1,4 +1,7 @@
-/* PPDK.CH semua sektor — paparan contoh. Data ilustrasi (nama, sekolah dan angka rekaan). */
+/* Bahasa visual agenda — dimuat selepas base/tenang/agenda pada skrin staf.
+   Skala: tajuk halaman 30 (telefon 28) · bahagian 20 · aktiviti 18 · isi 16 · meta 14.
+   Kurangkan label mono huruf besar kecil dan garis pembahagi; teks kelabu mod gelap lebih jelas.
+   `body` di hadapan pemilih = mengatasi <style> dalam halaman yang dimuat selepas fail ini. */
 :root{--fs-h1:30px;--fs-h2:20px;--fs-act:18px;--fs-body:16px;--fs-meta:14px}
 @media (max-width:780px){:root{--fs-h1:28px}}
 :root[data-theme="dark"]{--ink-2:#D0D4D1;--muted:#A7AFAD;--rule:#2F3836;--rule-2:#46504E}

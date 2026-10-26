@@ -1,4 +1,4 @@
-/* PPDK.CH semua sektor — paparan contoh. Data ilustrasi (nama, sekolah dan angka rekaan). */
+/* Portal awam ppdk.ch */
 .pw{max-width:980px;margin:0 auto;padding:0 clamp(16px,3vw,32px) 80px}
 .ptop{display:flex;justify-content:space-between;align-items:center;gap:16px;height:64px;border-bottom:1px solid var(--ink)}
 .ptop .brand{padding:0;font-size:22px}

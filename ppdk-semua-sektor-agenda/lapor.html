@@ -6,10 +6,10 @@
 <meta name="robots" content="noindex">
 <title>Laporan · Staf</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
-<link rel="stylesheet" href="base.css?v=eb478dd3">
-<link rel="stylesheet" href="gaya.css?v=cbbbdafc">
-<link rel="stylesheet" href="agenda.css?v=80604b75">
-<link rel="stylesheet" href="bahasa.css?v=c8d377cd">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="tenang.css">
+<link rel="stylesheet" href="agenda.css">
+<link rel="stylesheet" href="bahasa.css">
 <style>
 .back{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;color:var(--ink-2);min-height:44px}
 .back svg{width:16px;height:16px}
@@ -62,6 +62,7 @@
 .chk input{width:17px;height:17px;accent-color:var(--petrol);margin-top:2px}
 .lfoot .text-btn{white-space:nowrap}.lfoot{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:26px 0 30px;padding-top:16px;border-top:1px solid var(--rule)}
 .lfoot .r{display:flex;gap:8px;align-items:center}
+.lfoot.stk{flex-wrap:wrap}.lfoot #save-error{flex-basis:100%;margin:0}
 .wm{font:600 11px/1 var(--mono);letter-spacing:.08em;color:#9a5b00;background:#f6ecd9;padding:7px 9px;margin-bottom:12px;display:inline-block}
 .photos{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
 .photos figure{border:1px solid var(--rule);background:var(--card)}
@@ -102,8 +103,8 @@
   <div id="main"></div>
 </div>
 
-<script src="shared.js?v=61d306a6"></script>
-<script src="data.js?v=341eafbf"></script>
+<script src="shared.js"></script>
+<script src="data.js"></script>
 <script>
 (function () {
   M.mount({ page: 'aktiviti' });
@@ -204,8 +205,6 @@
     if (!r.baru) return;
     delete r.baru; delete r._md; baru = false;
     Object.assign(src, pick(r, REC)); delete src.baru; D.REKOD.push(src);
-    try { history.replaceState(null, '', 'lapor.html?id=' + encodeURIComponent(r.id)); } catch (e) {}
-    M.toast('Rekod dicipta · muncul di Jadual dan Log Pergerakan');
   }
   function whoH() {
     return team().map(function (n, i) { return '<span>' + M.esc(n) + (i ? ' <button type="button" class="rm" data-rm="' + (i - 1) + '" aria-label="Buang ' + M.esc(n) + '">✕</button>' : ' <em class="muted" style="font-style:normal;font-size:12px">pemilik</em>') + '</span>'; }).join('') +
@@ -225,7 +224,7 @@
     var K = D.KHAS[r.sek];
     return '<div class="aibox"><div class="lblrow"><label class="lbl" for="cat" style="font-size:15px">1 · Catatan ringkas anda</label><span class="aitag" style="color:var(--petrol);background:var(--card)">✦ Draf AI</span></div>' +
       '<textarea id="cat" rows="5" placeholder="Tulis ringkas, satu perkara satu baris. Contoh:\n3 kelas Tahun 4 dipantau\nguru guna bahan konkrit untuk pecahan\nmurid aktif dalam kumpulan\nperlu bimbingan susulan PBD">' + M.esc(r.cat || '') + '</textarea>' +
-      '<div class="row"><button class="btn btn-ink" type="button" id="ai">✦ Jana draf AI</button><button class="text-btn" type="button" id="undoai" hidden>Undur draf</button><span class="tiny" id="ais">Enjin AI yang sama dengan borang ICT. Hanya guna maklumat rekod + catatan anda; tiada fakta ditambah.</span></div></div>' +
+      '<div class="row"><button class="btn btn-ink" type="button" id="ai" aria-describedby="ai-error">✦ Jana draf AI</button><button class="text-btn" type="button" id="undoai" hidden>Undur draf</button><span class="tiny" id="ais">Enjin AI yang sama dengan borang ICT. Hanya guna maklumat rekod + catatan anda; tiada fakta ditambah.</span></div><div id="ai-error" class="flag warn" role="alert" hidden></div></div>' +
       '<div class="lblrow" style="margin:22px 0 8px"><span class="lbl" style="font-size:15px;margin:0">2 · Semak &amp; betulkan draf</span><span id="tag-rum" class="tiny">' + (r.ai ? 'Draf dibantu AI · semak fakta' : 'Atau tulis sendiri') + '</span></div>' +
       ta('obj', 'Objektif', 'bernombor', 3, r.obj) +
       ta('rum', 'Rumusan <span class="req">*</span>', 'satu perenggan', 5, r.rum) +
@@ -241,8 +240,17 @@
     var c = lines($('cat').value);
     if (!c.length) { $('cat').focus(); M.toast('Tulis catatan dahulu'); return; }
     undo = { obj: $('obj').value, rum: $('rum').value, imp: $('imp').value, ts: $('ts').value, ai: r.ai };
-    var b = $('ai'); b.disabled = true; b.textContent = 'Menjana draf…'; $('ais').textContent = 'Sedang menjana · anggaran 30–50 s (demo: segera). Kekalkan halaman ini terbuka.';
+    var b = $('ai'), sim = new URLSearchParams(location.search).get('sim');
+    $('ai-error').hidden = true; b.disabled = true; b.textContent = 'Menjana draf…'; $('ais').textContent = 'Sedang menjana · anggaran 30–50 s (demo: segera). Kekalkan halaman ini terbuka.';
     setTimeout(function () {
+      if (!b.isConnected) return;
+      if (sim === 'ai-gagal' || sim === 'ai-lambat') {
+        b.disabled = false; b.textContent = '✦ Jana draf AI'; $('ais').textContent = '';
+        $('ai-error').hidden = false;
+        $('ai-error').innerHTML = '<p>' + (sim === 'ai-lambat' ? 'Masa tamat: draf AI mengambil lebih 60 s (simulasi).' : 'Draf AI gagal. Kuota habis atau sambungan terputus.') + ' Catatan asal anda kekal. Anda boleh tulis laporan sendiri di bawah.</p><button class="btn btn-line btn-sm" type="button" id="ai-retry">Cuba lagi</button>';
+        $('ai-retry').onclick = function () { var u = new URL(location.href); u.searchParams.delete('sim'); history.replaceState(null, '', u); draft(); };
+        return;
+      }
       var cap = function (x) { return x.charAt(0).toUpperCase() + x.slice(1).replace(/\.?$/, '.'); };
       var fu = c.filter(function (x) { return /perlu|susul|cadang|akan/i.test(x); }), fa = c.filter(function (x) { return fu.indexOf(x) < 0; });
       if (!$('obj').value.trim()) $('obj').value = '1. Melaksanakan ' + r.tajuk.charAt(0).toLowerCase() + r.tajuk.slice(1) + ' di ' + place + '.';
@@ -264,7 +272,7 @@
       '<input id="photos" type="file" accept="image/jpeg,image/png,image/webp" multiple' + (n >= 6 ? ' disabled' : '') + '><p class="tiny" id="pstat" role="status"></p>' +
       '<div class="photos">' + r.photos.map(function (p, i) { return '<figure><img src="' + M.esc(p.src) + '" alt="Gambar ' + (i + 1) + '"><figcaption><span>' + M.esc(p.name) + '</span><button type="button" class="text-btn" data-rmp="' + i + '">Buang</button></figcaption></figure>'; }).join('') + '</div></div>' +
       (wide() ? '' : docBlock()) +
-      '<div class="section-t" style="margin-top:22px">Pengesahan pegawai</div><div class="chk"><label><input type="checkbox" id="confirm"> Saya telah menyemak fakta, senarai pegawai dan kandungan laporan' + (r.ai ? ', termasuk draf AI' : '') + '.</label></div>' +
+      '<div class="section-t" style="margin-top:22px">Pengesahan pegawai</div><div class="chk"><label><input type="checkbox" id="confirm" aria-describedby="confirm-error"> Saya telah menyemak fakta, senarai pegawai dan kandungan laporan' + (r.ai ? ', termasuk draf AI' : '') + '.</label><p class="hint" id="confirm-error" role="alert"></p></div>' +
       '<p class="tiny" style="margin-top:6px">Semakan untuk paparan awam (nama murid, gambar) dibuat semasa mohon terbit.</p>';
   }
   /* Kecilkan gambar sebelum simpan (daripada Sol): maks 960px, JPEG. */
@@ -320,10 +328,10 @@
   function render() {
     editing = true;
     $('main').innerHTML = (wide() ? '<div class="lgrid"><div class="lcol">' : '') + '<nav class="steps" aria-label="Langkah laporan">' + STEPS.map(function (s, i) { return '<button type="button" data-step="' + i + '"' + (i === step ? ' aria-current="step"' : '') + (i < step ? ' class="ok"' : '') + '><b>' + (i < step ? '✓ ' : '') + 'Langkah ' + (i + 1) + '</b><span>' + s + '</span></button>'; }).join('') + '</nav>' +
-      '<div class="pane">' + [p1, p2, p3][step]() + '</div>' +
-      '<div class="lfoot stk"><button class="text-btn" type="button" id="draf">Simpan draf</button><div class="r">' +
+      (src.pulang ? '<p class="flag warn">Dipulangkan — ' + M.esc(src.pulang.sebab) + '</p>' : '') + '<div class="pane">' + [p1, p2, p3][step]() + '</div>' +
+      '<div class="lfoot stk"><div id="save-error" hidden></div><button class="text-btn" type="button" id="draf">Simpan draf</button><div class="r">' +
       (step ? '<button class="btn btn-line" type="button" id="prev">Sebelum</button>' : '') +
-      (step < 2 ? '<button class="btn btn-ink" type="button" id="next">Seterusnya</button>' : '<button class="btn btn-ink" type="button" id="save">Simpan laporan</button>') + '</div></div>' +
+      (step < 2 ? '<button class="btn btn-ink" type="button" id="next">Seterusnya</button>' : '<button class="btn btn-ink" type="button" id="save">' + (D.stKey(src) === 'pulang' ? 'Simpan &amp; hantar semula' : 'Simpan laporan') + '</button>') + '</div></div>' +
       (wide() ? '</div><aside class="lpv" id="lpv" aria-label="Pratonton laporan">' + pv() + '</aside></div>' : '');
     window.scrollTo(0, 0);
   }
@@ -339,12 +347,41 @@
     $('main').innerHTML = '<div class="lock">' + M.esc(msg) + '</div>' + (final || src.rum ? docH(final) + '<div class="share"><button class="btn btn-line btn-sm" type="button" id="pdf">Cetak PDF</button><button class="btn btn-line btn-sm" type="button" id="wa">Salin WhatsApp</button></div>' : '') +
       '<div class="share" style="margin-top:18px"><a class="btn btn-line" href="aktiviti.html">Kembali ke Rekod Aktiviti</a></div>';
   }
-  function done() {
+  function done(resend) {
     editing = false;
+    if (resend) { $('main').innerHTML = '<div class="donebox" role="status"><h2>Dihantar semula untuk semakan</h2><p>Ketua sektor ' + M.esc(src.sek) + ' akan menyemak laporan yang dibaiki. Status: Menunggu semakan.</p><div class="share"><a class="btn btn-line" href="aktiviti.html">Kembali ke Rekod Aktiviti</a></div></div>'; return; }
     var canPub = r.tahap !== 'sulit' && r.sek !== 'SPsK' && r.sek !== 'SPP';
     $('main').innerHTML = '<div class="donebox"><h2>Laporan disimpan</h2><p>Kekal dalaman — dilihat oleh pegawai yang dibenarkan sahaja. Rekod ini juga dikira dalam Ringkasan Bulanan.</p>' +
       '<div class="share">' + (canPub ? '<a class="btn btn-ink" href="aktiviti.html?terbit=' + r.id + '">Mohon terbit di ppdk.ch</a>' : '') + '<a class="btn btn-line" href="aktiviti.html">Kembali ke Rekod Aktiviti</a></div>' +
       (canPub ? '<p class="tiny" style="margin-top:12px">Terbit = pilihan. Penerbit sektor menyemak sebelum laporan muncul di portal dan Facebook.</p>' : '') + '</div>';
+  }
+  function saveReport(draftOnly) {
+    collect();
+    if (r.baru && !p1ok()) { step = 0; render(); M.toast('Isi tajuk dan tempat dahulu'); return; }
+    if (!draftOnly && !r.rum) { go(2); return; }
+    /* Laporan dipulangkan: satu tindakan simpan + hantar semula; gambar wajib seperti Mohon terbit. */
+    var resend = !draftOnly && D.stKey(src) === 'pulang';
+    if (resend && !(r.photos.length || src.gam)) { $('confirm-error').textContent = 'Tambah sekurang-kurangnya satu gambar sebelum hantar semula.'; ($('photos') || $('confirm')).focus(); return; }
+    /* Demo ?sim=token-batal: akaun dibatalkan semasa menulis — draf disimpan pada peranti dahulu. */
+    if (new URLSearchParams(location.search).get('sim') === 'token-batal') {
+      try { sessionStorage.setItem('ppdk-demo-draf-' + src.id, JSON.stringify(pick(r, REP))); } catch (x) {}
+      var h = $('save-error'); h.className = 'flag warn'; h.setAttribute('role', 'alert'); h.tabIndex = -1; h.hidden = false;
+      h.innerHTML = '<p>Akaun tidak aktif. Draf anda disimpan pada peranti ini dan tidak hilang.</p><a class="btn btn-line btn-sm" href="log-masuk.html?sim=gantung">Lihat sebab</a>'; h.focus(); return;
+    }
+    var before = JSON.stringify(src), isNew = !!r.baru;
+    if (isNew) create();
+    if (draftOnly) src.drafLaporan = pick(r, REP);
+    else { Object.assign(src, pick(r, REP)); src.gam = r.photos.length; delete src.drafLaporan; src.status = 'selesai'; src.laporan = 'lengkap'; if (resend) { src.mohon = true; delete src.pulang; } }
+    if (!D.persist()) {
+      if (isNew) { D.REKOD.splice(D.REKOD.indexOf(src), 1); r.baru = true; baru = true; }
+      Object.keys(src).forEach(function (k) { delete src[k]; }); Object.assign(src, JSON.parse(before));
+      D.saveFailure($('save-error'), function () { if (draftOnly) saveReport(true); else if ($('save')) $('save').click(); else go(2); }); return;
+    }
+    $('save-error').hidden = true;
+    if (isNew) { var u = new URL(location.href); u.searchParams.set('id', r.id); history.replaceState(null, '', u); M.toast('Rekod dicipta · muncul di Jadual dan Log Pergerakan'); }
+    if (draftOnly) { clean('Draf disimpan · belum lengkap'); M.toast('Draf disimpan · laporan lengkap belum berubah'); }
+    else if (resend) { clean(''); done(true); }
+    else { clean(''); done(); M.toast('Laporan disimpan · kekal dalaman'); }
   }
   document.addEventListener('click', function (e) {
     var t = e.target;
@@ -352,8 +389,7 @@
     if (t.closest('#next')) { go(step + 1); return; }
     if (t.closest('#prev')) { go(step - 1); return; }
     var mdb = t.closest('[data-md]'); if (mdb) { collect(); r._md = mdb.getAttribute('data-md'); render(); return; }
-    if (t.closest('#draf')) { collect(); if (r.baru) { if (!p1ok()) { step = 0; render(); M.toast('Isi tajuk dan tempat dahulu'); return; } create(); }
-      src.drafLaporan = pick(r, REP); if (!D.persist()) return; clean('Draf disimpan · belum lengkap'); M.toast('Draf disimpan · laporan lengkap belum berubah'); return; }
+    if (t.closest('#draf')) { saveReport(true); return; }
     if (t.closest('#undoai') && undo) { ['obj', 'rum', 'imp', 'ts'].forEach(function (f) { $(f).value = undo[f]; }); r.ai = undo.ai; undo = null; $('undoai').hidden = true; collect(); render(); mark(); M.toast('Draf AI diundur'); return; }
     var rp = t.closest('[data-rmp]'); if (rp) { collect(); r.photos.splice(+rp.getAttribute('data-rmp'), 1); mark(); render(); return; }
     if (t.closest('#addp')) { addPegawai(); return; }
@@ -365,17 +401,14 @@
     if (t.closest('#wa')) { var s = waText(!!document.querySelector('.lock') && src.laporan === 'lengkap'); try { navigator.clipboard.writeText(s); } catch (x) {} M.toast('Teks WhatsApp disalin'); return; }
     if (t.closest('#save')) {
       collect();
-      if (!$('confirm').checked) { $('confirm').focus(); M.toast('Sahkan semakan dahulu'); return; }
-      var before = JSON.stringify(src);
-      if (r.baru) create();
-      Object.assign(src, pick(r, REP)); src.gam = r.photos.length; delete src.drafLaporan; src.status = 'selesai'; src.laporan = 'lengkap';
-      if (!D.persist()) { var old = JSON.parse(before); Object.keys(src).forEach(function (k) { delete src[k]; }); Object.assign(src, old); return; }
-      clean(''); done(); M.toast('Laporan disimpan · kekal dalaman');
+      if (!$('confirm').checked) { $('confirm-error').textContent = 'Sahkan semakan dahulu sebelum simpan laporan.'; $('confirm').setAttribute('aria-invalid', 'true'); $('confirm').focus(); return; }
+      saveReport(false);
     }
   });
   document.addEventListener('input', function (e) { if (e.target.closest('#main') && e.target.id !== 'photos') { mark(); livePv(); } });
   window.matchMedia('(min-width:1100px)').addEventListener('change', function () { if (editing) { collect(); render(); } });
   document.addEventListener('change', async function (e) {
+    if (e.target.id === 'confirm' && e.target.checked) { $('confirm-error').textContent = ''; e.target.removeAttribute('aria-invalid'); }
     if (e.target.id !== 'photos') return;
     collect(); var files = [].slice.call(e.target.files || []), room = 6 - r.photos.length;
     if (files.length > room) M.toast('Maksimum 6 gambar · ' + room + ' lagi dibenarkan');
@@ -384,7 +417,15 @@
     mark(); render();
   });
   var lm = baru ? '' : lockMsg();
-  if (lm) renderLocked(lm); else render();
+  if (lm) {
+    renderLocked(lm);
+    /* Peserta tugas bersama yang belum dilaporkan: ingatkan pemilik (tiada pindah milik). */
+    if (src.owner !== me.name && D.involves(src, me.name) && src.laporan !== 'lengkap' && src.tamat < M.TODAY) {
+      var sent = sessionStorage.getItem('ppdk-demo-ingat-' + src.id);
+      $('main').insertAdjacentHTML('afterbegin', '<div class="flag" style="margin-bottom:14px"><p>Laporan belum ditulis oleh pemilik. Tugas ini belum dikira dalam Ringkasan Bulanan.</p><button class="btn btn-line btn-sm" type="button" id="ingat"' + (sent ? ' hidden' : '') + '>Ingatkan ' + M.esc(src.owner) + '</button><p class="hint" id="ingat-ok" role="status">' + (sent ? 'Peringatan dihantar kepada ' + M.esc(src.owner) + '.' : '') + '</p></div>');
+      $('ingat').onclick = function () { try { sessionStorage.setItem('ppdk-demo-ingat-' + src.id, '1'); } catch (x) {} this.hidden = true; $('ingat-ok').textContent = 'Peringatan dihantar kepada ' + src.owner + '.'; $('ingat-ok').tabIndex = -1; $('ingat-ok').focus(); };
+    }
+  } else { if (new URLSearchParams(location.search).get('langkah') === 'gambar') step = 2; render(); }
 })();
 </script>
 </body>
