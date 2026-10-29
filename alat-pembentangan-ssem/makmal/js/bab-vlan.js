@@ -389,7 +389,7 @@
   const L3 = {
     tajuk: 'Bahagikan dengan VLAN',
     teks: 'WiFi sekolah dibahagikan kepada beberapa <b>SSID</b>. Setiap SSID dipadankan dengan satu <b>VLAN</b>. Broadcast kini hanya sampai ke peranti dalam <b>VLAN yang sama</b>, walaupun di bawah AP yang sama. AP, kabel dan switch <b>tidak bertambah</b>.',
-    analogi: 'Seperti fon kepala berbilang saluran dalam dewan: semua duduk dalam dewan yang sama, tetapi setiap orang hanya mendengar saluran yang dipilihnya (SSID).',
+    analogi: 'Seperti headphone berbilang saluran dalam dewan: semua duduk dalam dewan yang sama, tetapi setiap orang hanya mendengar saluran yang dipilihnya (SSID).',
     rsc: RSC_VLAN,
     bina(ctx) {
       const papan = ctx.papan({ mula: ['Mengaktifkan VLAN', '…', 'Setiap SSID dipadankan dengan satu VLAN.'] });
