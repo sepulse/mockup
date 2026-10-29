@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Alat Bantu Pembentangan SSeM</title>
+<meta name="robots" content="noindex, nofollow">
+<style>
+  :root {
+    --kertas: #F2F0EA; --kad: #FAF9F5; --dakwat: #111819; --dakwat2: #3B4648; --pudar: #5E6769;
+    --garis: #D8D3C8; --aksen: #B4462E; --gelap: #1d2224;
+    --fon: "Segoe UI", "Segoe UI Variable", system-ui, -apple-system, Roboto, Arial, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--gelap); font-family: var(--fon); color: var(--dakwat); overflow: hidden; }
+  button { font: inherit; color: inherit; cursor: pointer; }
+  :focus-visible { outline: 3px solid var(--aksen); outline-offset: 2px; }
+
+  /* ---- bar atas nipis (hanya semasa alat dibuka) */
+  #bar { height: 44px; display: none; align-items: center; gap: 8px; padding: 0 12px; background: var(--gelap); color: #E9E6DE; border-bottom: 1px solid #333c3f; }
+  body.alat #bar { display: flex; }
+  #bar .sp { flex: 1; }
+  #bar { overflow: hidden; }
+  #bar button { white-space: nowrap; height: 32px; padding: 0 14px; border-radius: 8px; border: 1px solid #3d4749; background: transparent; color: #E9E6DE; font-size: 14px; font-weight: 600; }
+  #bar button:hover { background: #2a3234; }
+  #bar button[aria-current="true"] { background: var(--aksen); border-color: var(--aksen); color: #fff; }
+  #bar .jenama { font-weight: 700; font-size: 14px; border: 0; padding: 0 10px 0 0; display: flex; align-items: center; gap: 8px; }
+  #bar .logo { width: 26px; height: 26px; border-radius: 7px; background: var(--aksen); color: #fff; display: grid; place-items: center; font-size: 11px; font-weight: 800; letter-spacing: .5px; }
+
+  @media (max-width: 720px) { #bar .tek, #btnPenuh { display: none; } #bar button { padding: 0 10px; font-size: 13px; } }
+
+  /* ---- rangka alat */
+  #pentas { height: 100%; }
+  body.alat #pentas { height: calc(100% - 44px); }
+  body:not(.alat) #pentas { display: none; }
+  iframe { width: 100%; height: 100%; border: 0; display: block; background: var(--gelap); }
+
+  /* ---- menu pilihan */
+  #menu { height: 100%; overflow: auto; background: var(--kertas); display: flex; flex-direction: column; align-items: center; padding: 6vh 24px 32px; }
+  body.alat #menu { display: none; }
+  .kepala { text-align: center; max-width: 760px; }
+  .kepala .logo { width: 56px; height: 56px; border-radius: 14px; background: var(--aksen); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 22px; letter-spacing: 1px; margin: 0 auto 18px; }
+  h1 { margin: 0 0 8px; font-size: clamp(28px, 4vw, 44px); line-height: 1.1; }
+  .kepala p { margin: 0; font-size: clamp(16px, 1.6vw, 20px); color: var(--pudar); }
+  .kad-senarai { margin: 5vh 0 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 380px), 1fr)); gap: 24px; width: min(100%, 980px); }
+  .kad { display: flex; flex-direction: column; gap: 10px; width: 100%; height: 100%; text-align: left; padding: 28px 28px 24px; background: var(--kad); border: 2px solid var(--garis); border-radius: 18px; transition: border-color .15s, transform .15s, box-shadow .15s; }
+  .kad:hover { border-color: var(--aksen); transform: translateY(-3px); box-shadow: 0 10px 0 #E4DFD3; }
+  .kad .no { font-size: 13px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--aksen); }
+  .kad h2 { margin: 0; font-size: 26px; line-height: 1.15; }
+  .kad p { margin: 0; font-size: 17px; line-height: 1.45; color: var(--dakwat2); flex: 1; }
+  .kad .cip { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+  .kad .cip span { font-size: 13px; font-weight: 600; color: var(--dakwat2); background: #ECE8DE; border-radius: 6px; padding: 4px 9px; }
+  .kad .buka { margin-top: 8px; font-weight: 700; color: var(--aksen); font-size: 16px; }
+  .nota { margin-top: 4vh; font-size: 14px; color: var(--pudar); text-align: center; max-width: 760px; line-height: 1.6; }
+  .nota kbd { font: 600 12px var(--fon); background: #fff; border: 1px solid var(--garis); border-bottom-width: 2px; border-radius: 5px; padding: 1px 6px; }
+</style>
+</head>
+<body>
+
+<header id="bar">
+  <button class="jenama" id="btnMenu" type="button" title="Kembali ke pilihan alat (Alt+M)">
+    <span class="logo">MG</span> <span class="tek">Alat Bantu SSeM</span>
+  </button>
+  <button type="button" data-alat="makmal">Makmal Rangkaian</button>
+  <button type="button" data-alat="s01">S01 · VLAN Asas 3D</button>
+  <span class="sp"></span>
+  <button type="button" id="btnPenuh" title="Skrin penuh (Alt+F)">⛶ Skrin penuh</button>
+</header>
+
+<main id="pentas"><iframe id="rangka" title="Alat bantu pembentangan" allow="fullscreen" allowfullscreen></iframe></main>
+
+<section id="menu">
+  <div class="kepala">
+    <div class="logo">MG</div>
+    <h1>Alat Bantu Pembentangan</h1>
+    <p>MyGovNet · Latihan Rangkaian SSeM. Pilih alat yang hendak ditunjukkan.</p>
+  </div>
+
+  <ul class="kad-senarai">
+    <li>
+      <button class="kad" type="button" data-alat="makmal">
+        <span class="no">Alat 1</span>
+        <h2>Makmal Rangkaian</h2>
+        <p>Simulasi interaktif langkah demi langkah: VLAN, DHCP, HotSpot, DNS, Firewall, laluan, NAT, kapasiti dan WireGuard, dengan petikan konfigurasi SSeM.</p>
+        <span class="cip"><span>10 bab</span><span>Langkah demi langkah</span><span>2D</span></span>
+        <span class="buka">Buka →</span>
+      </button>
+    </li>
+    <li>
+      <button class="kad" type="button" data-alat="s01">
+        <span class="no">Alat 2</span>
+        <h2>S01 · VLAN Asas 3D</h2>
+        <p>Modul asas VLAN dalam paparan isometrik 3D: tag, access port, trunk, switch dan DHCP. Seret untuk memutar pandangan.</p>
+        <span class="cip"><span>Modul asas</span><span>Three.js</span><span>3D</span></span>
+        <span class="buka">Buka →</span>
+      </button>
+    </li>
+  </ul>
+
+  <p class="nota">Dalam alat: <kbd>←</kbd> <kbd>→</kbd> langkah · <kbd>Space</kbd> jeda · <kbd>F</kbd> skrin penuh. Klik pada alat dahulu jika kekunci tidak bergerak.
+  Untuk kembali ke menu ini, tekan <kbd>Alt</kbd>+<kbd>M</kbd> atau klik &ldquo;Alat Bantu SSeM&rdquo; di bar atas.</p>
+</section>
+
+<script>
+(function () {
+  var ALAT = {
+    makmal: { url: 'makmal/index.html', tajuk: 'Makmal Rangkaian SSeM' },
+    s01:    { url: 's01/index.html',    tajuk: 'S01 VLAN Asas' }
+  };
+  var rangka = document.getElementById('rangka');
+  var semasa = null;
+
+  function buka(id, ubahHash) {
+    if (!ALAT[id]) return keMenu(ubahHash);
+    if (semasa !== id) { rangka.src = ALAT[id].url; semasa = id; }
+    document.body.classList.add('alat');
+    document.title = ALAT[id].tajuk + ' · Alat Bantu SSeM';
+    document.querySelectorAll('#bar [data-alat]').forEach(function (b) {
+      b.setAttribute('aria-current', b.dataset.alat === id ? 'true' : 'false');
+    });
+    if (ubahHash !== false) history.replaceState(null, '', '#' + id);
+    fokusAlat();
+  }
+
+  // Beri fokus kepada alat supaya kekunci anak panah/Space terus berfungsi, dan terus Alt+M/F/1/2 dari dalam alat (hos http/https sahaja).
+  function fokusAlat() { try { rangka.contentWindow.focus(); } catch (e) {} }
+  rangka.addEventListener('load', function () {
+    try { rangka.contentWindow.addEventListener('keydown', pintasan); } catch (e) { /* file:// : abaikan */ }
+    fokusAlat();
+  });
+
+  function keMenu(ubahHash) {
+    document.body.classList.remove('alat');
+    document.title = 'Alat Bantu Pembentangan SSeM';
+    if (ubahHash !== false) history.replaceState(null, '', location.pathname + location.search);
+  }
+
+  function penuh() {
+    if (document.fullscreenElement) document.exitFullscreen();
+    else if (document.documentElement.requestFullscreen) document.documentElement.requestFullscreen().then(fokusAlat);
+  }
+
+  document.querySelectorAll('[data-alat]').forEach(function (b) {
+    b.addEventListener('click', function () { buka(b.dataset.alat); });
+  });
+  document.getElementById('btnMenu').addEventListener('click', function () { keMenu(); });
+  document.getElementById('btnPenuh').addEventListener('click', penuh);
+
+  // Alt+M / Alt+F: berfungsi bila fokus di halaman induk. Dalam alat, kekunci asal alat dipakai.
+  addEventListener('keydown', pintasan);
+  function pintasan(e) {
+    if (!e.altKey) return;
+    if (e.key === 'm' || e.key === 'M') { e.preventDefault(); keMenu(); }
+    else if (e.key === 'f' || e.key === 'F') { e.preventDefault(); penuh(); }
+    else if (e.key === '1') { e.preventDefault(); buka('makmal'); }
+    else if (e.key === '2') { e.preventDefault(); buka('s01'); }
+  }
+
+  // Pautan terus: #makmal, #s01
+  addEventListener('hashchange', function () { var id = location.hash.slice(1); if (ALAT[id]) buka(id, false); else keMenu(false); });
+  var awal = location.hash.slice(1);
+  if (ALAT[awal]) buka(awal, false);
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Makmal Rangkaian SSeM</title>
+<link rel="stylesheet" href="css/gaya.css">
+</head>
+<body>
+<div id="bingkai">
+  <div id="pentas">
+    <header id="atas">
+      <button class="jenama" id="btnRumah" title="Kembali ke menu (M)">
+        <span class="logo">MG</span>
+        <span><b>Makmal Rangkaian</b><small>MyGovNet · SSeM</small></span>
+      </button>
+      <div id="tajukBab"></div>
+      <div id="titikLangkah"></div>
+      <div class="atasKanan">
+        <button class="btnIkon" id="btnPenuh" title="Skrin penuh (F)">⛶</button>
+      </div>
+    </header>
+
+    <main id="utama">
+      <section id="menu"></section>
+      <section id="bab" hidden>
+        <div id="kawasanPentas">
+          <svg id="svg" viewBox="0 0 1320 888" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Simulasi rangkaian"></svg>
+          <div id="lapisanHtml"></div>
+          <div id="tip" hidden></div>
+        </div>
+        <aside id="panel">
+          <div id="lgNo"></div>
+          <h2 id="lgTajuk"></h2>
+          <p id="lgTeks"></p>
+          <div id="kawalan"></div>
+          <div id="analogi" hidden></div>
+          <details id="rsc" hidden><summary>Dalam router SSeM</summary><div id="rscIsi"></div></details>
+        </aside>
+      </section>
+    </main>
+
+    <footer id="bawah">
+      <div class="bawahKiri" id="petunjuk">← → langkah · Space pause · R ulang · M menu · F skrin penuh</div>
+      <div class="bawahTengah">
+        <button class="btnKaki" id="btnSebelum">◀ Sebelum</button>
+        <button class="btnKaki" id="btnJeda">⏸ Pause</button>
+        <button class="btnKaki" id="btnUlang">↺ Ulang</button>
+        <button class="btnKaki utama" id="btnSeterusnya">Seterusnya ▶</button>
+      </div>
+      <div class="bawahKanan">
+        <span class="lblLaju">Laju</span>
+        <div class="segmen kecil" id="laju">
+          <button data-v="0.5">0.5×</button><button data-v="1" class="aktif">1×</button><button data-v="1.6">1.6×</button>
+        </div>
+      </div>
+    </footer>
+  </div>
+</div>
+
+<noscript>
+  <div class="tanpaJs">Prototaip ini memerlukan JavaScript. Buka fail ini dalam Chrome atau Edge dengan JavaScript dihidupkan.</div>
+</noscript>
+
+<script src="js/teras.js"></script>
+<script src="js/bab-vlan.js"></script>
+<script src="js/bab-dhcp.js"></script>
+<script src="js/bab-hotspot.js"></script>
+<script src="js/bab-dns.js"></script>
+<script src="js/bab-firewall.js"></script>
+<script src="js/bab-laluan.js"></script>
+<script src="js/bab-nat.js"></script>
+<script src="js/bab-kapasiti.js"></script>
+<script src="js/bab-wireguard.js"></script>
+<script src="js/bab-rumusan.js"></script>
+<script src="js/bab-belum.js"></script>
+<script src="js/mula.js"></script>
+</body>
+</html>
