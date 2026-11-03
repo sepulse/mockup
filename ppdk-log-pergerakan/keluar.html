@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Keluar pejabat · Log Pergerakan</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="bahasa.css">
+<link rel="stylesheet" href="gerak.css">
+</head>
+<body>
+<div id="content" class="wrap">
+  <div class="page-h"><div><a class="text-btn" href="saya.html" style="margin-bottom:6px">← Status saya</a><h1>Keluar pejabat</h1><div class="sub">Isi sebelum anda bertolak. Kurang setengah minit.</div></div></div>
+
+  <div id="dah" hidden></div>
+  <form class="form" id="f" novalidate>
+    <div class="fs">
+      <label class="lbl" for="dest">Destinasi <span class="req">*</span></label>
+      <input type="text" id="dest" list="tempat" autocomplete="off" placeholder="Nama sekolah atau tempat">
+      <datalist id="tempat"></datalist>
+      <div class="chips" id="recent" aria-label="Destinasi terkini"></div>
+      <p class="err" id="e-dest" hidden>Isi destinasi.</p>
+    </div>
+
+    <div class="fs">
+      <div class="lbl" id="l-tuj">Tujuan <span class="req">*</span></div>
+      <div class="chips" id="tuj" role="group" aria-labelledby="l-tuj"></div>
+      <input type="text" id="nota" placeholder="Catatan ringkas (pilihan), cth. Mesyuarat panel PBD" style="margin-top:10px" maxlength="80">
+      <p class="err" id="e-tuj" hidden>Pilih tujuan.</p>
+    </div>
+
+    <div class="fs tq">
+      <div>
+        <label class="lbl" for="pergi">Masa pergi <span class="req">*</span></label>
+        <input type="time" id="pergi">
+        <p class="hint" id="h-pergi"></p>
+      </div>
+      <div>
+        <label class="lbl" for="balik">Masa balik (jangka) <span class="req">*</span></label>
+        <input type="time" id="balik">
+        <p class="hint" id="h-balik"></p>
+      </div>
+    </div>
+    <div class="chips" id="qb" aria-label="Pilihan masa balik"></div>
+    <label class="check" style="margin-top:12px"><input type="checkbox" id="pulang">Tidak kembali ke pejabat hari ini</label>
+    <p class="err" id="e-masa" hidden></p>
+
+    <div class="prev" id="prev"></div>
+
+    <div class="savebar">
+      <a class="btn btn-line" href="saya.html">Batal</a>
+      <button class="btn btn-ink" type="submit" id="save">Sahkan keluar</button>
+    </div>
+  </form>
+</div>
+
+<script src="app.js"></script>
+<script>
+(function () {
+  G.mount({ page: 'saya' });
+  var $ = function (id) { return document.getElementById(id); };
+  var m = G.me(), tuj = '';
+
+  var open = G.openOf(m.id);
+  if (open) {
+    var akan = G.toMin(open.keluar) > G.toMin(G.now());
+    $('f').hidden = true; $('dah').hidden = false;
+    $('dah').innerHTML = '<div class="stat luar"><div class="k"><i></i>' + (akan ? 'Rekod keluar ' + open.keluar + ' sudah disimpan' : 'Anda masih direkod di luar') + '</div><div class="dest">' + G.icon('pin') + G.esc(open.dest) + '</div><p class="s">' + (akan ? 'Batal rekod itu di Status saya jika mahu menukarnya.' : 'Keluar ' + open.keluar + '. Tekan Masuk pejabat dahulu sebelum rekod keluar baharu.') + '</p><a class="btn btn-ink go" href="saya.html">Ke Status saya</a></div>';
+    return;
+  }
+
+  $('tempat').innerHTML = G.TEMPAT.map(function (t) { return '<option value="' + G.esc(t) + '">'; }).join('');
+  var seen = {}, recent = [];
+  G.LOG.slice().reverse().forEach(function (r) { if (r.sid === m.id && !r.batal && !seen[r.dest] && r.tuj !== 'Urusan peribadi' && recent.length < 3) { seen[r.dest] = 1; recent.push(r); } });
+  $('recent').innerHTML = recent.map(function (r) { return '<button type="button" class="chip" data-dest="' + G.esc(r.dest) + '" data-tuj="' + G.esc(r.tuj) + '">' + G.esc(r.dest) + '</button>'; }).join('');
+  $('recent').hidden = !recent.length;
+  $('tuj').innerHTML = G.TUJUAN.map(function (t) { return '<button type="button" class="chip" aria-pressed="false" data-v="' + t + '">' + t + '</button>'; }).join('');
+
+  var now = G.now();
+  $('pergi').value = now;
+  $('balik').value = G.hhmm(G.toMin(now) + 120);
+
+  function setTuj(t) { tuj = t; [].forEach.call($('tuj').children, function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-v') === t); }); }
+  function qbChips() {
+    var p = G.toMin($('pergi').value || now), out = [];
+    [60, 120, 180].forEach(function (n) { out.push({ t: G.hhmm(p + n), l: '+' + G.dur(n) }); });
+    ['12:30', '16:30'].forEach(function (t) { if (G.toMin(t) > p + 30 && !out.some(function (o) { return o.t === t; })) out.push({ t: t, l: t === '12:30' ? 'Sebelum rehat' : 'Hujung hari' }); });
+    $('qb').innerHTML = out.map(function (o) { return '<button type="button" class="chip" data-t="' + o.t + '" aria-pressed="' + (!$('pulang').checked && $('balik').value === o.t) + '">' + o.l + ' · ' + o.t + '</button>'; }).join('');
+  }
+  function update() {
+    var p = $('pergi').value, b = $('balik').value, pul = $('pulang').checked, dest = $('dest').value.trim();
+    $('balik').disabled = pul;
+    var later = p && G.toMin(p) > G.toMin(now);
+    $('h-pergi').textContent = later ? 'Rekod dibuat lebih awal; status bertukar pada ' + p + '.' : (p && G.toMin(now) - G.toMin(p) > 15 ? 'Lebih awal daripada sekarang (' + now + ').' : 'Sekarang ' + now + '.');
+    $('h-balik').textContent = pul ? 'Rekod ditutup automatik pada ' + G.TAMAT_KERJA + '.' : (p && b && G.toMin(b) > G.toMin(p) ? 'Kira-kira ' + G.dur(G.toMin(b) - G.toMin(p)) + ' di luar.' : '');
+    $('save').textContent = later ? 'Simpan rekod keluar' : 'Sahkan keluar';
+    qbChips();
+    var priv = tuj === 'Urusan peribadi';
+    $('prev').innerHTML = '<div class="k">Rakan akan melihat di Papan</div><div class="v"><b>' + G.esc(m.n) + '</b> · Di luar pejabat<br>' +
+      (priv ? '<span class="muted">Urusan peribadi</span>' : G.esc(dest || '—') + ' · ' + G.esc(tuj || '—')) +
+      '<br><span style="font-family:var(--mono)">Keluar ' + (p || '—') + ' · ' + (pul ? 'tidak kembali hari ini' : 'jangka pulang ' + (b || '—')) + '</span></div>' +
+      (priv ? '<p class="hint" style="margin-top:8px">' + G.icon('lock') + ' Destinasi urusan peribadi hanya dilihat oleh ketua sektor anda dan KPPD.</p>' : '');
+  }
+
+  $('f').addEventListener('click', function (e) {
+    var t = e.target.closest('#tuj [data-v]'); if (t) { setTuj(t.getAttribute('data-v')); $('e-tuj').hidden = true; update(); return; }
+    var r = e.target.closest('[data-dest]'); if (r) { $('dest').value = r.getAttribute('data-dest'); setTuj(r.getAttribute('data-tuj')); $('e-dest').hidden = true; $('e-tuj').hidden = true; update(); return; }
+    var q = e.target.closest('[data-t]'); if (q) { $('balik').value = q.getAttribute('data-t'); $('pulang').checked = false; $('e-masa').hidden = true; update(); }
+  });
+  ['dest', 'pergi', 'balik', 'pulang', 'nota'].forEach(function (id) { $(id).addEventListener('input', update); $(id).addEventListener('change', update); });
+
+  $('f').addEventListener('submit', function (e) {
+    e.preventDefault();
+    var dest = $('dest').value.trim(), p = $('pergi').value, b = $('balik').value, pul = $('pulang').checked, bad = null;
+    $('e-dest').hidden = !!dest; if (!dest) bad = bad || $('dest');
+    $('e-tuj').hidden = !!tuj; if (!tuj) bad = bad || $('tuj').firstChild;
+    var em = '';
+    if (!p) em = 'Isi masa pergi.';
+    else if (!pul && !b) em = 'Isi masa balik atau tanda "Tidak kembali ke pejabat hari ini".';
+    else if (!pul && G.toMin(b) <= G.toMin(p)) em = 'Masa balik mesti selepas masa pergi (' + p + ').';
+    $('e-masa').textContent = em; $('e-masa').hidden = !em; if (em) bad = bad || $(p ? 'balik' : 'pergi');
+    if (bad) { bad.focus(); return; }
+    var r = G.keluar({ dest: dest, tuj: tuj, keluar: p, jangka: b, pulang: pul, nota: $('nota').value.trim() });
+    if (r) location.href = 'saya.html?baru=' + r.id;
+  });
+  update();
+})();
+</script>
+</body>
+</html>

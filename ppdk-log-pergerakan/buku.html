@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Buku Pergerakan · Log Pergerakan</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="bahasa.css">
+<link rel="stylesheet" href="gerak.css">
+</head>
+<body>
+<div id="content" class="wrap">
+  <div class="page-h"><div><h1>Buku Pergerakan</h1><div class="sub" id="sub"></div></div>
+    <div class="tags only-lead"><button class="btn btn-line btn-sm" type="button" id="csv"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Muat turun CSV</button><button class="btn btn-line btn-sm hide-m" type="button" id="cetak"><svg class="i" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H3v-8h18v8h-3"/><rect x="6" y="14" width="12" height="7"/></svg>Cetak</button></div>
+  </div>
+  <div class="toolbar">
+    <div class="dnav"><button class="iconbtn" type="button" id="prev" aria-label="Hari sebelumnya"><svg class="i" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><b id="dlbl"></b><button class="iconbtn" type="button" id="next" aria-label="Hari berikutnya"><svg class="i" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button><button class="text-btn" type="button" id="tdy">Hari ini</button></div>
+    <select id="sek" aria-label="Sektor" class="only-kppd"></select>
+  </div>
+  <div id="out" style="margin-top:16px"></div>
+</div>
+
+<script src="app.js"></script>
+<script src="gerak.js"></script>
+<script>
+(function () {
+  G.mount({ page: 'buku' });
+  var $ = function (id) { return document.getElementById(id); };
+  var qs = new URLSearchParams(location.search);
+  var st = { d: qs.get('d') || G.TODAY, sek: '' };
+  var MIN_D = '2026-10-12';
+  $('sek').innerHTML = '<option value="">Semua sektor</option>' + G.SEKTOR.map(function (s) { return '<option value="' + s.k + '">' + G.esc(s.n) + '</option>'; }).join('');
+
+  /* Skop: staf = rekod sendiri; ketua sektor = sektornya; KPPD = semua (boleh tapis sektor). */
+  function scope() {
+    var role = G.role(), m = G.me();
+    return G.LOG.filter(function (r) {
+      if (r.batal || r.d !== st.d) return false;
+      var s = G.staf(r.sid);
+      if (role === 'staf') return r.sid === m.id;
+      if (role === 'ketua') return s.sek === m.sek;
+      return !st.sek || s.sek === st.sek;
+    }).sort(function (a, b) { return G.toMin(a.keluar) - G.toMin(b.keluar); });
+  }
+  function masukTxt(r) {
+    if (r.masuk) return r.masuk;
+    if (r.pulang) return r.d === G.TODAY && G.toMin(G.now()) < G.toMin(G.TAMAT_KERJA) ? 'Tidak kembali' : 'Terus pulang';
+    if (r.d === G.TODAY) return G.toMin(r.keluar) > G.toMin(G.now()) ? 'Belum keluar' : 'Masih di luar';
+    return '<span class="flag">Tiada rekod masuk</span>';
+  }
+  function scopeLbl() {
+    var role = G.role(), m = G.me();
+    if (role === 'staf') return 'Rekod saya sahaja';
+    if (role === 'ketua') return G.sekName(m.sek);
+    return st.sek ? G.sekName(st.sek) : 'Semua sektor · PPD';
+  }
+
+  function render() {
+    var rows = scope(), staf = G.role() === 'staf';
+    $('dlbl').textContent = G.fmtDate(st.d, true);
+    $('sub').textContent = scopeLbl() + ' · ' + rows.length + ' rekod keluar';
+    $('prev').disabled = st.d <= MIN_D; $('next').disabled = st.d >= G.TODAY; $('tdy').hidden = st.d === G.TODAY;
+    if (!rows.length) { $('out').innerHTML = '<p class="empty">' + (staf ? 'Anda tiada rekod keluar pada hari ini.' : 'Tiada rekod keluar pada hari ini.') + '</p>'; return; }
+    var tbl = '<div class="tbl-wrap"><table class="tbl"><thead><tr>' + (staf ? '' : '<th>Pegawai</th><th>Sektor</th>') + '<th>Keluar</th><th>Destinasi</th><th>Tujuan</th><th>Jangka</th><th>Masuk</th></tr></thead><tbody>' +
+      rows.map(function (r) {
+        var s = G.staf(r.sid);
+        return '<tr>' + (staf ? '' : '<td><b>' + G.esc(s.n) + '</b></td><td>' + G.sk(s.sek) + '</td>') + '<td class="m">' + r.keluar + '</td><td>' + G.destOf(r) + (r.nota ? '<div class="muted" style="font-size:13px">' + G.esc(r.nota) + '</div>' : '') + '</td><td>' + (G.tujOf(r) || '—') + '</td><td class="m">' + (r.pulang ? '—' : r.jangka) + '</td><td class="m">' + masukTxt(r) + '</td></tr>';
+      }).join('') + '</tbody></table></div>';
+    var cards = '<div class="cards-m">' + rows.map(function (r) {
+      var s = G.staf(r.sid), t = G.tujOf(r);
+      return '<div class="ent"><div class="w">' + (staf ? '' : '<div class="n"><b>' + G.esc(s.n) + '</b>' + G.sk(s.sek) + '</div>') + G.destOf(r) + (t ? '<small>' + t + '</small>' : '') + '</div>' +
+        '<div class="t"><b>' + r.keluar + ' → ' + (r.masuk || '…') + '</b><small>' + (r.masuk ? 'jangka ' + (r.pulang ? '—' : r.jangka) : masukTxt(r)) + '</small></div></div>';
+    }).join('') + '</div>';
+    $('out').innerHTML = tbl + cards;
+    if (window.Gerak) Gerak.run($('out'), { items: 'tbody tr,.ent' });
+  }
+
+  function csv() {
+    var rows = scope(), head = ['Tarikh', 'Pegawai', 'Sektor', 'Keluar', 'Destinasi', 'Tujuan', 'Catatan', 'Jangka pulang', 'Masuk'];
+    var q = function (v) { v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    var body = rows.map(function (r) {
+      var s = G.staf(r.sid), priv = r.tuj === 'Urusan peribadi' && !G.canSeePrivate(r);
+      return [r.d, s.n, s.sek, r.keluar, priv ? 'Urusan peribadi' : r.dest, priv ? '' : r.tuj, priv ? '' : (r.nota || ''), r.pulang ? 'Tidak kembali' : r.jangka, r.masuk || (r.pulang ? 'Terus pulang' : '')].map(q).join(',');
+    });
+    var blob = new Blob(['﻿' + [head.join(',')].concat(body).join('\r\n')], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'buku-pergerakan-' + st.d + '.csv'; document.body.appendChild(a); a.click(); a.remove();
+    G.toast('CSV dimuat turun · <b>' + rows.length + '</b> rekod');
+  }
+
+  $('prev').addEventListener('click', function () { st.d = G.addDays(st.d, -1); render(); });
+  $('next').addEventListener('click', function () { st.d = G.addDays(st.d, 1); render(); });
+  $('tdy').addEventListener('click', function () { st.d = G.TODAY; render(); });
+  $('sek').addEventListener('change', function () { st.sek = this.value; render(); });
+  $('csv').addEventListener('click', csv);
+  $('cetak').addEventListener('click', function () { window.print(); });
+  document.addEventListener('rolechange', render);
+  document.addEventListener('jamchange', render);
+  render();
+})();
+</script>
+</body>
+</html>

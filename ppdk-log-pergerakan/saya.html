@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Status saya · Log Pergerakan</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="bahasa.css">
+<link rel="stylesheet" href="gerak.css">
+</head>
+<body>
+<div id="content" class="wrap">
+  <div class="page-h"><div><h1 id="hi">Status saya</h1><div class="sub" id="sub"></div></div></div>
+  <div class="two">
+    <div>
+      <section id="stat" aria-live="polite"></section>
+      <section class="sec">
+        <div class="sec-h"><h2>Pergerakan hari ini</h2><a href="buku.html">Buku</a></div>
+        <div id="tl"></div>
+      </section>
+    </div>
+    <aside class="r-col sec">
+      <div class="sec-h"><h2 id="oh">Di luar sekarang</h2><a href="papan.html">Papan</a></div>
+      <div class="pl" id="out"></div>
+    </aside>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script src="gerak.js"></script>
+<script>
+(function () {
+  G.mount({ page: 'saya' });
+  var $ = function (id) { return document.getElementById(id); };
+
+  function render() {
+    var m = G.me(), st = G.status(m.id), r = st.r, now = G.now();
+    $('hi').textContent = G.greet() + ', ' + G.first(m.n);
+    $('sub').innerHTML = G.fmtDate(G.TODAY) + ' · <b>' + now + '</b>';
+    var h;
+    if (!r) {
+      h = '<div class="stat"><div class="k"><i></i>Status semasa</div><span class="big">Anda di pejabat</span>' +
+        (st.akan ? '<p class="s">Rekod keluar pada <b>' + st.akan.keluar + '</b> ke ' + G.esc(st.akan.dest) + ' sudah disimpan. Status bertukar automatik pada masa itu.</p><div class="alt"><button type="button" class="text-btn" id="batal">Batal rekod ini</button></div>'
+          : '<a class="btn btn-ink go" href="keluar.html">' + G.icon('out') + 'Keluar pejabat</a>') +
+        '<p class="help">Rekod setiap kali anda keluar pejabat, termasuk urusan peribadi. Tekan <b>Masuk pejabat</b> apabila kembali.</p></div>';
+    } else {
+      var tuj = G.esc(r.tuj), jSmall = '';
+      if (st.k === 'luar' && st.baki != null) jSmall = 'lagi ' + G.dur(st.baki);
+      if (st.k === 'lewat') jSmall = 'Lepas ' + G.dur(st.lebih);
+      h = '<div class="stat ' + st.k + '"><div class="k"><i></i>' + G.STL[st.k] + '</div>' +
+        '<div class="dest">' + G.icon('pin') + G.esc(r.dest) + '</div><p class="s">' + tuj + (r.nota ? ' · ' + G.esc(r.nota) : '') + '</p>' +
+        '<div class="times"><div><span>Keluar</span><b>' + r.keluar + '</b><small>' + G.dur(G.toMin(now) - G.toMin(r.keluar)) + ' lalu</small></div>' +
+        '<div class="j"><span>Jangka pulang</span>' + (r.pulang ? '<b>—</b><small>Tidak kembali hari ini</small>' : '<b>' + r.jangka + '</b><small>' + jSmall + '</small>') + '</div></div>' +
+        (r.pulang
+          ? '<button type="button" class="btn btn-line go" id="in">' + G.icon('in') + 'Saya kembali ke pejabat</button><p class="help">Jika tidak kembali, rekod ditutup automatik pada ' + G.TAMAT_KERJA + '.</p>'
+          : '<button type="button" class="btn btn-ink go" id="in">' + G.icon('in') + 'Masuk pejabat</button>') +
+        '<div class="alt"><button type="button" class="text-btn" id="ubah">' + (st.k === 'lewat' ? 'Lanjutkan jangka pulang' : 'Ubah jangka pulang') + '</button>' +
+        '<button type="button" class="text-btn" id="batal">Batal rekod ini</button></div></div>';
+    }
+    $('stat').innerHTML = h;
+    var list = G.today(m.id);
+    $('tl').innerHTML = list.length ? G.tlHtml(list) : '<p class="empty" style="text-align:left;padding:4px 0">Belum ada pergerakan hari ini.</p>';
+    var out = G.STAF.filter(function (s) { return s.id !== m.id && G.status(s.id).r; });
+    $('oh').innerHTML = 'Di luar sekarang <span class="muted" style="font:600 15px var(--mono)">' + out.length + '</span>';
+    $('out').innerHTML = out.length ? out.slice(0, 6).map(function (s) { return G.prRow(s, { noSt: true }); }).join('') +
+      (out.length > 6 ? '<a class="pr" href="papan.html?f=luar" style="display:block;text-align:center;min-height:0;color:var(--petrol);font-weight:600">Lihat semua (' + out.length + ')</a>' : '')
+      : '<p class="empty">Semua pegawai di pejabat.</p>';
+    if (window.Gerak) Gerak.run($('content'), { items: '.stat,.ev,.pr' });
+  }
+
+  function jangkaDrawer(r) {
+    var base = Math.max(G.toMin(G.now()), r.jangka ? G.toMin(r.jangka) : 0);
+    var opts = [30, 60, 120].map(function (n) { var t = G.hhmm(base + n); return '<button type="button" class="chip" data-t="' + t + '">+' + G.dur(n) + ' · ' + t + '</button>'; }).join('');
+    G.drawer({
+      kicker: 'Keluar ' + r.keluar + ' · ' + G.esc(r.dest), title: 'Ubah jangka pulang',
+      body: '<label class="lbl" for="jt">Jangka pulang</label><input type="time" id="jt" value="' + (r.jangka || G.hhmm(base + 60)) + '">' +
+        '<div class="chips">' + opts + '</div>' +
+        '<label class="check" style="margin-top:16px"><input type="checkbox" id="jp"' + (r.pulang ? ' checked' : '') + '>Tidak kembali ke pejabat hari ini</label>' +
+        '<p class="err" id="je" hidden></p><p class="hint">Rakan di Papan akan melihat masa baharu.</p>',
+      foot: '<button class="btn btn-line" type="button" data-close>Batal</button><button class="btn btn-ink" type="button" id="js">Simpan</button>',
+      onOpen: function (d) {
+        d.addEventListener('click', function (e) {
+          var c = e.target.closest('[data-t]'); if (c) { d.querySelector('#jt').value = c.getAttribute('data-t'); d.querySelector('#jp').checked = false; }
+          if (e.target.closest('#js')) {
+            var t = d.querySelector('#jt').value, p = d.querySelector('#jp').checked, er = d.querySelector('#je');
+            if (!p && (!t || G.toMin(t) <= G.toMin(G.now()))) { er.textContent = 'Pilih masa selepas ' + G.now() + '.'; er.hidden = false; return; }
+            if (G.ubahJangka(r, t, p)) { G.closeDrawer(); G.toast(p ? 'Dikemas kini: <b>tidak kembali hari ini</b>' : 'Jangka pulang kini <b>' + t + '</b>'); render(); }
+          }
+        });
+      }
+    });
+  }
+  function batalDrawer(r) {
+    G.drawer({
+      kicker: 'Keluar ' + r.keluar + ' · ' + G.esc(r.dest), title: 'Batal rekod keluar?',
+      body: '<p>Guna jika anda tersalah tekan atau tidak jadi keluar. Rekod ini akan dibuang daripada Papan.</p><p class="hint" style="margin-top:10px">Jika anda sudah kembali, tekan <b>Masuk pejabat</b> sebaliknya.</p>',
+      foot: '<button class="btn btn-line" type="button" data-close>Jangan batal</button><button class="btn btn-dark" type="button" id="bs">Batal rekod</button>',
+      onOpen: function (d) { d.querySelector('#bs').addEventListener('click', function () { if (G.batal(r)) { G.closeDrawer(); G.toast('Rekod keluar dibatalkan'); render(); } }); }
+    });
+  }
+
+  document.addEventListener('click', function (e) {
+    var r = G.openOf(G.me().id);
+    if (e.target.closest('#in') && r) {
+      var t = G.now();
+      if (G.masuk(r, t)) { G.toast('Masuk pejabat dicatat <b>' + t + '</b>'); render(); }
+    } else if (e.target.closest('#ubah') && r) jangkaDrawer(r);
+    else if (e.target.closest('#batal') && r) batalDrawer(r);
+    var p = e.target.closest('button.pr[data-sid]'); if (p) G.openPerson(p.getAttribute('data-sid'));
+  });
+  document.addEventListener('rolechange', render);
+  document.addEventListener('jamchange', render);
+
+  var q = new URLSearchParams(location.search);
+  render();
+  if (q.get('baru')) {
+    var r = G.openOf(G.me().id);
+    if (r) G.toast('Keluar dicatat <b>' + r.keluar + '</b>. Rakan boleh melihatnya di Papan.');
+    history.replaceState(null, '', location.pathname + (q.get('role') ? '?role=' + q.get('role') : ''));
+  }
+})();
+</script>
+</body>
+</html>

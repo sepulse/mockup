@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Papan Pergerakan · Log Pergerakan</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="bahasa.css">
+<link rel="stylesheet" href="gerak.css">
+</head>
+<body>
+<div id="content" class="wrap">
+  <div class="page-h"><div><h1>Papan Pergerakan</h1><div class="sub" id="sub"></div></div></div>
+
+  <div class="counts" id="counts" role="group" aria-label="Tapis status"></div>
+  <div class="qbar">
+    <label class="search"><span class="sr">Cari pegawai</span><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="q" type="search" placeholder="Cari nama"></label>
+    <select id="sek" aria-label="Sektor"></select>
+  </div>
+  <div id="list"></div>
+  <p class="note" style="margin-top:16px"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Berdasarkan rekod keluar/masuk pegawai, bukan lokasi langsung. Cuti tidak direkod di sini.</p>
+</div>
+
+<script src="app.js"></script>
+<script src="gerak.js"></script>
+<script>
+(function () {
+  G.mount({ page: 'papan' });
+  var $ = function (id) { return document.getElementById(id); };
+  var qs = new URLSearchParams(location.search);
+  var st = { f: qs.get('f') || 'semua', sek: '' };
+  var ORDER = { lewat: 0, luar: 1, pulang: 2, pejabat: 3 };
+
+  $('sek').innerHTML = '<option value="">Semua sektor</option>' + G.SEKTOR.map(function (s) { return '<option value="' + s.k + '">' + G.esc(s.n) + '</option>'; }).join('');
+
+  function render() {
+    $('sub').innerHTML = G.fmtDate(G.TODAY) + ' · dikemas kini <b style="font-family:var(--mono)">' + G.now() + '</b>';
+    var q = $('q').value.trim().toLowerCase();
+    var all = G.STAF.filter(function (s) { return !st.sek || s.sek === st.sek; }).map(function (s) { return { s: s, st: G.status(s.id) }; });
+    var c = { semua: all.length, luar: 0, pejabat: 0, pulang: 0 };
+    all.forEach(function (x) { if (x.st.k === 'pejabat') c.pejabat++; else if (x.st.k === 'pulang') c.pulang++; else c.luar++; });
+    var lewat = all.filter(function (x) { return x.st.k === 'lewat'; }).length;
+    $('counts').innerHTML = [
+      ['semua', 'Semua pegawai', 'Semua'], ['luar', 'Di luar pejabat', 'Di luar'], ['pejabat', 'Di pejabat', 'Di pejabat'], ['pulang', 'Tidak kembali hari ini', 'Tak kembali']
+    ].map(function (o) { return '<button type="button" data-f="' + o[0] + '" aria-pressed="' + (st.f === o[0]) + '"><b>' + c[o[0]] + '</b><span><span class="hide-m">' + o[1] + '</span><span class="show-m">' + o[2] + '</span></span>' + (o[0] === 'luar' && lewat ? '<em>' + lewat + ' lepas jangka</em>' : '') + '</button>'; }).join('');
+
+    var rows = all.filter(function (x) {
+      if (st.f === 'luar' && !(x.st.k === 'luar' || x.st.k === 'lewat')) return false;
+      if (st.f === 'pejabat' && x.st.k !== 'pejabat') return false;
+      if (st.f === 'pulang' && x.st.k !== 'pulang') return false;
+      if (!q) return true;
+      var r = x.st.r, canDest = r && (r.tuj !== 'Urusan peribadi' || G.canSeePrivate(r));
+      var hay = x.s.n + (canDest ? ' ' + r.dest : '');
+      return hay.toLowerCase().indexOf(q) >= 0;
+    });
+    rows.sort(function (a, b) { return ORDER[a.st.k] - ORDER[b.st.k] || (a.st.r && b.st.r ? G.toMin(a.st.r.keluar) - G.toMin(b.st.r.keluar) : a.s.n.localeCompare(b.s.n)); });
+
+    var groups = [['Di luar pejabat', ['lewat', 'luar']], ['Tidak kembali hari ini', ['pulang']], ['Di pejabat', ['pejabat']]];
+    var h = groups.map(function (g) {
+      var list = rows.filter(function (x) { return g[1].indexOf(x.st.k) >= 0; });
+      if (!list.length) return '';
+      return '<div class="grp-t">' + g[0] + ' <span class="c">' + list.length + '</span></div><div class="pl">' + list.map(function (x) { return G.prRow(x.s, { noSt: true }); }).join('') + '</div>';
+    }).join('');
+    $('list').innerHTML = h || '<p class="empty">' + (q ? 'Tiada pegawai sepadan dengan "' + G.esc(q) + '".' : 'Tiada pegawai dalam kumpulan ini.') + '</p>';
+    if (window.Gerak) Gerak.run($('content'), { items: '.pr', nums: '.counts b' });
+  }
+
+  $('counts').addEventListener('click', function (e) { var b = e.target.closest('[data-f]'); if (!b) return; st.f = b.getAttribute('data-f'); render(); });
+  $('q').addEventListener('input', render);
+  $('sek').addEventListener('change', function () { st.sek = this.value; render(); });
+  $('list').addEventListener('click', function (e) { var p = e.target.closest('[data-sid]'); if (p) G.openPerson(p.getAttribute('data-sid')); });
+  document.addEventListener('rolechange', render);
+  document.addEventListener('jamchange', render);
+  render();
+})();
+</script>
+</body>
+</html>
