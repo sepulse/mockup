@@ -20,7 +20,7 @@
     <select id="sek" aria-label="Sektor"></select>
   </div>
   <div id="list"></div>
-  <p class="note" style="margin-top:16px"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Berdasarkan rekod keluar/masuk pegawai, bukan lokasi langsung. Cuti tidak direkod di sini.</p>
+  <p class="note" style="margin-top:16px"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>Berdasarkan rekod keluar/masuk pegawai, bukan lokasi langsung. <b>Tidak hadir</b> = cuti yang direkod sendiri oleh pegawai; <b>Di pejabat</b> = tiada rekod keluar atau tidak hadir.</p>
 </div>
 
 <script src="app.js"></script>
@@ -31,7 +31,7 @@
   var $ = function (id) { return document.getElementById(id); };
   var qs = new URLSearchParams(location.search);
   var st = { f: qs.get('f') || 'semua', sek: '' };
-  var ORDER = { lewat: 0, luar: 1, pulang: 2, pejabat: 3 };
+  var ORDER = { lewat: 0, luar: 1, pulang: 2, cuti: 3, pejabat: 4 };
 
   $('sek').innerHTML = '<option value="">Semua sektor</option>' + G.SEKTOR.map(function (s) { return '<option value="' + s.k + '">' + G.esc(s.n) + '</option>'; }).join('');
 
@@ -39,17 +39,18 @@
     $('sub').innerHTML = G.fmtDate(G.TODAY) + ' · dikemas kini <b style="font-family:var(--mono)">' + G.now() + '</b>';
     var q = $('q').value.trim().toLowerCase();
     var all = G.STAF.filter(function (s) { return !st.sek || s.sek === st.sek; }).map(function (s) { return { s: s, st: G.status(s.id) }; });
-    var c = { semua: all.length, luar: 0, pejabat: 0, pulang: 0 };
-    all.forEach(function (x) { if (x.st.k === 'pejabat') c.pejabat++; else if (x.st.k === 'pulang') c.pulang++; else c.luar++; });
+    var c = { semua: all.length, luar: 0, pejabat: 0, pulang: 0, cuti: 0 };
+    all.forEach(function (x) { if (c[x.st.k] != null && x.st.k !== 'luar') c[x.st.k]++; else c.luar++; });
     var lewat = all.filter(function (x) { return x.st.k === 'lewat'; }).length;
     $('counts').innerHTML = [
-      ['semua', 'Semua pegawai', 'Semua'], ['luar', 'Di luar pejabat', 'Di luar'], ['pejabat', 'Di pejabat', 'Di pejabat'], ['pulang', 'Tidak kembali hari ini', 'Tak kembali']
+      ['semua', 'Semua pegawai', 'Semua'], ['luar', 'Di luar pejabat', 'Di luar'], ['pejabat', 'Di pejabat', 'Di pejabat'], ['pulang', 'Tidak kembali / tugas luar', 'Tak kembali'], ['cuti', 'Tidak hadir', 'Tak hadir']
     ].map(function (o) { return '<button type="button" data-f="' + o[0] + '" aria-pressed="' + (st.f === o[0]) + '"><b>' + c[o[0]] + '</b><span><span class="hide-m">' + o[1] + '</span><span class="show-m">' + o[2] + '</span></span>' + (o[0] === 'luar' && lewat ? '<em>' + lewat + ' lepas jangka</em>' : '') + '</button>'; }).join('');
 
     var rows = all.filter(function (x) {
       if (st.f === 'luar' && !(x.st.k === 'luar' || x.st.k === 'lewat')) return false;
       if (st.f === 'pejabat' && x.st.k !== 'pejabat') return false;
       if (st.f === 'pulang' && x.st.k !== 'pulang') return false;
+      if (st.f === 'cuti' && x.st.k !== 'cuti') return false;
       if (!q) return true;
       var r = x.st.r, canDest = r && (r.tuj !== 'Urusan peribadi' || G.canSeePrivate(r));
       var hay = x.s.n + (canDest ? ' ' + r.dest : '');
@@ -57,7 +58,7 @@
     });
     rows.sort(function (a, b) { return ORDER[a.st.k] - ORDER[b.st.k] || (a.st.r && b.st.r ? G.toMin(a.st.r.keluar) - G.toMin(b.st.r.keluar) : a.s.n.localeCompare(b.s.n)); });
 
-    var groups = [['Di luar pejabat', ['lewat', 'luar']], ['Tidak kembali hari ini', ['pulang']], ['Di pejabat', ['pejabat']]];
+    var groups = [['Di luar pejabat', ['lewat', 'luar']], ['Tidak kembali hari ini / tugas luar', ['pulang']], ['Tidak hadir', ['cuti']], ['Di pejabat', ['pejabat']]];
     var h = groups.map(function (g) {
       var list = rows.filter(function (x) { return g[1].indexOf(x.st.k) >= 0; });
       if (!list.length) return '';

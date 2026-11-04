@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="ms">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex">
+<title>Pautan &amp; QR · Log Pergerakan</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+<link rel="stylesheet" href="base.css">
+<link rel="stylesheet" href="bahasa.css">
+<link rel="stylesheet" href="gerak.css">
+<style>
+.qp{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,360px);gap:24px;align-items:start}
+.qp .card{border:1px solid var(--rule);background:var(--card);padding:20px}
+.q-pre{display:flex;align-items:stretch;border:1px solid var(--rule-2);background:var(--card)}
+.q-pre span{display:flex;align-items:center;padding:0 10px;font:500 14px var(--mono);color:var(--muted);background:var(--paper);border-right:1px solid var(--rule)}
+.q-pre input{border:0;min-width:0}
+.q-live{margin-top:14px;font-size:14px;color:var(--ink-2)}
+.q-live b{font-family:var(--mono);color:var(--ink);word-break:break-all}
+.q-go{width:100%;min-height:52px;margin-top:20px;font-size:16px}
+.q-go[aria-busy="true"]{opacity:.7;cursor:progress}
+.q-out .k{font-size:13.5px;color:var(--muted);font-weight:600}
+.q-tile{margin-top:12px;background:#fff;border:1px solid var(--rule);aspect-ratio:1;display:grid;place-items:center}
+.q-tile svg{width:100%;height:100%;display:block}
+.q-idle{margin-top:12px;aspect-ratio:1;border:1px dashed var(--rule-2);display:grid;place-items:center;text-align:center;color:var(--muted);font-size:14px;padding:24px}
+.q-url{margin-top:14px;font:600 18px/1.3 var(--mono);word-break:break-all}
+.q-url small{display:block;font:400 13px/1.4 var(--sans);color:var(--muted);margin-top:4px;word-break:break-all}
+.q-act{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}
+.q-meta{margin-top:12px;font-size:13px;color:var(--muted)}
+.qp .note{margin-top:16px}
+@media (max-width:780px){.qp{grid-template-columns:1fr}.qp .card{padding:16px}}
+</style>
+</head>
+<body>
+<div id="content" class="wrap">
+  <div class="page-h"><div><h1>Pautan &amp; QR</h1><div class="sub">Untuk semua warga PPD. Jana pautan pendek ppdk.ch dan kod QR untuk poster, surat dan hebahan.</div></div></div>
+
+  <div class="qp">
+    <form class="card form" id="f" novalidate>
+      <div class="fs">
+        <label class="lbl" for="url">URL sasaran <span class="req">*</span></label>
+        <input type="text" id="url" inputmode="url" spellcheck="false" autocapitalize="off" autocomplete="off" placeholder="https://" aria-describedby="e-url">
+        <p class="hint">URL penuh halaman, borang atau dokumen, cth. borang Google atau fail dalam Drive.</p>
+        <p class="err" id="e-url" hidden></p>
+      </div>
+      <div class="fs">
+        <label class="lbl" for="slug">Slug · pilihan</label>
+        <div class="q-pre"><span>ppdk.ch/</span><input type="text" id="slug" autocomplete="off" placeholder="cth. mesyuarat-guru" maxlength="40" aria-describedby="e-slug"></div>
+        <p class="hint">Kosongkan untuk slug automatik. Huruf kecil, nombor, - dan _ sahaja (2–40 aksara).</p>
+        <p class="err" id="e-slug" hidden></p>
+      </div>
+      <p class="q-live">Pautan anda: <b id="live">ppdk.ch/(dijana automatik)</b></p>
+      <button class="btn btn-ink q-go" type="submit" id="go">Jana pautan &amp; kod QR</button>
+      <p class="note box"><svg class="i" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg><span>Setiap pautan direkod atas nama anda bersama masa ia dicipta. Unit ICT boleh menyahaktifkan pautan yang disalah guna. Pautan yang telah dicipta tidak boleh ditukar sasarannya.</span></p>
+    </form>
+
+    <section class="card q-out" aria-live="polite">
+      <div class="k">Kod QR</div>
+      <div id="res"><div class="q-idle">Kod QR dan pautan pendek akan dipaparkan di sini.</div></div>
+    </section>
+  </div>
+</div>
+
+<script src="app.js"></script>
+<script src="gerak.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js" integrity="sha512-CNgIRecGo7nphbeZ04Sc13ka07paqdeTu0WR1IM4kNcpmBAUSHSQX0FslNhTDadL4O5SAGapGt4FodqL8My0mA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+<script>
+(function () {
+  G.mount({ page: 'pautan' });
+  var $ = function (id) { return document.getElementById(id); };
+  /* Peraturan sama seperti /api/shorten pada ppdk.ch (build_master_worker.js). Demo: disimpan dalam tab ini sahaja. */
+  var RESERVED = ['admin', 'adminapp', 'api', 'a1', 'dashboard', 'home', 'index', 'laporan', 'map', 'radar', 'ptis', 'pwa', 'qrcode', 'sw', 'manifest', 'favicon',
+    'robots', 'lab', 'qa', 'login', 'logout', 'static', 'assets', 'public', 'report', 'tuntutan-staf'];
+  var KP = 'ppdk-gerak-pautan';
+  var LINKS;
+  try { LINKS = JSON.parse(G.ss.get(KP, 'null')); } catch (e) { LINKS = null; }
+  if (!LINKS) LINKS = {
+    'borang-ptis': { url: 'https://ppdk.ch/ptis', by: 'Wong Kah Seng', at: '2026-10-01 09:12' },
+    'mesyuarat-okt': { url: 'https://forms.gle/contohMesyuaratOkt', by: 'Farah Nadia Yusof', at: '2026-10-08 14:30' },
+    'takwim': { url: 'https://drive.google.com/file/d/contoh-takwim/view', by: 'Rosnah Abdullah', at: '2026-09-20 08:05' }
+  };
+  var busy = false, res = null;
+
+  function norm(v) {
+    return String(v || '').trim().toLowerCase().replace(/^https?:\/\/(?:www\.)?ppdk\.ch\//i, '').replace(/[^a-z0-9_-]+/g, '-').replace(/-+/g, '-').replace(/^[-_]+|[-_]+$/g, '').slice(0, 40);
+  }
+  function live() { var s = norm($('slug').value); $('live').textContent = 'ppdk.ch/' + (s || '(dijana automatik)'); }
+  function err(id, msg) { var e = $(id); e.textContent = msg || ''; e.hidden = !msg; var inp = $(id === 'e-url' ? 'url' : 'slug'); if (msg) inp.setAttribute('aria-invalid', 'true'); else inp.removeAttribute('aria-invalid'); }
+  function autoSlug() { var c = 'abcdefghjkmnpqrstuvwxyz23456789', s; do { s = ''; for (var i = 0; i < 5; i++) s += c[Math.floor(Math.random() * c.length)]; } while (LINKS[s] || RESERVED.indexOf(s) >= 0); return s; }
+
+  /* Pengesahan: pulangkan { dest, slug } atau { field, msg }. */
+  function check() {
+    var dest = $('url').value.trim(), raw = $('slug').value.trim(), slug = raw.toLowerCase();
+    if (!dest) return { field: 'e-url', msg: 'Masukkan URL sasaran.' };
+    if (!/^https?:\/\//i.test(dest)) {
+      if (/^[a-z][a-z0-9+.-]*:/i.test(dest)) return { field: 'e-url', msg: 'URL sasaran mesti menggunakan http atau https.' };
+      dest = 'https://' + dest;
+    }
+    var u; try { u = new URL(dest); } catch (e) { return { field: 'e-url', msg: 'URL sasaran tidak sah. Semak semula ejaan.' }; }
+    if (!/\./.test(u.hostname)) return { field: 'e-url', msg: 'URL sasaran tidak sah. Semak semula ejaan.' };
+    var host = u.hostname.toLowerCase();
+    if (host === 'ppdk.ch' || host === 'www.ppdk.ch') {
+      var parts = u.pathname.split('/').filter(Boolean);
+      if (parts.length === 1 && (LINKS[parts[0].toLowerCase()] || parts[0].toLowerCase() === slug)) return { field: 'e-url', msg: 'URL sasaran tidak boleh menunjuk ke pautan pendek ppdk.ch lain.' };
+    }
+    if (raw) {
+      if (!/^[a-z0-9_-]{2,40}$/.test(slug) || !/[a-z0-9]/.test(slug)) return { field: 'e-slug', msg: 'Slug mesti 2–40 aksara: huruf kecil, nombor, - atau _ sahaja.' };
+      if (RESERVED.indexOf(slug) >= 0) return { field: 'e-slug', msg: 'Slug ini digunakan oleh sistem. Pilih slug lain.' };
+      if (LINKS[slug]) return { field: 'e-slug', msg: 'Slug sudah digunakan. Pilih slug lain atau kosongkan untuk slug automatik.' };
+    }
+    return { dest: u.toString(), slug: raw ? slug : '' };
+  }
+
+  function matrix(text) {
+    if (!window.QRCode) return null;
+    var tmp = document.createElement('div'), q = new QRCode(tmp, { text: text, width: 256, height: 256, correctLevel: QRCode.CorrectLevel.M }), m = q._oQRCode;
+    if (!m || typeof m.getModuleCount !== 'function') return null;
+    var n = m.getModuleCount(), a = [];
+    for (var r = 0; r < n; r++) for (var c = 0; c < n; c++) a.push(m.isDark(r, c));
+    return { n: n, a: a };
+  }
+  function svg(mx) {
+    var q = 4, size = mx.n + q * 2, p = '';
+    mx.a.forEach(function (d, k) { if (d) p += 'M' + (q + k % mx.n) + ' ' + (q + Math.floor(k / mx.n)) + 'h1v1h-1z'; });
+    return '<svg viewBox="0 0 ' + size + ' ' + size + '" shape-rendering="crispEdges" role="img" aria-label="Kod QR untuk ' + G.esc(res.short) + '"><rect width="' + size + '" height="' + size + '" fill="#fff"/><path fill="#111819" d="' + p + '"/></svg>';
+  }
+  function png() {
+    var mx = res.mx, W = 1024, H = 1120, c = document.createElement('canvas'); c.width = W; c.height = H;
+    var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, W, H);
+    var s = Math.floor(W / (mx.n + 8)), off = Math.floor((W - mx.n * s) / 2);
+    x.fillStyle = '#111819';
+    mx.a.forEach(function (d, k) { if (d) x.fillRect(off + (k % mx.n) * s, off + Math.floor(k / mx.n) * s, s, s); });
+    x.font = '600 44px "IBM Plex Mono", monospace'; x.textAlign = 'center'; x.fillText(res.short, W / 2, H - 56);
+    return c.toDataURL('image/png');
+  }
+
+  function show() {
+    $('res').innerHTML = '<div class="q-tile">' + svg(res.mx) + '</div>' +
+      '<div class="q-url">' + G.esc(res.short) + '<small>→ ' + G.esc(res.dest) + '</small></div>' +
+      '<div class="q-act"><button type="button" class="btn btn-ink" id="copy">Salin pautan</button><button type="button" class="btn btn-line" id="dl">Muat turun PNG</button></div>' +
+      '<p class="q-meta">Dicipta oleh ' + G.esc(res.by) + ' · ' + G.fmtShort(G.TODAY) + ' ' + res.at + '</p>' +
+      '<button type="button" class="text-btn" id="baru" style="margin-top:6px">Jana baharu</button>';
+    if (window.Gerak) Gerak.run($('res'), { items: '.q-tile,.q-url,.q-act' });
+  }
+
+  function generate() {
+    if (busy) return;
+    err('e-url'); err('e-slug');
+    if ($('slug').value.trim()) $('slug').value = norm($('slug').value);
+    var v = check();
+    if (v.msg) { err(v.field, v.msg); $(v.field === 'e-url' ? 'url' : 'slug').focus(); return; }
+    if (!window.QRCode) { err('e-url', 'Penjana QR tidak dapat dimuatkan. Semak sambungan internet dan cuba semula.'); return; }
+    busy = true; $('go').setAttribute('aria-busy', 'true'); $('go').textContent = 'Menjana…';
+    setTimeout(function () {
+      busy = false; $('go').removeAttribute('aria-busy'); $('go').textContent = 'Jana pautan & kod QR';
+      var slug = v.slug || autoSlug();
+      if (LINKS[slug]) { err('e-slug', 'Slug sudah digunakan. Pilih slug lain atau kosongkan untuk slug automatik.'); return; }
+      var short = 'https://ppdk.ch/' + slug, mx = matrix(short);
+      if (!mx) { err('e-url', 'Kod QR tidak dapat dijana. Cuba lagi.'); return; }
+      LINKS[slug] = { url: v.dest, by: G.me().n, at: TODAY_AT() };
+      if (!G.ss.set(KP, JSON.stringify(LINKS))) { delete LINKS[slug]; err('e-url', 'Tidak dapat disimpan. Cuba lagi.'); return; }
+      res = { slug: slug, short: 'ppdk.ch/' + slug, full: short, dest: v.dest, by: G.me().n, at: G.now(), mx: mx };
+      $('url').value = v.dest; $('slug').value = slug; live();
+      show();
+      G.toast('Pautan <b>' + G.esc(res.short) + '</b> sedia');
+    }, 450);
+  }
+  function TODAY_AT() { return G.TODAY + ' ' + G.now(); }
+
+  function copy() {
+    var t = res.full;
+    function fallback() {
+      var ta = document.createElement('textarea'); ta.value = t; ta.setAttribute('readonly', ''); ta.style.position = 'fixed'; ta.style.opacity = '0'; document.body.appendChild(ta); ta.select();
+      var ok = false; try { ok = document.execCommand('copy'); } catch (e) {} ta.remove();
+      G.toast(ok ? 'Pautan disalin' : 'Salinan automatik gagal. Salin pautan yang dipaparkan.');
+    }
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(t).then(function () { G.toast('Pautan disalin'); }, fallback); else fallback();
+  }
+  function download() {
+    var a = document.createElement('a'); a.href = png(); a.download = 'ppdk.ch-' + res.slug + '.png'; document.body.appendChild(a); a.click(); a.remove();
+    G.toast('PNG dimuat turun');
+  }
+  function reset() {
+    res = null; $('f').reset(); live(); err('e-url'); err('e-slug');
+    $('res').innerHTML = '<div class="q-idle">Kod QR dan pautan pendek akan dipaparkan di sini.</div>';
+    $('url').focus();
+  }
+
+  $('f').addEventListener('submit', function (e) { e.preventDefault(); generate(); });
+  $('slug').addEventListener('input', function () { err('e-slug'); live(); });
+  $('slug').addEventListener('blur', function () { if ($('slug').value) $('slug').value = norm($('slug').value); live(); });
+  $('url').addEventListener('input', function () { err('e-url'); });
+  $('res').addEventListener('click', function (e) {
+    if (!res) return;
+    if (e.target.closest('#copy')) copy();
+    else if (e.target.closest('#dl')) download();
+    else if (e.target.closest('#baru')) reset();
+  });
+  live();
+})();
+</script>
+</body>
+</html>

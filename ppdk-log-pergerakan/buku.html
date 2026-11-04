@@ -20,6 +20,7 @@
     <select id="sek" aria-label="Sektor" class="only-kppd"></select>
   </div>
   <div id="out" style="margin-top:16px"></div>
+  <p class="note simpan" id="simpan"></p>
 </div>
 
 <script src="app.js"></script>
@@ -32,61 +33,103 @@
   var st = { d: qs.get('d') || G.TODAY, sek: '' };
   var MIN_D = '2026-10-12';
   $('sek').innerHTML = '<option value="">Semua sektor</option>' + G.SEKTOR.map(function (s) { return '<option value="' + s.k + '">' + G.esc(s.n) + '</option>'; }).join('');
+  $('simpan').innerHTML = G.icon('info') + '<span>Rekod disimpan ' + G.SIMPAN_BULAN + ' bulan, kemudian dipadam automatik (cadangan; perlu kelulusan KPPD). Rekod dibatalkan, rekod lewat dan pembetulan kekal dipaparkan untuk jejak audit.</span>';
 
   /* Skop: staf = rekod sendiri; ketua sektor = sektornya; KPPD = semua (boleh tapis sektor). */
-  function scope() {
-    var role = G.role(), m = G.me();
-    return G.LOG.filter(function (r) {
-      if (r.batal || r.d !== st.d) return false;
-      var s = G.staf(r.sid);
-      if (role === 'staf') return r.sid === m.id;
-      if (role === 'ketua') return s.sek === m.sek;
-      return !st.sek || s.sek === st.sek;
-    }).sort(function (a, b) { return G.toMin(a.keluar) - G.toMin(b.keluar); });
+  function inScope(sid) {
+    var role = G.role(), m = G.me(), s = G.staf(sid);
+    if (role === 'staf') return sid === m.id;
+    if (role === 'ketua') return s.sek === m.sek;
+    return !st.sek || s.sek === st.sek;
   }
+  function scope() {
+    return G.LOG.filter(function (r) { return G.covers(r, st.d) && (!r.batal || r.d === st.d) && inScope(r.sid); })
+      .sort(function (a, b) { return (a.d < st.d ? -1 : G.toMin(a.keluar)) - (b.d < st.d ? -1 : G.toMin(b.keluar)); });
+  }
+  function absen() {
+    return G.CUTI.filter(function (c) { return c.dari <= st.d && st.d <= c.hingga && inScope(c.sid); })
+      .sort(function (a, b) { return G.staf(a.sid).n.localeCompare(G.staf(b.sid).n); });
+  }
+  function keluarTxt(r) {
+    if (r.d !== st.d) return '<small class="muted">sejak</small> ' + G.fmtShort(r.d);
+    var lw = G.canSeeFor(r.sid) ? G.lewatRekod(r) : null;
+    return r.keluar + (lw ? '<small class="flag">Direkod lewat · ' + lw + '</small>' : '');
+  }
+  function jangkaTxt(r) { return r.pulang ? (r.hingga ? 'hingga ' + G.fmtShort(r.hingga) : '—') : r.jangka; }
   function masukTxt(r) {
-    if (r.masuk) return r.masuk;
+    if (r.batal) return '<span class="flag">Dibatalkan ' + r.batal + '</span>';
+    if (r.masuk) return r.masuk + (r.masukD && r.masukD !== r.d ? ' <small class="muted">(' + G.fmtShort(r.masukD) + ')</small>' : '') + (r.betul && G.canSeeFor(r.sid) ? '<small class="flag">Dibetulkan ' + r.betul + '</small>' : '');
+    if (r.hingga) return 'Tugas luar';
     if (r.pulang) return r.d === G.TODAY && G.toMin(G.now()) < G.toMin(G.TAMAT_KERJA) ? 'Tidak kembali' : 'Terus pulang';
     if (r.d === G.TODAY) return G.toMin(r.keluar) > G.toMin(G.now()) ? 'Belum keluar' : 'Masih di luar';
     return '<span class="flag">Tiada rekod masuk</span>';
   }
+  function statusCsv(r) {
+    var a = [];
+    if (!G.canSeeFor(r.sid)) return r.batal ? 'Dibatalkan' : '';
+    if (r.batal) a.push('Dibatalkan ' + r.batal);
+    if (r.d === st.d && G.lewatRekod(r)) a.push('Direkod lewat ' + r.dibuat);
+    if (r.betul) a.push('Dibetulkan ' + r.betul);
+    if (!r.masuk && !r.batal && !r.pulang && r.d < G.TODAY) a.push('Tiada rekod masuk');
+    return a.join('; ');
+  }
+  function rangeTxt(c) { return c.dari === c.hingga ? G.fmtShort(c.dari) : G.fmtShort(c.dari) + ' – ' + G.fmtShort(c.hingga); }
   function scopeLbl() {
     var role = G.role(), m = G.me();
     if (role === 'staf') return 'Rekod saya sahaja';
     if (role === 'ketua') return G.sekName(m.sek);
-    return st.sek ? G.sekName(st.sek) : 'Semua sektor · PPD';
+    if (!st.sek) return 'Semua sektor · PPD';
+    var k = G.ketuaOf(st.sek);
+    return G.sekName(st.sek) + (k ? ' · penyemak: ' + k.n : '');
   }
 
   function render() {
-    var rows = scope(), staf = G.role() === 'staf';
+    var rows = scope(), staf = G.role() === 'staf', ab = absen();
+    var nBatal = rows.filter(function (r) { return r.batal; }).length, nAb = ab.filter(function (c) { return !c.batal; }).length;
     $('dlbl').textContent = G.fmtDate(st.d, true);
-    $('sub').textContent = scopeLbl() + ' · ' + rows.length + ' rekod keluar';
+    $('sub').textContent = scopeLbl() + ' · ' + (rows.length - nBatal) + ' rekod keluar' + (nBatal ? ' · ' + nBatal + ' dibatalkan' : '') + (nAb ? ' · ' + nAb + ' tidak hadir' : '');
     $('prev').disabled = st.d <= MIN_D; $('next').disabled = st.d >= G.TODAY; $('tdy').hidden = st.d === G.TODAY;
-    if (!rows.length) { $('out').innerHTML = '<p class="empty">' + (staf ? 'Anda tiada rekod keluar pada hari ini.' : 'Tiada rekod keluar pada hari ini.') + '</p>'; return; }
-    var tbl = '<div class="tbl-wrap"><table class="tbl"><thead><tr>' + (staf ? '' : '<th>Pegawai</th><th>Sektor</th>') + '<th>Keluar</th><th>Destinasi</th><th>Tujuan</th><th>Jangka</th><th>Masuk</th></tr></thead><tbody>' +
-      rows.map(function (r) {
-        var s = G.staf(r.sid);
-        return '<tr>' + (staf ? '' : '<td><b>' + G.esc(s.n) + '</b></td><td>' + G.sk(s.sek) + '</td>') + '<td class="m">' + r.keluar + '</td><td>' + G.destOf(r) + (r.nota ? '<div class="muted" style="font-size:13px">' + G.esc(r.nota) + '</div>' : '') + '</td><td>' + (G.tujOf(r) || '—') + '</td><td class="m">' + (r.pulang ? '—' : r.jangka) + '</td><td class="m">' + masukTxt(r) + '</td></tr>';
-      }).join('') + '</tbody></table></div>';
-    var cards = '<div class="cards-m">' + rows.map(function (r) {
-      var s = G.staf(r.sid), t = G.tujOf(r);
-      return '<div class="ent"><div class="w">' + (staf ? '' : '<div class="n"><b>' + G.esc(s.n) + '</b>' + G.sk(s.sek) + '</div>') + G.destOf(r) + (t ? '<small>' + t + '</small>' : '') + '</div>' +
-        '<div class="t"><b>' + r.keluar + ' → ' + (r.masuk || '…') + '</b><small>' + (r.masuk ? 'jangka ' + (r.pulang ? '—' : r.jangka) : masukTxt(r)) + '</small></div></div>';
-    }).join('') + '</div>';
-    $('out').innerHTML = tbl + cards;
-    if (window.Gerak) Gerak.run($('out'), { items: 'tbody tr,.ent' });
+    var h;
+    if (!rows.length) h = '<p class="empty">' + (staf ? 'Anda tiada rekod keluar pada hari ini.' : 'Tiada rekod keluar pada hari ini.') + '</p>';
+    else {
+      var tbl = '<div class="tbl-wrap"><table class="tbl"><thead><tr>' + (staf ? '' : '<th>Pegawai</th><th>Sektor</th>') + '<th>Keluar</th><th>Destinasi</th><th>Tujuan</th><th>Jangka</th><th>Masuk</th></tr></thead><tbody>' +
+        rows.map(function (r) {
+          var s = G.staf(r.sid);
+          return '<tr' + (r.batal ? ' class="cx"' : '') + '>' + (staf ? '' : '<td><b>' + G.esc(s.n) + '</b></td><td>' + G.sk(s.sek) + '</td>') + '<td class="m">' + keluarTxt(r) + '</td><td>' + G.destOf(r) + (r.nota && G.canSeePrivate(r) ? '<div class="muted" style="font-size:13px">' + G.esc(r.nota) + '</div>' : '') + '</td><td>' + (G.tujOf(r) || '—') + '</td><td class="m">' + jangkaTxt(r) + '</td><td class="m">' + masukTxt(r) + '</td></tr>';
+        }).join('') + '</tbody></table></div>';
+      var cards = '<div class="cards-m">' + rows.map(function (r) {
+        var s = G.staf(r.sid), t = G.tujOf(r);
+        return '<div class="ent' + (r.batal ? ' cx' : '') + '"><div class="w">' + (staf ? '' : '<div class="n"><b>' + G.esc(s.n) + '</b>' + G.sk(s.sek) + '</div>') + G.destOf(r) + (t ? '<small>' + t + '</small>' : '') + '</div>' +
+          '<div class="t"><b>' + (r.d === st.d ? r.keluar : G.fmtShort(r.d)) + ' → ' + (r.masuk || '…') + '</b><small>' + (r.masuk && !r.batal ? 'jangka ' + jangkaTxt(r) : masukTxt(r)) + '</small>' +
+          (r.d === st.d && G.canSeeFor(r.sid) && G.lewatRekod(r) ? '<small class="flag">Direkod lewat · ' + r.dibuat + '</small>' : '') + (r.betul && !r.batal && G.canSeeFor(r.sid) ? '<small class="flag">Dibetulkan ' + r.betul + '</small>' : '') + '</div></div>';
+      }).join('') + '</div>';
+      h = tbl + cards;
+    }
+    if (ab.length) {
+      h += '<section class="absen"><div class="section-t">Tidak hadir</div><ul>' + ab.map(function (c) {
+        var s = G.staf(c.sid);
+        return '<li>' + (staf ? '' : '<b>' + G.esc(s.n) + '</b>' + G.sk(s.sek)) + '<span>' + G.jenisCuti(c) + '</span><span class="muted">' + rangeTxt(c) + '</span>' + (c.batal ? '<span class="flag">Dibatalkan ' + c.batal + '</span>' : '') + '</li>';
+      }).join('') + '</ul></section>';
+    }
+    $('out').innerHTML = h;
+    if (window.Gerak) Gerak.run($('out'), { items: 'tbody tr,.ent,.absen li' });
   }
 
   function csv() {
-    var rows = scope(), head = ['Tarikh', 'Pegawai', 'Sektor', 'Keluar', 'Destinasi', 'Tujuan', 'Catatan', 'Jangka pulang', 'Masuk'];
-    var q = function (v) { v = String(v == null ? '' : v); return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
+    var rows = scope(), head = ['Tarikh', 'Pegawai', 'Sektor', 'Keluar', 'Destinasi', 'Tujuan', 'Catatan', 'Jangka pulang', 'Masuk', 'Status audit'];
+    var q = function (v) { v = String(v == null ? '' : v); if (/^[=+\-@\t\r]/.test(v)) v = "'" + v; return /[",\n]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v; };
     var body = rows.map(function (r) {
       var s = G.staf(r.sid), priv = r.tuj === 'Urusan peribadi' && !G.canSeePrivate(r);
-      return [r.d, s.n, s.sek, r.keluar, priv ? 'Urusan peribadi' : r.dest, priv ? '' : r.tuj, priv ? '' : (r.nota || ''), r.pulang ? 'Tidak kembali' : r.jangka, r.masuk || (r.pulang ? 'Terus pulang' : '')].map(q).join(',');
-    });
+      return [st.d, s.n, s.sek, r.d === st.d ? r.keluar : 'sejak ' + r.d, priv ? 'Urusan peribadi' : r.dest, priv ? '' : r.tuj, priv ? '' : (r.nota || ''),
+        r.pulang ? (r.hingga ? 'Tugas luar hingga ' + r.hingga : 'Tidak kembali') : r.jangka,
+        r.batal ? '' : r.masuk ? r.masuk + (r.masukD && r.masukD !== r.d ? ' (' + r.masukD + ')' : '') : (r.hingga ? 'Tugas luar' : r.pulang ? 'Terus pulang' : ''), statusCsv(r)].map(q).join(',');
+    }).concat(absen().map(function (c) {
+      var s = G.staf(c.sid);
+      return [st.d, s.n, s.sek, '', '', G.canSeeFor(c.sid) ? c.jenis : 'Tidak hadir', c.dari + ' hingga ' + c.hingga, '', '', c.batal ? 'Dibatalkan ' + c.batal : ''].map(q).join(',');
+    }));
     var blob = new Blob(['﻿' + [head.join(',')].concat(body).join('\r\n')], { type: 'text/csv;charset=utf-8' });
     var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'buku-pergerakan-' + st.d + '.csv'; document.body.appendChild(a); a.click(); a.remove();
-    G.toast('CSV dimuat turun · <b>' + rows.length + '</b> rekod');
+    G.toast('CSV dimuat turun · <b>' + body.length + '</b> baris');
   }
 
   $('prev').addEventListener('click', function () { st.d = G.addDays(st.d, -1); render(); });

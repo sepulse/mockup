@@ -45,6 +45,11 @@
     </div>
     <div class="chips" id="qb" aria-label="Pilihan masa balik"></div>
     <label class="check" style="margin-top:12px"><input type="checkbox" id="pulang">Tidak kembali ke pejabat hari ini</label>
+    <div class="fs hingga" id="w-hingga" hidden>
+      <label class="lbl" for="hingga">Tugas luar sehingga</label>
+      <input type="date" id="hingga">
+      <p class="hint" id="h-hingga">Untuk kursus atau program beberapa hari. Biarkan hari ini jika hanya hari ini.</p>
+    </div>
     <p class="err" id="e-masa" hidden></p>
 
     <div class="prev" id="prev"></div>
@@ -71,6 +76,13 @@
     return;
   }
 
+  var cutiNow = G.cutiOn(m.id, G.TODAY);
+  if (cutiNow) {
+    $('f').hidden = true; $('dah').hidden = false;
+    $('dah').innerHTML = '<div class="stat cuti"><div class="k"><i></i>Anda direkod tidak hadir hari ini</div><p class="s">' + G.esc(cutiNow.jenis) + '. Batal rekod tidak hadir di Status saya jika anda bekerja hari ini.</p><a class="btn btn-ink go" href="saya.html">Ke Status saya</a></div>';
+    return;
+  }
+
   $('tempat').innerHTML = G.TEMPAT.map(function (t) { return '<option value="' + G.esc(t) + '">'; }).join('');
   var seen = {}, recent = [];
   G.LOG.slice().reverse().forEach(function (r) { if (r.sid === m.id && !r.batal && !seen[r.dest] && r.tuj !== 'Urusan peribadi' && recent.length < 3) { seen[r.dest] = 1; recent.push(r); } });
@@ -81,6 +93,8 @@
   var now = G.now();
   $('pergi').value = now;
   $('balik').value = G.hhmm(G.toMin(now) + 120);
+  var maxHingga = G.addDays(G.TODAY, G.HAD_HARI - 1);
+  $('hingga').value = G.TODAY; $('hingga').min = G.TODAY; $('hingga').max = maxHingga;
 
   function setTuj(t) { tuj = t; [].forEach.call($('tuj').children, function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-v') === t); }); }
   function qbChips() {
@@ -91,16 +105,22 @@
   }
   function update() {
     var p = $('pergi').value, b = $('balik').value, pul = $('pulang').checked, dest = $('dest').value.trim();
+    var hg = pul && $('hingga').value > G.TODAY ? $('hingga').value : '';
     $('balik').disabled = pul;
-    var later = p && G.toMin(p) > G.toMin(now);
-    $('h-pergi').textContent = later ? 'Rekod dibuat lebih awal; status bertukar pada ' + p + '.' : (p && G.toMin(now) - G.toMin(p) > 15 ? 'Lebih awal daripada sekarang (' + now + ').' : 'Sekarang ' + now + '.');
-    $('h-balik').textContent = pul ? 'Rekod ditutup automatik pada ' + G.TAMAT_KERJA + '.' : (p && b && G.toMin(b) > G.toMin(p) ? 'Kira-kira ' + G.dur(G.toMin(b) - G.toMin(p)) + ' di luar.' : '');
+    $('w-hingga').hidden = !pul;
+    var later = p && G.toMin(p) > G.toMin(now), undur = p ? G.toMin(now) - G.toMin(p) : 0;
+    $('h-pergi').textContent = later ? 'Rekod dibuat lebih awal; status bertukar pada ' + p + '.'
+      : undur > G.HAD_UNDUR ? 'Tidak boleh lebih ' + G.dur(G.HAD_UNDUR) + ' sebelum sekarang (' + now + ').'
+      : undur > G.HAD_LEWAT ? 'Lebih ' + G.HAD_LEWAT + ' min sebelum sekarang: Buku akan menanda "Direkod lewat · disimpan ' + now + '".'
+      : 'Sekarang ' + now + '.';
+    $('h-pergi').classList.toggle('lw', undur > G.HAD_LEWAT);
+    $('h-balik').textContent = pul ? (hg ? 'Status "Tugas luar" hingga ' + G.fmtDate(hg) + '.' : 'Rekod ditutup automatik pada ' + G.TAMAT_KERJA + '.') : (p && b && G.toMin(b) > G.toMin(p) ? 'Kira-kira ' + G.dur(G.toMin(b) - G.toMin(p)) + ' di luar.' : '');
     $('save').textContent = later ? 'Simpan rekod keluar' : 'Sahkan keluar';
     qbChips();
     var priv = tuj === 'Urusan peribadi';
-    $('prev').innerHTML = '<div class="k">Rakan akan melihat di Papan</div><div class="v"><b>' + G.esc(m.n) + '</b> · Di luar pejabat<br>' +
+    $('prev').innerHTML = '<div class="k">Rakan akan melihat di Papan</div><div class="v"><b>' + G.esc(m.n) + '</b> · ' + (hg ? 'Tugas luar' : 'Di luar pejabat') + '<br>' +
       (priv ? '<span class="muted">Urusan peribadi</span>' : G.esc(dest || '—') + ' · ' + G.esc(tuj || '—')) +
-      '<br><span style="font-family:var(--mono)">Keluar ' + (p || '—') + ' · ' + (pul ? 'tidak kembali hari ini' : 'jangka pulang ' + (b || '—')) + '</span></div>' +
+      '<br><span style="font-family:var(--mono)">Keluar ' + (p || '—') + ' · ' + (hg ? 'hingga ' + G.fmtShort(hg) : pul ? 'tidak kembali hari ini' : 'jangka pulang ' + (b || '—')) + '</span></div>' +
       (priv ? '<p class="hint" style="margin-top:8px">' + G.icon('lock') + ' Destinasi urusan peribadi hanya dilihat oleh ketua sektor anda dan KPPD.</p>' : '');
   }
 
@@ -109,7 +129,7 @@
     var r = e.target.closest('[data-dest]'); if (r) { $('dest').value = r.getAttribute('data-dest'); setTuj(r.getAttribute('data-tuj')); $('e-dest').hidden = true; $('e-tuj').hidden = true; update(); return; }
     var q = e.target.closest('[data-t]'); if (q) { $('balik').value = q.getAttribute('data-t'); $('pulang').checked = false; $('e-masa').hidden = true; update(); }
   });
-  ['dest', 'pergi', 'balik', 'pulang', 'nota'].forEach(function (id) { $(id).addEventListener('input', update); $(id).addEventListener('change', update); });
+  ['dest', 'pergi', 'balik', 'pulang', 'hingga', 'nota'].forEach(function (id) { $(id).addEventListener('input', update); $(id).addEventListener('change', update); });
 
   $('f').addEventListener('submit', function (e) {
     e.preventDefault();
@@ -117,12 +137,17 @@
     $('e-dest').hidden = !!dest; if (!dest) bad = bad || $('dest');
     $('e-tuj').hidden = !!tuj; if (!tuj) bad = bad || $('tuj').firstChild;
     var em = '';
-    if (!p) em = 'Isi masa pergi.';
-    else if (!pul && !b) em = 'Isi masa balik atau tanda "Tidak kembali ke pejabat hari ini".';
-    else if (!pul && G.toMin(b) <= G.toMin(p)) em = 'Masa balik mesti selepas masa pergi (' + p + ').';
-    $('e-masa').textContent = em; $('e-masa').hidden = !em; if (em) bad = bad || $(p ? 'balik' : 'pergi');
+    var hg = $('hingga').value, emEl = null;
+    if (!p) { em = 'Isi masa pergi.'; emEl = 'pergi'; }
+    else if (G.toMin(G.now()) - G.toMin(p) > G.HAD_UNDUR) { em = 'Masa pergi tidak boleh lebih ' + G.dur(G.HAD_UNDUR) + ' sebelum sekarang. Untuk pembetulan, hubungi ketua sektor.'; emEl = 'pergi'; }
+    else if (!pul && !b) { em = 'Isi masa balik atau tanda "Tidak kembali ke pejabat hari ini".'; emEl = 'balik'; }
+    else if (!pul && G.toMin(b) <= G.toMin(p)) { em = 'Masa balik mesti selepas masa pergi (' + p + ').'; emEl = 'balik'; }
+    else if (G.today(m.id).some(function (x) { return x.d === G.TODAY && x.masuk && G.toMin(x.masuk) > G.toMin(p); })) { em = 'Masa pergi bertindih dengan rekod keluar sebelumnya. Pilih masa selepas anda masuk pejabat.'; emEl = 'pergi'; }
+    else if (pul && hg > G.TODAY && G.CUTI.some(function (c) { return c.sid === m.id && !c.batal && c.dari <= hg && G.TODAY <= c.hingga; })) { em = 'Tempoh tugas luar bertindih dengan rekod tidak hadir anda.'; emEl = 'hingga'; }
+    else if (pul && (!hg || hg < G.TODAY || hg > maxHingga)) { em = 'Tarikh tugas luar mesti antara hari ini dan ' + G.fmtShort(maxHingga) + ' (paling lama ' + G.HAD_HARI + ' hari).'; emEl = 'hingga'; }
+    $('e-masa').textContent = em; $('e-masa').hidden = !em; if (em) bad = bad || $(emEl);
     if (bad) { bad.focus(); return; }
-    var r = G.keluar({ dest: dest, tuj: tuj, keluar: p, jangka: b, pulang: pul, nota: $('nota').value.trim() });
+    var r = G.keluar({ dest: dest, tuj: tuj, keluar: p, jangka: b, pulang: pul, hingga: pul ? hg : '', nota: $('nota').value.trim() });
     if (r) location.href = 'saya.html?baru=' + r.id;
   });
   update();

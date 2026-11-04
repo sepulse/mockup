@@ -83,7 +83,7 @@ button.pr:hover{background:var(--paper-2)}
 .grp-t .c{font:600 13px/1 var(--mono);color:var(--muted)}
 
 /* Jalur kiraan */
-.counts{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--rule);background:var(--card)}
+.counts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:1px solid var(--rule);background:var(--card)}
 .counts button{padding:12px 14px;text-align:left;border-right:1px solid var(--rule);min-height:72px}
 .counts button:last-child{border-right:0}
 .counts button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-fg)}
@@ -151,7 +151,7 @@ button.pr:hover{background:var(--paper-2)}
 
 /* Telefon */
 @media (max-width:780px){
-  .bnav{grid-template-columns:repeat(3,1fr)}
+  .bnav{grid-template-columns:repeat(4,1fr)}
   .mtool{top:13px;bottom:auto;left:auto;right:58px;align-items:flex-end}
   .mfab{opacity:.7}
   .pr{grid-template-columns:36px minmax(0,1fr) auto;gap:4px 12px;align-items:start}
@@ -180,3 +180,28 @@ button.pr:hover{background:var(--paper-2)}
 }
 @media (min-width:781px){.cards-m{display:none}}
 @media print{.dnav button,.qbar,#csv,#cetak{display:none!important}.tbl-wrap{display:block!important}.cards-m{display:none!important}}
+
+/* Tidak hadir, jejak audit, tunggakan, tugas luar */
+.gst.cuti{color:var(--muted)}
+.stat.cuti{box-shadow:inset 4px 0 0 var(--muted)}
+.stat.cuti .k i{background:var(--muted)}
+.stat .help.lw,.hint.lw{color:var(--warn);font-weight:600}
+.stat .alt .text-btn svg{width:15px;height:15px}
+.cuti-l{list-style:none;margin:14px 0 0;padding:10px 0 0;border-top:1px solid var(--rule);display:grid;gap:6px}
+.cuti-l li{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink-2)}
+.cuti-l li svg{width:16px;height:16px;color:var(--muted);flex:none}
+.cuti-l li span{flex:1;min-width:0}
+.tunggak{margin-bottom:14px}
+.tunggak div{display:grid;gap:3px}
+.tunggak b{color:var(--ink)}
+.tunggak span{color:var(--ink-2)}
+.tunggak .text-btn{justify-self:start;color:var(--warn)}
+.tl .ev .b small.flag{display:block;margin-top:2px}
+.tbl small.flag,.ent small.flag{display:block;font-size:12px}
+.tbl tr.cx td .flag,.tbl tr.cx td small{text-decoration:none}
+.ent.cx .w,.ent.cx .t b{color:var(--muted);text-decoration:line-through}
+.absen{margin-top:18px}
+.absen ul{list-style:none;margin:8px 0 0;padding:0;display:grid;gap:6px}
+.absen li{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:14px}
+.absen li .muted{font-size:13px}
+.simpan{margin-top:14px}

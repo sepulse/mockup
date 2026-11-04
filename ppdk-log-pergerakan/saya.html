@@ -15,6 +15,7 @@
   <div class="page-h"><div><h1 id="hi">Status saya</h1><div class="sub" id="sub"></div></div></div>
   <div class="two">
     <div>
+      <div id="tunggak"></div>
       <section id="stat" aria-live="polite"></section>
       <section class="sec">
         <div class="sec-h"><h2>Pergerakan hari ini</h2><a href="buku.html">Buku</a></div>
@@ -34,30 +35,51 @@
 (function () {
   G.mount({ page: 'saya' });
   var $ = function (id) { return document.getElementById(id); };
+  function rangeTxt(c) { return c.dari === c.hingga ? G.fmtShort(c.dari) : G.fmtShort(c.dari) + ' – ' + G.fmtShort(c.hingga); }
 
   function render() {
     var m = G.me(), st = G.status(m.id), r = st.r, now = G.now();
     $('hi').textContent = G.greet() + ', ' + G.first(m.n);
     $('sub').innerHTML = G.fmtDate(G.TODAY) + ' · <b>' + now + '</b>';
-    var h;
-    if (!r) {
+
+    /* Rekod hari lepas tanpa masa masuk */
+    $('tunggak').innerHTML = G.tertunggak(m.id).map(function (x) {
+      return '<div class="note warn tunggak">' + G.icon('warn') + '<div><b>Tiada rekod masuk: ' + G.fmtShort(x.d) + ', keluar ' + x.keluar + ' ke ' + G.esc(x.dest) + '.</b>' +
+        '<span>Isi masa anda kembali ke pejabat. Rekod akan ditanda "dibetulkan" dalam Buku.</span>' +
+        '<button type="button" class="text-btn" data-fix="' + x.id + '">Isi masa masuk</button></div></div>';
+    }).join('');
+
+    var h, cs = G.cutiSaya();
+    if (st.k === 'cuti') {
+      h = '<div class="stat cuti"><div class="k"><i></i>Status semasa</div><span class="big">Anda direkod tidak hadir</span>' +
+        '<p class="s">' + G.esc(st.c.jenis) + ' · ' + rangeTxt(st.c) + '</p>' +
+        '<p class="help">Rakan di Papan melihat <b>Tidak hadir</b> sahaja. Jenis cuti dilihat oleh ketua sektor anda dan KPPD.</p>' +
+        '<div class="alt"><button type="button" class="text-btn" data-cbatal="' + st.c.id + '">Batal rekod tidak hadir</button></div></div>';
+    } else if (!r) {
+      var akan = cs.filter(function (c) { return c.dari > G.TODAY; });
       h = '<div class="stat"><div class="k"><i></i>Status semasa</div><span class="big">Anda di pejabat</span>' +
         (st.akan ? '<p class="s">Rekod keluar pada <b>' + st.akan.keluar + '</b> ke ' + G.esc(st.akan.dest) + ' sudah disimpan. Status bertukar automatik pada masa itu.</p><div class="alt"><button type="button" class="text-btn" id="batal">Batal rekod ini</button></div>'
           : '<a class="btn btn-ink go" href="keluar.html">' + G.icon('out') + 'Keluar pejabat</a>') +
-        '<p class="help">Rekod setiap kali anda keluar pejabat, termasuk urusan peribadi. Tekan <b>Masuk pejabat</b> apabila kembali.</p></div>';
+        '<p class="help">Rekod setiap kali anda keluar pejabat, termasuk urusan peribadi. Tekan <b>Masuk pejabat</b> apabila kembali.</p>' +
+        (akan.length ? '<ul class="cuti-l">' + akan.map(function (c) { return '<li>' + G.icon('cal') + '<span>' + G.esc(c.jenis) + ' · ' + rangeTxt(c) + '</span><button type="button" class="text-btn" data-cbatal="' + c.id + '">Batal</button></li>'; }).join('') + '</ul>' : '') +
+        (st.akan ? '' : '<div class="alt"><button type="button" class="text-btn" id="cuti">' + G.icon('cal') + 'Rekod cuti / tidak hadir</button></div>') + '</div>';
     } else {
-      var tuj = G.esc(r.tuj), jSmall = '';
+      var multi = r.d !== G.TODAY || !!r.hingga, tuj = G.esc(r.tuj), jSmall = '';
       if (st.k === 'luar' && st.baki != null) jSmall = 'lagi ' + G.dur(st.baki);
       if (st.k === 'lewat') jSmall = 'Lepas ' + G.dur(st.lebih);
-      h = '<div class="stat ' + st.k + '"><div class="k"><i></i>' + G.STL[st.k] + '</div>' +
+      h = '<div class="stat ' + st.k + '"><div class="k"><i></i>' + G.stLabel(st) + '</div>' +
         '<div class="dest">' + G.icon('pin') + G.esc(r.dest) + '</div><p class="s">' + tuj + (r.nota ? ' · ' + G.esc(r.nota) : '') + '</p>' +
-        '<div class="times"><div><span>Keluar</span><b>' + r.keluar + '</b><small>' + G.dur(G.toMin(now) - G.toMin(r.keluar)) + ' lalu</small></div>' +
-        '<div class="j"><span>Jangka pulang</span>' + (r.pulang ? '<b>—</b><small>Tidak kembali hari ini</small>' : '<b>' + r.jangka + '</b><small>' + jSmall + '</small>') + '</div></div>' +
+        '<div class="times"><div><span>Keluar</span>' + (r.d === G.TODAY ? '<b>' + r.keluar + '</b><small>' + G.dur(G.toMin(now) - G.toMin(r.keluar)) + ' lalu</small>' : '<b>' + G.fmtShort(r.d) + '</b><small>' + r.keluar + '</small>') + '</div>' +
+        '<div class="j"><span>' + (multi ? 'Tugas luar hingga' : 'Jangka pulang') + '</span>' +
+        (multi ? '<b>' + G.fmtShort(r.hingga) + '</b><small>Tidak masuk pejabat</small>' : r.pulang ? '<b>—</b><small>Tidak kembali hari ini</small>' : '<b>' + r.jangka + '</b><small>' + jSmall + '</small>') + '</div></div>' +
         (r.pulang
-          ? '<button type="button" class="btn btn-line go" id="in">' + G.icon('in') + 'Saya kembali ke pejabat</button><p class="help">Jika tidak kembali, rekod ditutup automatik pada ' + G.TAMAT_KERJA + '.</p>'
-          : '<button type="button" class="btn btn-ink go" id="in">' + G.icon('in') + 'Masuk pejabat</button>') +
-        '<div class="alt"><button type="button" class="text-btn" id="ubah">' + (st.k === 'lewat' ? 'Lanjutkan jangka pulang' : 'Ubah jangka pulang') + '</button>' +
-        '<button type="button" class="text-btn" id="batal">Batal rekod ini</button></div></div>';
+          ? '<button type="button" class="btn btn-line go" id="in">' + G.icon('in') + 'Saya kembali ke pejabat</button><p class="help">' +
+            (multi ? 'Tekan hanya jika anda kembali lebih awal. Status kekal <b>Tugas luar</b> hingga ' + G.fmtDate(r.hingga) + '.' : 'Jika tidak kembali, rekod ditutup automatik pada ' + G.TAMAT_KERJA + '.') + '</p>'
+          : '<button type="button" class="btn btn-ink go" id="in">' + G.icon('in') + 'Masuk pejabat</button>' +
+            (st.k === 'lewat' ? '<p class="help lw">Sudah kembali? Tekan <b>Masuk pejabat</b> supaya Papan tepat. Jika belum, lanjutkan jangka pulang.</p>' : '')) +
+        '<div class="alt">' + (multi ? '' : '<button type="button" class="text-btn" id="ubah">' + (st.k === 'lewat' ? 'Lanjutkan jangka pulang' : 'Ubah jangka pulang') + '</button>') +
+        (G.bolehBatal(r) ? '<button type="button" class="text-btn" id="batal">Batal rekod ini</button>' : '') + '</div>' +
+        (G.bolehBatal(r) ? '' : '<p class="help">Rekod tidak boleh dibatalkan selepas ' + G.HAD_BATAL + ' minit dari masa keluar. Jika sudah kembali, tekan Masuk pejabat.</p>') + '</div>';
     }
     $('stat').innerHTML = h;
     var list = G.today(m.id);
@@ -95,9 +117,68 @@
   function batalDrawer(r) {
     G.drawer({
       kicker: 'Keluar ' + r.keluar + ' · ' + G.esc(r.dest), title: 'Batal rekod keluar?',
-      body: '<p>Guna jika anda tersalah tekan atau tidak jadi keluar. Rekod ini akan dibuang daripada Papan.</p><p class="hint" style="margin-top:10px">Jika anda sudah kembali, tekan <b>Masuk pejabat</b> sebaliknya.</p>',
+      body: '<p>Guna jika anda tersalah tekan atau tidak jadi keluar. Rekod ini dibuang daripada Papan, tetapi kekal dalam Buku sebagai <b>Dibatalkan</b> untuk semakan ketua sektor dan KPPD.</p><p class="hint" style="margin-top:10px">Batal hanya dibenarkan dalam ' + G.HAD_BATAL + ' minit selepas masa keluar. Jika anda sudah kembali, tekan <b>Masuk pejabat</b> sebaliknya.</p>',
       foot: '<button class="btn btn-line" type="button" data-close>Jangan batal</button><button class="btn btn-dark" type="button" id="bs">Batal rekod</button>',
-      onOpen: function (d) { d.querySelector('#bs').addEventListener('click', function () { if (G.batal(r)) { G.closeDrawer(); G.toast('Rekod keluar dibatalkan'); render(); } }); }
+      onOpen: function (d) {
+        d.querySelector('#bs').addEventListener('click', function () {
+          if (!G.bolehBatal(r)) { G.closeDrawer(); G.toast('Sudah melepasi ' + G.HAD_BATAL + ' minit. Rekod tidak boleh dibatalkan.'); render(); return; }
+          if (G.batal(r)) { G.closeDrawer(); G.toast('Rekod keluar dibatalkan'); render(); }
+        });
+      }
+    });
+  }
+  function fixDrawer(r) {
+    G.drawer({
+      kicker: G.fmtDate(r.d) + ' · ' + G.esc(r.dest), title: 'Isi masa masuk',
+      body: '<p>Anda keluar pada <b>' + r.keluar + '</b>' + (r.jangka ? ' dengan jangka pulang <b>' + r.jangka + '</b>' : '') + ', tetapi tiada rekod masuk.</p>' +
+        '<label class="lbl" for="ft" style="margin-top:14px">Masa anda kembali ke pejabat</label><input type="time" id="ft" value="' + (r.jangka || G.hhmm(G.toMin(r.keluar) + 60)) + '">' +
+        '<p class="err" id="fe" hidden></p><p class="hint">Buku akan menunjukkan masa ini bersama tanda <b>dibetulkan</b> dan masa pembetulan.</p>',
+      foot: '<button class="btn btn-line" type="button" data-close>Batal</button><button class="btn btn-ink" type="button" id="fs">Simpan</button>',
+      onOpen: function (d) {
+        d.querySelector('#fs').addEventListener('click', function () {
+          var t = d.querySelector('#ft').value, er = d.querySelector('#fe');
+          if (!t || G.toMin(t) <= G.toMin(r.keluar)) { er.textContent = 'Masa masuk mesti selepas ' + r.keluar + '.'; er.hidden = false; return; }
+          if (G.isiMasuk(r, t)) { G.closeDrawer(); G.toast('Masa masuk <b>' + t + '</b> disimpan'); render(); }
+        });
+      }
+    });
+  }
+  function cutiDrawer() {
+    var jenis = '';
+    G.drawer({
+      kicker: 'Makluman kepada rakan dan ketua', title: 'Rekod cuti / tidak hadir',
+      body: '<div class="lbl" id="cl">Jenis <span class="req">*</span></div><div class="chips" id="cj" role="group" aria-labelledby="cl">' +
+        G.JENIS_CUTI.map(function (j) { return '<button type="button" class="chip" aria-pressed="false" data-j="' + j + '">' + j + '</button>'; }).join('') + '</div>' +
+        '<div class="tq" style="margin-top:16px"><div><label class="lbl" for="cd">Dari</label><input type="date" id="cd" value="' + G.TODAY + '" min="' + G.TODAY + '"></div>' +
+        '<div><label class="lbl" for="ch">Hingga</label><input type="date" id="ch" value="' + G.TODAY + '" min="' + G.TODAY + '"></div></div>' +
+        '<p class="err" id="ce" hidden></p>' +
+        '<p class="hint">' + G.icon('lock') + ' Rakan di Papan melihat <b>Tidak hadir</b> sahaja. Jenis cuti dilihat oleh ketua sektor anda dan KPPD.</p>' +
+        '<p class="hint">Ini makluman pergerakan sahaja. Permohonan cuti rasmi kekal melalui HRMIS.</p>',
+      foot: '<button class="btn btn-line" type="button" data-close>Batal</button><button class="btn btn-ink" type="button" id="cs">Simpan</button>',
+      onOpen: function (d) {
+        d.addEventListener('click', function (e) {
+          var j = e.target.closest('[data-j]');
+          if (j) { jenis = j.getAttribute('data-j'); [].forEach.call(d.querySelectorAll('[data-j]'), function (b) { b.setAttribute('aria-pressed', b === j); }); return; }
+          if (!e.target.closest('#cs')) return;
+          var dari = d.querySelector('#cd').value, hingga = d.querySelector('#ch').value, er = d.querySelector('#ce'), msg = '';
+          if (!jenis) msg = 'Pilih jenis.';
+          else if (!dari || !hingga || dari < G.TODAY) msg = 'Isi tarikh dari hari ini.';
+          else if (hingga < dari) msg = 'Tarikh hingga mesti sama atau selepas tarikh dari.';
+          else if (dari === G.TODAY && G.openOf(G.me().id)) msg = 'Anda masih direkod di luar. Tekan Masuk pejabat atau batal rekod itu dahulu.';
+          else if (G.LOG.some(function (r) { return r.sid === G.me().id && !r.batal && !r.masuk && r.hingga && r.d <= hingga && dari <= r.hingga; })) msg = 'Tarikh ini bertindih dengan rekod tugas luar anda.';
+          else if (G.CUTI.some(function (c) { return c.sid === G.me().id && !c.batal && c.dari <= hingga && dari <= c.hingga; })) msg = 'Tarikh ini bertindih dengan rekod tidak hadir sedia ada.';
+          er.textContent = msg; er.hidden = !msg; if (msg) return;
+          if (G.cutiTambah({ jenis: jenis, dari: dari, hingga: hingga })) { G.closeDrawer(); G.toast('Tidak hadir direkod · <b>' + (dari === hingga ? G.fmtShort(dari) : G.fmtShort(dari) + ' – ' + G.fmtShort(hingga)) + '</b>'); render(); }
+        });
+      }
+    });
+  }
+  function cutiBatalDrawer(c) {
+    G.drawer({
+      kicker: G.esc(c.jenis) + ' · ' + rangeTxt(c), title: 'Batal rekod tidak hadir?',
+      body: '<p>Rekod dibuang daripada Papan. Ketua sektor dan KPPD masih melihatnya sebagai <b>Dibatalkan</b>.</p>',
+      foot: '<button class="btn btn-line" type="button" data-close>Jangan batal</button><button class="btn btn-dark" type="button" id="cb">Batal rekod</button>',
+      onOpen: function (d) { d.querySelector('#cb').addEventListener('click', function () { if (G.cutiBatal(c)) { G.closeDrawer(); G.toast('Rekod tidak hadir dibatalkan'); render(); } }); }
     });
   }
 
@@ -108,6 +189,11 @@
       if (G.masuk(r, t)) { G.toast('Masuk pejabat dicatat <b>' + t + '</b>'); render(); }
     } else if (e.target.closest('#ubah') && r) jangkaDrawer(r);
     else if (e.target.closest('#batal') && r) batalDrawer(r);
+    else if (e.target.closest('#cuti')) cutiDrawer();
+    var f = e.target.closest('[data-fix]');
+    if (f) { var x = G.LOG.filter(function (y) { return y.id === f.getAttribute('data-fix'); })[0]; if (x) fixDrawer(x); }
+    var cb = e.target.closest('[data-cbatal]');
+    if (cb) { var c = G.CUTI.filter(function (y) { return y.id === cb.getAttribute('data-cbatal'); })[0]; if (c) cutiBatalDrawer(c); }
     var p = e.target.closest('button.pr[data-sid]'); if (p) G.openPerson(p.getAttribute('data-sid'));
   });
   document.addEventListener('rolechange', render);
