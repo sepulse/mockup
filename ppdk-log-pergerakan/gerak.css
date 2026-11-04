@@ -205,3 +205,46 @@ button.pr:hover{background:var(--paper-2)}
 .absen li{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;font-size:14px}
 .absen li .muted{font-size:13px}
 .simpan{margin-top:14px}
+
+/* ---------- Aksen petrol (ikut QR & Short URL ppdk.ch) ---------- */
+:root:not([data-theme="dark"]){--sel-bg:var(--petrol-deep);--sel-fg:var(--on-dark)}
+:root{--amber-on-dark:#F2C27A;--stage-lines:repeating-linear-gradient(90deg,transparent 0 47px,rgba(255,255,255,.045) 47px 48px)}
+.eyebrow{color:var(--petrol);font-weight:600;margin-bottom:8px}
+.page-h h1{position:relative}
+/* Pentas petrol: kad status utama */
+.stat{background:var(--petrol-deep) var(--stage-lines);color:var(--on-dark);border-color:var(--petrol-deep);box-shadow:inset 4px 0 0 var(--on-dark-2)}
+.stat.luar{box-shadow:inset 4px 0 0 var(--mint)}
+.stat.lewat{box-shadow:inset 4px 0 0 var(--amber-on-dark)}
+.stat.pulang,.stat.cuti{box-shadow:inset 4px 0 0 var(--on-dark-2)}
+.stat .k,.stat.luar .k{color:var(--mint)}
+.stat .k i,.stat.luar .k i{background:var(--mint)}
+.stat.lewat .k{color:var(--amber-on-dark)}.stat.lewat .k i{background:var(--amber-on-dark)}
+.stat.pulang .k,.stat.cuti .k{color:var(--on-dark-2)}.stat.pulang .k i,.stat.cuti .k i{background:var(--on-dark-2)}
+.stat .s,.stat .help,.stat .times div span,.stat .times div small,.stat .dest svg{color:var(--on-dark-2)}
+.stat .help b{color:var(--on-dark)}
+.stat .help.lw,.stat.lewat .times .j small{color:var(--amber-on-dark)}
+.stat .times{border-top-color:var(--petrol-line)}
+.stat .btn-ink{background:var(--mint);color:#0A2B2F}
+.stat .btn-ink:hover{background:#A6E9DE}
+.stat .btn-line{border-color:rgba(242,240,234,.4);color:var(--on-dark)}
+.stat .btn-line:hover{border-color:var(--on-dark);background:rgba(255,255,255,.06)}
+.stat .text-btn{color:var(--mint)}
+.stat .cuti-l{border-top-color:var(--petrol-line)}
+.stat .cuti-l li{color:var(--on-dark)}
+.stat .cuti-l li svg{color:var(--on-dark-2)}
+.stat :focus-visible{outline-color:var(--mint)}
+/* Pentas petrol: hasil QR */
+.qp .q-out.card{background:var(--petrol-deep) var(--stage-lines);color:var(--on-dark);border-color:var(--petrol-deep)}
+.qp .q-out .k{color:var(--mint);font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.q-out .q-idle{border-color:var(--petrol-line);color:var(--on-dark-2)}
+.q-out .q-tile{border-color:transparent}
+.q-out .q-url small,.q-out .q-meta{color:var(--on-dark-2)}
+.q-out .btn-ink{background:var(--mint);color:#0A2B2F}
+.q-out .btn-line{border-color:rgba(242,240,234,.4);color:var(--on-dark)}
+.q-out .text-btn{color:var(--mint)}
+.q-out :focus-visible{outline-color:var(--mint)}
+/* Pengepala jadual & kumpulan */
+.tbl th{background:var(--petrol-deep);color:var(--on-dark);border-bottom-color:var(--petrol-deep);font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.grp-t{border-left:3px solid var(--petrol);padding-left:10px}
+.counts b{color:var(--petrol)}
+.counts button[aria-pressed="true"] b{color:var(--mint)}

@@ -227,7 +227,7 @@
       var t = tujOf(r);
       w = destOf(r) + (t ? '<small>' + t + '</small>' : '');
       /* Satu baris masa: keluar → jangka pulang; baris kedua = baki / lepas jangka. */
-      tm = '<b>' + (r.d === TODAY ? r.keluar : fmtShort(r.d)) + ' → ' + (r.pulang ? '<span class="pl-n">' + hinggaTxt(r) + '</span>' : r.jangka) + '</b>' +
+      tm = r.d !== TODAY ? '<b><span class="pl-n">' + hinggaTxt(r) + '</span></b><small>sejak ' + fmtShort(r.d) + '</small>' : '<b>' + r.keluar + ' → ' + (r.pulang ? '<span class="pl-n">' + hinggaTxt(r) + '</span>' : r.jangka) + '</b>' +
         (st.k === 'lewat' ? '<small class="lw">Lepas ' + dur(st.lebih) + '</small>' : st.k === 'luar' && st.baki != null ? '<small>lagi ' + dur(st.baki) + '</small>' : '');
     }
     return '<button type="button" class="pr' + (r ? '' : ' pej') + '" data-sid="' + s.id + '"><span class="avatar' + (r ? '' : ' pej') + '">' + ini(s.n) + '</span>' +
@@ -338,8 +338,8 @@
     });
     if (opts.bare) return;
     var shell = document.createElement('div'); shell.className = 'shell';
-    var navHtml = NAV.map(function (n) {
-      return '<a href="' + n.href + '" class="' + (n.id === opts.page ? 'on' : '') + '"' + (n.id === opts.page ? ' aria-current="page"' : '') + '>' + icon(n.ic) + '<span>' + n.l + '</span><span></span></a>';
+    var navHtml = NAV.map(function (n, i) {
+      return '<a href="' + n.href + '" class="' + (n.id === opts.page ? 'on' : '') + '"' + (n.id === opts.page ? ' aria-current="page"' : '') + '>' + icon(n.ic) + '<span>' + n.l + '</span><span class="k">0' + (i + 1) + '</span></a>';
     }).join('');
     shell.innerHTML =
       '<aside class="side"><a class="brand" href="saya.html">PPDK<i>.CH</i></a><div class="brand-sub mono">Log Pergerakan · data rekaan</div>' +
