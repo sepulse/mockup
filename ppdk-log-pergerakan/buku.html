@@ -97,12 +97,12 @@
       var tbl = '<div class="tbl-wrap"><table class="tbl"><thead><tr>' + (staf ? '' : '<th>Pegawai</th><th>Sektor</th>') + '<th>Keluar</th><th>Destinasi</th><th>Tujuan</th><th>Jangka</th><th>Masuk</th></tr></thead><tbody>' +
         rows.map(function (r) {
           var s = G.staf(r.sid);
-          return '<tr' + (r.batal ? ' class="cx"' : '') + '>' + (staf ? '' : '<td><b>' + G.esc(s.n) + '</b></td><td>' + G.sk(s.sek) + '</td>') + '<td class="m">' + keluarTxt(r) + '</td><td>' + G.destOf(r) + (r.nota && G.canSeePrivate(r) ? '<div class="muted" style="font-size:13px">' + G.esc(r.nota) + '</div>' : '') + '</td><td>' + (G.tujOf(r) || '—') + '</td><td class="m">' + jangkaTxt(r) + '</td><td' + (r.masuk && !r.batal ? ' class="m"' : '') + '>' + masukTxt(r) + '</td></tr>';
+          return '<tr' + (r.batal ? ' class="cx"' : '') + '>' + (staf ? '' : '<td><b>' + G.esc(s.n) + '</b></td><td>' + G.sk(s.sek) + '</td>') + '<td class="m">' + keluarTxt(r) + '</td><td>' + G.destOf(r) + (r.nota && (r.tuj !== 'Urusan peribadi' || G.canSeePrivate(r)) ? '<div class="muted" style="font-size:13px">' + G.esc(r.nota) + '</div>' : '') + '</td><td>' + (G.tujOf(r) || '—') + '</td><td class="m">' + jangkaTxt(r) + '</td><td' + (r.masuk && !r.batal ? ' class="m"' : '') + '>' + masukTxt(r) + '</td></tr>';
         }).join('') + '</tbody></table></div>';
       var cards = '<div class="cards-m">' + rows.map(function (r) {
         var s = G.staf(r.sid), t = G.tujOf(r);
-        return '<div class="ent' + (r.batal ? ' cx' : '') + '"><div class="w">' + (staf ? '' : '<div class="n"><b>' + G.esc(s.n) + '</b>' + G.sk(s.sek) + '</div>') + G.destOf(r) + (t ? '<small>' + t + '</small>' : '') + '</div>' +
-          '<div class="t"><b>' + (r.d === st.d ? r.keluar : G.fmtShort(r.d)) + ' → ' + (r.masuk || '…') + '</b><small>' + (r.masuk && !r.batal ? 'jangka ' + jangkaTxt(r) : masukTxt(r)) + '</small>' +
+        return '<div class="ent' + (r.batal ? ' cx' : '') + '"><div class="w">' + (staf ? '' : '<div class="n"><b>' + G.esc(s.n) + '</b>' + G.sk(s.sek) + '</div>') + G.destOf(r) + (t ? '<small>' + t + '</small>' : '') + (r.nota && (r.tuj !== 'Urusan peribadi' || G.canSeePrivate(r)) ? '<small class="nt">' + G.esc(r.nota) + '</small>' : '') + '</div>' +
+          '<div class="t"><b>' + (r.d === st.d ? r.keluar : G.fmtShort(r.d)) + ' → ' + (r.masuk ? r.masuk + (r.masukD && r.masukD !== r.d ? ' (' + G.fmtShort(r.masukD) + ')' : '') : '…') + '</b><small>' + (r.masuk && !r.batal ? 'jangka ' + jangkaTxt(r) : masukTxt(r)) + '</small>' +
           (r.d === st.d && G.canSeeFor(r.sid) && G.lewatRekod(r) ? '<small class="flag">Direkod lewat · ' + r.dibuat + '</small>' : '') + (r.betul && !r.batal && G.canSeeFor(r.sid) ? '<small class="flag">Dibetulkan ' + r.betul + '</small>' : '') + '</div></div>';
       }).join('') + '</div>';
       h = tbl + cards;

@@ -177,13 +177,11 @@
   function fmtShort(iso) { var d = dObj(iso); return HARI[d.getDay()].slice(0, 3) + ' ' + d.getDate() + ' ' + BULAN[d.getMonth()].slice(0, 3); }
   /* Rekod meliputi tarikh d: keluar pada d, atau tugas luar beberapa hari yang merentasi d (dan belum ditutup sebelum d). */
   function covers(r, d) { return r.d === d || (!!r.hingga && r.d < d && d <= r.hingga && !(r.masukD && r.masukD < d)); }
-  /* Rekod hari ini (atau tugas luar yang masih berjalan) yang belum ditutup. "Tidak kembali hari ini" ditutup automatik
-     pada waktu pulang (WBB) pegawai, kecuali tugas luar yang berterusan selepas hari ini. */
+  /* Rekod hari ini (atau tugas luar yang masih berjalan) yang belum ditutup. */
   function openOf(sid) {
-    var tamat = toMin(now()) >= toMin(tamatOf(sid));
     for (var i = LOG.length - 1; i >= 0; i--) {
       var r = LOG[i];
-      if (r.sid === sid && !r.masuk && !r.batal && covers(r, TODAY) && !(r.pulang && tamat && !(r.hingga && r.hingga > TODAY))) return r;
+      if (r.sid === sid && !r.masuk && !r.batal && covers(r, TODAY)) return r;
     }
     return null;
   }
@@ -203,12 +201,21 @@
     var r = openOf(sid);
     if (r && r.d === TODAY && toMin(r.keluar) > toMin(now())) return { k: 'pejabat', r: null, akan: r };
     if (!r) { var c = cutiOn(sid, TODAY); return c ? { k: 'cuti', r: null, c: c } : { k: 'pejabat', r: null }; }
-    if (r.pulang) return { k: 'pulang', r: r };
+    /* Selepas waktu pulang (WBB) pegawai:
+       - "Tidak kembali hari ini" → selesai: "Terus pulang" (bukan "Di pejabat"); tugas luar yang berterusan tidak terjejas.
+       - rekod masa yang belum Masuk → "Tiada rekod masuk" (bukan kiraan "Lepas N jam" yang terus berjalan). */
+    var tamat = toMin(now()) >= toMin(tamatOf(sid));
+    if (r.pulang) return tamat && !(r.hingga && r.hingga > TODAY) ? { k: 'pulang', r: r, selesai: true } : { k: 'pulang', r: r };
+    if (tamat && r.jangka && toMin(now()) > toMin(r.jangka)) return { k: 'luar', r: r, tiada: true, baki: null };
     if (r.jangka && toMin(now()) > toMin(r.jangka)) return { k: 'lewat', r: r, lebih: toMin(now()) - toMin(r.jangka) };
     return { k: 'luar', r: r, baki: r.jangka ? toMin(r.jangka) - toMin(now()) : null };
   }
   var STL = { pejabat: 'Di pejabat', luar: 'Di luar pejabat', lewat: 'Melepasi jangka pulang', pulang: 'Tidak kembali hari ini', cuti: 'Tidak hadir' };
-  function stLabel(st) { return st.k === 'pulang' && st.r && st.r.hingga && st.r.hingga > TODAY ? 'Tugas luar' : STL[st.k]; }
+  function stLabel(st) {
+    if (st.selesai) return 'Terus pulang';
+    if (st.tiada) return 'Tiada rekod masuk';
+    return st.k === 'pulang' && st.r && st.r.hingga && st.r.hingga > TODAY ? 'Tugas luar' : STL[st.k];
+  }
   function stChip(k, st) {
     var ic = { pejabat: 'office', luar: 'out', lewat: 'clock', pulang: 'home', cuti: 'cal' }[k];
     return '<span class="gst ' + k + '">' + icon(ic) + (st ? stLabel(st) : STL[k]) + '</span>';
@@ -241,7 +248,7 @@
   function jenisCuti(c) { return canSeeFor(c.sid) ? esc(c.jenis) : 'Tidak hadir'; }
   /* Audit: rekod disimpan lebih HAD_LEWAT minit selepas masa keluar yang diisi. */
   function lewatRekod(r) { return r.dibuat && toMin(r.dibuat) - toMin(r.keluar) > HAD_LEWAT ? r.dibuat : null; }
-  function bolehBatal(r) { return r.d === TODAY && toMin(now()) - toMin(r.keluar) <= HAD_BATAL; }
+  function bolehBatal(r) { return r.d === TODAY && toMin(now()) - Math.max(toMin(r.keluar), toMin(r.dibuat || r.keluar)) <= HAD_BATAL; }
   function hinggaTxt(r) { return r.hingga && r.hingga > TODAY ? 'hingga ' + fmtShort(r.hingga) : 'tidak kembali'; }
 
   /* Satu baris pegawai untuk Papan dan Status saya. */
@@ -257,8 +264,8 @@
       var t = tujOf(r);
       w = destOf(r) + (t ? '<small>' + t + '</small>' : '');
       /* Satu baris masa: keluar → jangka pulang; baris kedua = baki / lepas jangka. */
-      tm = r.d !== TODAY ? '<b><span class="pl-n">' + hinggaTxt(r) + '</span></b><small>sejak ' + fmtShort(r.d) + '</small>' : '<b>' + r.keluar + ' → ' + (r.pulang ? '<span class="pl-n">' + hinggaTxt(r) + '</span>' : r.jangka) + '</b>' +
-        (st.k === 'lewat' ? '<small class="lw">Lepas ' + dur(st.lebih) + '</small>' : st.k === 'luar' && st.baki != null ? '<small>lagi ' + dur(st.baki) + '</small>' : '');
+      tm = r.d !== TODAY ? '<b><span class="pl-n">' + hinggaTxt(r) + '</span></b><small>sejak ' + fmtShort(r.d) + '</small>' : '<b>' + r.keluar + ' → ' + (r.pulang ? '<span class="pl-n">' + (st.selesai ? 'terus pulang' : hinggaTxt(r)) + '</span>' : r.jangka) + '</b>' +
+        (st.tiada ? '<small class="lw">Tiada rekod masuk</small>' : st.k === 'lewat' ? '<small class="lw">Lepas ' + dur(st.lebih) + '</small>' : st.k === 'luar' && st.baki != null ? '<small>lagi ' + dur(st.baki) + '</small>' : '');
     }
     return '<button type="button" class="pr' + (r ? ' ' + st.k : st.k === 'cuti' ? ' cuti' : ' pej') + '" data-sid="' + s.id + '"><span class="avatar' + (r ? '' : ' pej') + '">' + ini(s.n) + '</span>' +
       '<div><div class="n">' + esc(s.n) + (s.id === me().id ? ' <span class="muted">(saya)</span>' : '') + '</div><div>' + sk(s.sek) + (opts && opts.noSt ? '' : stChip(st.k, st)) + '</div></div>' +
@@ -277,10 +284,11 @@
     var ev = [];
     list.forEach(function (r) {
       var t = tujOf(r), lw = canSeeFor(r.sid) && r.d === TODAY ? lewatRekod(r) : null;
+      var nt = r.nota && (r.tuj !== 'Urusan peribadi' || canSeePrivate(r)) ? '<small class="nt">' + esc(r.nota) + '</small>' : '';
       if (r.d !== TODAY) {
-        ev.push('<div class="ev o"><div class="t">—</div><div class="dot"></div><div class="b">Tugas luar · ' + destOf(r) + '<small>' + (t ? t + ' · ' : '') + 'sejak ' + fmtShort(r.d) + ', ' + hinggaTxt(r) + '</small></div></div>');
+        ev.push('<div class="ev o"><div class="t">—</div><div class="dot"></div><div class="b">Tugas luar · ' + destOf(r) + '<small>' + (t ? t + ' · ' : '') + 'sejak ' + fmtShort(r.d) + ', ' + hinggaTxt(r) + '</small>' + nt + '</div></div>');
       } else {
-        ev.push('<div class="ev o"><div class="t">' + r.keluar + '</div><div class="dot"></div><div class="b">Keluar · ' + destOf(r) + '<small>' + (t ? t + ' · ' : '') + (r.pulang ? (r.hingga ? 'tugas luar ' + hinggaTxt(r) : 'tidak kembali hari ini') : 'jangka pulang ' + r.jangka) + '</small>' +
+        ev.push('<div class="ev o"><div class="t">' + r.keluar + '</div><div class="dot"></div><div class="b">Keluar · ' + destOf(r) + '<small>' + (t ? t + ' · ' : '') + (r.pulang ? (r.hingga ? 'tugas luar ' + hinggaTxt(r) : 'tidak kembali hari ini') : 'jangka pulang ' + r.jangka) + '</small>' + nt +
           (lw ? '<small class="flag">Direkod lewat · disimpan ' + lw + '</small>' : '') + '</div></div>');
       }
       if (r.masuk) ev.push('<div class="ev"><div class="t">' + r.masuk + '</div><div class="dot"></div><div class="b">Masuk pejabat<small>' + (r.d === TODAY ? dur(toMin(r.masuk) - toMin(r.keluar)) + ' di luar' : 'tugas luar selesai') + '</small></div></div>');

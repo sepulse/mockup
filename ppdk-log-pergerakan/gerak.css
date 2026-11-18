@@ -327,3 +327,6 @@ button.pr.lewat:hover{background:var(--warn-bg)}
 .q-out .btn-line{border-color:rgba(242,240,234,.4);color:var(--on-dark)}
 .q-out .text-btn{color:var(--mint)}
 .q-out :focus-visible{outline-color:var(--mint)}
+/* Catatan pegawai dalam garis masa & kad Buku */
+small.nt{display:block;margin-top:2px;font-style:italic;color:var(--ink-2)}
+.ent .w small.nt{margin-top:2px}

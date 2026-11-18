@@ -41,7 +41,7 @@
   function render() {
     var m = G.me(), st = G.status(m.id), r = st.r, now = G.now();
     var baru = !G.LOG.some(function (x) { return x.sid === m.id && !x.batal; });
-    var liveTxt = 'Status: ' + G.STL[st.k] + (r && r.jangka && !r.pulang ? ', jangka pulang ' + r.jangka : '');
+    var liveTxt = 'Status: ' + G.stLabel(st) + (r && r.jangka && !r.pulang ? ', jangka pulang ' + r.jangka : '');
     if ($('live').textContent !== liveTxt) $('live').textContent = liveTxt;
     $('hi').textContent = G.greet() + ', ' + G.first(m.n);
     $('sub').innerHTML = G.fmtDate(G.TODAY) + ' · <b>' + now + '</b>';
@@ -88,7 +88,7 @@
     $('stat').innerHTML = h;
     var list = G.today(m.id);
     $('tl').innerHTML = list.length ? G.tlHtml(list) : '<p class="empty">Belum ada pergerakan hari ini.</p>';
-    var out = G.STAF.filter(function (s) { return s.id !== m.id && G.status(s.id).r; });
+    var out = G.STAF.filter(function (s) { var k = G.status(s.id).k; return s.id !== m.id && (k === 'luar' || k === 'lewat'); });
     $('oh').innerHTML = 'Di luar sekarang <span class="muted" style="font:600 15px var(--mono)">' + out.length + '</span>';
     $('out').innerHTML = out.length ? out.slice(0, 6).map(function (s) { return G.prRow(s, { noSt: true }); }).join('') +
       (out.length > 6 ? '<a class="pr" href="papan.html?f=luar" style="display:block;text-align:center;min-height:0;color:var(--petrol);font-weight:600">Lihat semua (' + out.length + ')</a>' : '')
@@ -103,10 +103,20 @@
       kicker: 'Keluar ' + r.keluar + ' · ' + G.esc(r.dest), title: 'Ubah jangka pulang',
       body: '<label class="lbl" for="jt">Jangka pulang</label><input type="time" id="jt" value="' + (r.jangka || G.hhmm(base + 60)) + '"' + (r.pulang ? ' disabled' : '') + '>' +
         '<div class="chips">' + opts + '<button type="button" class="chip" id="jp" aria-pressed="' + !!r.pulang + '">Tidak kembali hari ini</button></div>' +
-        '<p class="err" id="je" hidden></p><p class="hint">Rakan di Papan akan melihat masa baharu.</p>',
+        '<p class="hint" id="jw"></p><p class="err" id="je" role="alert" hidden></p><p class="hint">Rakan di Papan akan melihat masa baharu.</p>',
       foot: '<button class="btn btn-line" type="button" data-close>Batal</button><button class="btn btn-ink" type="button" id="js">Simpan</button>',
       onOpen: function (d) {
+        var wk = G.wkOf(G.me().id);
+        function wkWarn() {
+          var t = d.querySelector('#jt').value, p = d.querySelector('#jp').getAttribute('aria-pressed') === 'true';
+          d.querySelector('#jw').innerHTML = !p && t && G.toMin(t) > G.toMin(wk.tamat)
+            ? '<span class="warn-t">' + G.icon('warn') + 'Selepas waktu pulang anda (' + wk.tamat + '). Jika tidak kembali ke pejabat, pilih <b>Tidak kembali hari ini</b>.</span>'
+            : 'Waktu kerja anda: <b>' + wk.mula + '–' + wk.tamat + '</b>';
+        }
+        wkWarn();
+        d.querySelector('#jt').addEventListener('input', wkWarn);
         d.addEventListener('click', function (e) {
+          setTimeout(wkWarn, 0);
           var c = e.target.closest('[data-t]'); if (c) { d.querySelector('#jt').value = c.getAttribute('data-t'); d.querySelector('#jp').setAttribute('aria-pressed', 'false'); d.querySelector('#jt').disabled = false; }
           var jp = e.target.closest('#jp'); if (jp) { var on = jp.getAttribute('aria-pressed') !== 'true'; jp.setAttribute('aria-pressed', on); d.querySelector('#jt').disabled = on; }
           if (e.target.closest('#js')) {
@@ -121,7 +131,10 @@
   function batalDrawer(r) {
     G.drawer({
       kicker: 'Keluar ' + r.keluar + ' · ' + G.esc(r.dest), title: 'Batal rekod keluar?',
-      body: '<p>Guna jika anda tersalah tekan atau tidak jadi keluar. Rekod ini dibuang daripada Papan, tetapi kekal dalam Buku sebagai <b>Dibatalkan</b> untuk semakan ketua sektor dan KPPD.</p><p class="hint" style="margin-top:10px">Batal hanya dibenarkan dalam ' + G.HAD_BATAL + ' minit selepas masa keluar. Jika anda sudah kembali, tekan <b>Masuk pejabat</b> sebaliknya.</p>',
+      body: '<p>Guna jika anda tersalah tekan atau tidak jadi keluar. Rekod ini dibuang daripada Papan, tetapi kekal dalam Buku sebagai <b>Dibatalkan</b> untuk semakan ketua sektor dan KPPD.</p>' +
+        (G.toMin(r.keluar) > G.toMin(G.now())
+          ? '<p class="hint" style="margin-top:10px">Rekod ini belum bermula (keluar ' + r.keluar + '). Selepas masa keluar, batal dibenarkan dalam ' + G.HAD_BATAL + ' minit sahaja.</p>'
+          : '<p class="hint" style="margin-top:10px">Batal hanya dibenarkan dalam ' + G.HAD_BATAL + ' minit selepas rekod dibuat. Jika anda sudah kembali, tekan <b>Masuk pejabat</b> sebaliknya.</p>'),
       foot: '<button class="btn btn-line" type="button" data-close>Jangan batal</button><button class="btn btn-dark" type="button" id="bs">Batal rekod</button>',
       onOpen: function (d) {
         d.querySelector('#bs').addEventListener('click', function () {
@@ -135,13 +148,16 @@
     G.drawer({
       kicker: G.fmtDate(r.d) + ' · ' + G.esc(r.dest), title: 'Isi masa masuk',
       body: '<p>Anda keluar pada <b>' + r.keluar + '</b>' + (r.jangka ? ' dengan jangka pulang <b>' + r.jangka + '</b>' : '') + ', tetapi tiada rekod masuk.</p>' +
-        '<label class="lbl" for="ft" style="margin-top:14px">Masa anda kembali ke pejabat</label><input type="time" id="ft" value="' + (r.jangka || G.hhmm(G.toMin(r.keluar) + 60)) + '">' +
-        '<p class="err" id="fe" hidden></p><p class="hint">Buku akan menunjukkan masa ini bersama tanda <b>dibetulkan</b> dan masa pembetulan.</p>',
+        '<label class="lbl" for="ft" style="margin-top:14px">Masa anda kembali ke pejabat</label><input type="time" id="ft" min="' + r.keluar + '" max="' + G.tamatOf(r.sid) + '" value="' + (r.jangka && G.toMin(r.jangka) <= G.toMin(G.tamatOf(r.sid)) ? r.jangka : G.tamatOf(r.sid)) + '">' +
+        '<div class="chips">' + (r.jangka ? '<button type="button" class="chip" data-ft="' + r.jangka + '">Jangka pulang · ' + r.jangka + '</button>' : '') + '<button type="button" class="chip" data-ft="' + G.tamatOf(r.sid) + '">Waktu pulang · ' + G.tamatOf(r.sid) + '</button></div>' +
+        '<p class="err" id="fe" role="alert" hidden></p><p class="hint">Antara ' + r.keluar + ' dan waktu pulang anda (' + G.tamatOf(r.sid) + '). Buku akan menunjukkan masa ini bersama tanda <b>Dibetulkan</b> dan masa pembetulan.</p>',
       foot: '<button class="btn btn-line" type="button" data-close>Batal</button><button class="btn btn-ink" type="button" id="fs">Simpan</button>',
       onOpen: function (d) {
+        d.addEventListener('click', function (e) { var c = e.target.closest('[data-ft]'); if (c) d.querySelector('#ft').value = c.getAttribute('data-ft'); });
         d.querySelector('#fs').addEventListener('click', function () {
-          var t = d.querySelector('#ft').value, er = d.querySelector('#fe');
+          var t = d.querySelector('#ft').value, er = d.querySelector('#fe'), tm = G.tamatOf(r.sid);
           if (!t || G.toMin(t) <= G.toMin(r.keluar)) { er.textContent = 'Masa masuk mesti selepas ' + r.keluar + '.'; er.hidden = false; return; }
+          if (G.toMin(t) > G.toMin(tm)) { er.textContent = 'Masa masuk mesti sebelum waktu pulang anda (' + tm + ').'; er.hidden = false; return; }
           if (G.isiMasuk(r, t)) { G.closeDrawer(); G.toast('Masa masuk <b>' + t + '</b> disimpan'); render(); }
         });
       }

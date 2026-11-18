@@ -55,6 +55,7 @@
       <input type="date" id="hingga" aria-describedby="h-hingga e-masa">
       <p class="hint" id="h-hingga">Untuk kursus atau program beberapa hari. Biarkan hari ini jika hanya hari ini.</p>
     </div>
+    <p class="hint lk-note" id="h-cuti" hidden>Urusan peribadi tidak boleh direkod sebagai tugas luar beberapa hari. Untuk cuti, guna <a href="saya.html">Rekod cuti / tidak hadir</a> di Status saya.</p>
     <p class="err" id="e-masa" role="alert" hidden></p>
 
     <div class="prev" id="prev"></div>
@@ -75,7 +76,7 @@
   var m = G.me(), tuj = '';
 
   var open = G.openOf(m.id);
-  if (open) {
+  if (open && !G.status(m.id).selesai) {
     var akan = G.toMin(open.keluar) > G.toMin(G.now());
     $('f').hidden = true; $('dah').hidden = false;
     $('dah').innerHTML = '<div class="stat luar"><div class="k"><i></i>' + (akan ? 'Rekod keluar ' + open.keluar + ' sudah disimpan' : 'Anda masih direkod di luar') + '</div><div class="dest">' + G.icon('pin') + G.esc(open.dest) + '</div><p class="s">' + (akan ? 'Batal rekod itu di Status saya jika mahu menukarnya.' : 'Keluar ' + open.keluar + '. Tekan Masuk pejabat dahulu sebelum rekod keluar baharu.') + '</p><a class="btn btn-ink go" href="saya.html">Ke Status saya</a></div>';
@@ -195,18 +196,23 @@
      Tiada "rehat"/"hujung hari" tetap kerana waktu kerja (WBB) berbeza bagi setiap pegawai. */
   var wk = G.wkOf(m.id);
   function qbChips() {
+    var fa = document.activeElement, keep = fa && $('qb').contains(fa) ? (fa.id ? '#' + fa.id : '[data-n="' + fa.getAttribute('data-n') + '"]') : null;
     var p = G.toMin($('pergi').value || now), b = $('balik').value;
     $('qb').innerHTML = [30, 60, 120, 180, 240].map(function (n) {
       var t = G.hhmm(p + n);
       return '<button type="button" class="chip" data-n="' + n + '" data-t="' + t + '" aria-pressed="' + (!pul && b === t) + '">' + (n < 60 ? n + ' min' : n / 60 + ' jam') + '</button>';
     }).join('') + '<button type="button" class="chip" id="pulang" aria-pressed="' + pul + '">' + G.icon('home') + 'Tidak kembali hari ini</button>';
+    $('pulang').setAttribute('aria-controls', 'w-hingga'); $('pulang').setAttribute('aria-expanded', String(pul));
+    if (keep) { var el = $('qb').querySelector(keep); if (el) el.focus(); }
   }
   function update() {
     now = G.now();
     var p = $('pergi').value, b = $('balik').value, dest = $('dest').value.trim();
-    var hg = pul && $('hingga').value > G.TODAY ? $('hingga').value : '';
+    var privNow = tuj === 'Urusan peribadi';
+    var hg = pul && !privNow && $('hingga').value > G.TODAY ? $('hingga').value : '';
     $('balik').disabled = pul;
-    $('w-hingga').hidden = !pul;
+    $('w-hingga').hidden = !pul || privNow;
+    $('h-cuti').hidden = !(pul && privNow);
     var later = p && G.toMin(p) > G.toMin(now), undur = p ? G.toMin(now) - G.toMin(p) : 0;
     $('h-pergi').textContent = later ? 'Rekod dibuat lebih awal; status bertukar pada ' + p + '.'
       : undur > G.HAD_UNDUR ? 'Tidak boleh lebih ' + G.dur(G.HAD_UNDUR) + ' sebelum sekarang (' + now + ').'
@@ -247,7 +253,7 @@
     $('e-dest').hidden = !!dest; if (!dest) { bad = bad || $('dest'); $('dest').setAttribute('aria-invalid', 'true'); } else $('dest').removeAttribute('aria-invalid');
     $('e-tuj').hidden = !!tuj; if (!tuj) bad = bad || $('tuj').firstChild;
     var em = '';
-    var hg = $('hingga').value, emEl = null;
+    var hg = tuj === 'Urusan peribadi' ? G.TODAY : $('hingga').value, emEl = null;
     if (!p) { em = 'Isi masa pergi.'; emEl = 'pergi'; }
     else if (G.toMin(G.now()) - G.toMin(p) > G.HAD_UNDUR) { em = 'Masa pergi tidak boleh lebih ' + G.dur(G.HAD_UNDUR) + ' sebelum sekarang. Untuk pembetulan, hubungi ketua sektor.'; emEl = 'pergi'; }
     else if (!pul && !b) { em = 'Isi masa balik atau pilih "Tidak kembali hari ini".'; emEl = 'balik'; }
