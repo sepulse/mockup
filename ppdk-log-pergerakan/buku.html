@@ -15,6 +15,7 @@
   <div class="page-h"><div><div class="eyebrow mono">Log Pergerakan · Buku</div><h1>Buku Pergerakan</h1><div class="sub" id="sub"></div></div>
     <div class="tags only-lead"><button class="btn btn-line btn-sm" type="button" id="csv"><svg class="i" viewBox="0 0 24 24"><path d="M12 4v11M7 10l5 5 5-5M4 20h16"/></svg>Muat turun CSV</button><button class="btn btn-line btn-sm hide-m" type="button" id="cetak"><svg class="i" viewBox="0 0 24 24"><path d="M6 9V3h12v6M6 18H3v-8h18v8h-3"/><rect x="6" y="14" width="12" height="7"/></svg>Cetak</button></div>
   </div>
+  <div id="rnote"></div>
   <div class="toolbar">
     <div class="dnav"><button class="iconbtn" type="button" id="prev" aria-label="Hari sebelumnya"><svg class="i" viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg></button><b id="dlbl"></b><button class="iconbtn" type="button" id="next" aria-label="Hari berikutnya"><svg class="i" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg></button><button class="text-btn" type="button" id="tdy">Hari ini</button></div>
     <select id="sek" aria-label="Sektor" class="only-kppd"></select>
@@ -60,7 +61,7 @@
     if (r.batal) return '<span class="flag">Dibatalkan ' + r.batal + '</span>';
     if (r.masuk) return r.masuk + (r.masukD && r.masukD !== r.d ? ' <small class="muted">(' + G.fmtShort(r.masukD) + ')</small>' : '') + (r.betul && G.canSeeFor(r.sid) ? '<small class="flag">Dibetulkan ' + r.betul + '</small>' : '');
     if (r.hingga) return 'Tugas luar';
-    if (r.pulang) return r.d === G.TODAY && G.toMin(G.now()) < G.toMin(G.TAMAT_KERJA) ? 'Tidak kembali' : 'Terus pulang';
+    if (r.pulang) return r.d === G.TODAY && G.toMin(G.now()) < G.toMin(G.tamatOf(r.sid)) ? 'Tidak kembali' : 'Terus pulang';
     if (r.d === G.TODAY) return G.toMin(r.keluar) > G.toMin(G.now()) ? 'Belum keluar' : 'Masih di luar';
     return '<span class="flag">Tiada rekod masuk</span>';
   }
@@ -86,6 +87,7 @@
   function render() {
     var rows = scope(), staf = G.role() === 'staf', ab = absen();
     var nBatal = rows.filter(function (r) { return r.batal; }).length, nAb = ab.filter(function (c) { return !c.batal; }).length;
+    $('rnote').innerHTML = G.roleNote('buku');
     $('dlbl').textContent = G.fmtDate(st.d, true);
     $('sub').textContent = scopeLbl() + ' · ' + (rows.length - nBatal) + ' rekod keluar' + (nBatal ? ' · ' + nBatal + ' dibatalkan' : '') + (nAb ? ' · ' + nAb + ' tidak hadir' : '');
     $('prev').disabled = st.d <= MIN_D; $('next').disabled = st.d >= G.TODAY; $('tdy').hidden = st.d === G.TODAY;
@@ -95,7 +97,7 @@
       var tbl = '<div class="tbl-wrap"><table class="tbl"><thead><tr>' + (staf ? '' : '<th>Pegawai</th><th>Sektor</th>') + '<th>Keluar</th><th>Destinasi</th><th>Tujuan</th><th>Jangka</th><th>Masuk</th></tr></thead><tbody>' +
         rows.map(function (r) {
           var s = G.staf(r.sid);
-          return '<tr' + (r.batal ? ' class="cx"' : '') + '>' + (staf ? '' : '<td><b>' + G.esc(s.n) + '</b></td><td>' + G.sk(s.sek) + '</td>') + '<td class="m">' + keluarTxt(r) + '</td><td>' + G.destOf(r) + (r.nota && G.canSeePrivate(r) ? '<div class="muted" style="font-size:13px">' + G.esc(r.nota) + '</div>' : '') + '</td><td>' + (G.tujOf(r) || '—') + '</td><td class="m">' + jangkaTxt(r) + '</td><td class="m">' + masukTxt(r) + '</td></tr>';
+          return '<tr' + (r.batal ? ' class="cx"' : '') + '>' + (staf ? '' : '<td><b>' + G.esc(s.n) + '</b></td><td>' + G.sk(s.sek) + '</td>') + '<td class="m">' + keluarTxt(r) + '</td><td>' + G.destOf(r) + (r.nota && G.canSeePrivate(r) ? '<div class="muted" style="font-size:13px">' + G.esc(r.nota) + '</div>' : '') + '</td><td>' + (G.tujOf(r) || '—') + '</td><td class="m">' + jangkaTxt(r) + '</td><td' + (r.masuk && !r.batal ? ' class="m"' : '') + '>' + masukTxt(r) + '</td></tr>';
         }).join('') + '</tbody></table></div>';
       var cards = '<div class="cards-m">' + rows.map(function (r) {
         var s = G.staf(r.sid), t = G.tujOf(r);

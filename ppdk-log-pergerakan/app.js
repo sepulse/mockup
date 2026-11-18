@@ -47,29 +47,32 @@
     { k: 'Pengurusan', n: 'Pengurusan (termasuk Unit ICT)' }
   ];
   function sekName(k) { for (var i = 0; i < SEKTOR.length; i++) if (SEKTOR[i].k === k) return SEKTOR[i].n; return k; }
-  function sk(k) { return '<span class="sk" style="--sc:var(--s-' + (k === 'Pengurusan' ? 'PGR' : k) + ')" title="' + sekName(k) + '">' + (k === 'Pengurusan' ? 'PGR' : k) + '</span>'; }
+  function sk(k) { return '<span class="sk" style="--sc:var(--s-' + (k === 'Pengurusan' ? 'PGR' : k) + ')" title="' + sekName(k) + '"><span aria-hidden="true">' + (k === 'Pengurusan' ? 'PGR' : k) + '</span><span class="sr">' + sekName(k) + '</span></span>'; }
 
   var STAF = [
-    { id: 's1', n: 'Nur Aina Hashim', sek: 'SPb', jaw: 'Pegawai SISC+ Matematik' },
-    { id: 's2', n: 'Rahman Jali', sek: 'SPb', jaw: 'Ketua Sektor Pembelajaran', ketua: true },
-    { id: 's3', n: 'Ahmad Faizal Rosli', sek: 'SPb', jaw: 'Pegawai SISC+ Sains' },
-    { id: 's4', n: 'Lim Mei Ling', sek: 'SPb', jaw: 'Pegawai SISC+ Bahasa Inggeris' },
-    { id: 's5', n: 'Siti Hajar Osman', sek: 'SPS', jaw: 'Ketua Sektor Pengurusan Sekolah', ketua: true },
-    { id: 's6', n: 'Kevin anak Jimbun', sek: 'SPS', jaw: 'Pegawai Pengurusan Sekolah' },
-    { id: 's7', n: 'Norazlina Kamal', sek: 'SPbM', jaw: 'Ketua Sektor Pembangunan Murid', ketua: true },
-    { id: 's8', n: 'Hafiz Rahim', sek: 'SPbM', jaw: 'Pegawai Sukan' },
-    { id: 's16', n: 'Patricia anak Nyandang', sek: 'SPsK', jaw: 'Ketua Sektor Psikologi & Kaunseling', ketua: true },
-    { id: 's9', n: 'Dayang Norliza Abang', sek: 'SPsK', jaw: 'Pegawai Psikologi' },
-    { id: 's17', n: 'Tan Boon Huat', sek: 'SPP', jaw: 'Ketua Sektor Pentaksiran & Peperiksaan', ketua: true },
-    { id: 's10', n: 'Jason Ting', sek: 'SPP', jaw: 'Pegawai Peperiksaan' },
-    { id: 's11', n: 'Rosnah Abdullah', sek: 'SPr', jaw: 'Ketua Sektor Perancangan', ketua: true },
-    { id: 's12', n: 'Mohd Amirul Hakim', sek: 'SPr', jaw: 'Pegawai Data' },
-    { id: 's18', n: 'Salmah Bujang', sek: 'Pengurusan', jaw: 'Ketua Unit Pengurusan', ketua: true },
-    { id: 's13', n: 'Wong Kah Seng', sek: 'Pengurusan', jaw: 'Juruteknik Unit ICT' },
-    { id: 's14', n: 'Farah Nadia Yusof', sek: 'Pengurusan', jaw: 'Pembantu Tadbir' },
-    { id: 's15', n: 'Ismail Bujang', sek: 'Pengurusan', jaw: 'Pemandu' },
-    { id: 's0', n: 'Zulkifli Ahmad', sek: 'Pengurusan', jaw: 'Ketua Pegawai Pendidikan Daerah', kppd: true }
+    { id: 's1', n: 'Nur Aina Hashim', sek: 'SPb', jaw: 'Pegawai SISC+ Matematik', wk: '07:30-16:30' },
+    { id: 's2', n: 'Rahman Jali', sek: 'SPb', jaw: 'Ketua Sektor Pembelajaran', ketua: true, wk: '08:00-17:00' },
+    { id: 's3', n: 'Ahmad Faizal Rosli', sek: 'SPb', jaw: 'Pegawai SISC+ Sains', wk: '08:30-17:30' },
+    { id: 's4', n: 'Lim Mei Ling', sek: 'SPb', jaw: 'Pegawai SISC+ Bahasa Inggeris', wk: '07:30-16:30' },
+    { id: 's5', n: 'Siti Hajar Osman', sek: 'SPS', jaw: 'Ketua Sektor Pengurusan Sekolah', ketua: true, wk: '08:00-17:00' },
+    { id: 's6', n: 'Kevin anak Jimbun', sek: 'SPS', jaw: 'Pegawai Pengurusan Sekolah', wk: '07:30-16:30' },
+    { id: 's7', n: 'Norazlina Kamal', sek: 'SPbM', jaw: 'Ketua Sektor Pembangunan Murid', ketua: true, wk: '08:00-17:00' },
+    { id: 's8', n: 'Hafiz Rahim', sek: 'SPbM', jaw: 'Pegawai Sukan', wk: '07:30-16:30' },
+    { id: 's16', n: 'Patricia anak Nyandang', sek: 'SPsK', jaw: 'Ketua Sektor Psikologi & Kaunseling', ketua: true, wk: '08:00-17:00' },
+    { id: 's9', n: 'Dayang Norliza Abang', sek: 'SPsK', jaw: 'Pegawai Psikologi', wk: '08:30-17:30' },
+    { id: 's17', n: 'Tan Boon Huat', sek: 'SPP', jaw: 'Ketua Sektor Pentaksiran & Peperiksaan', ketua: true, wk: '07:30-16:30' },
+    { id: 's10', n: 'Jason Ting', sek: 'SPP', jaw: 'Pegawai Peperiksaan', wk: '08:00-17:00' },
+    { id: 's11', n: 'Rosnah Abdullah', sek: 'SPr', jaw: 'Ketua Sektor Perancangan', ketua: true, wk: '08:00-17:00' },
+    { id: 's12', n: 'Mohd Amirul Hakim', sek: 'SPr', jaw: 'Pegawai Data', wk: '08:30-17:30' },
+    { id: 's18', n: 'Salmah Bujang', sek: 'Pengurusan', jaw: 'Ketua Unit Pengurusan', ketua: true, wk: '08:00-17:00' },
+    { id: 's13', n: 'Wong Kah Seng', sek: 'Pengurusan', jaw: 'Juruteknik Unit ICT', wk: '07:30-16:30' },
+    { id: 's14', n: 'Farah Nadia Yusof', sek: 'Pengurusan', jaw: 'Pembantu Tadbir', wk: '08:00-17:00' },
+    { id: 's15', n: 'Ismail Bujang', sek: 'Pengurusan', jaw: 'Pemandu', wk: '07:30-16:30' },
+    { id: 's0', n: 'Zulkifli Ahmad', sek: 'Pengurusan', jaw: 'Ketua Pegawai Pendidikan Daerah', kppd: true, wk: '08:00-17:00' }
   ];
+  /* wk = waktu bekerja berperingkat (WBB) pegawai; dalam produksi daripada profil staf. */
+  function wkOf(sid) { var s = staf(sid), p = (s && s.wk || '08:00-' + TAMAT_KERJA).split('-'); return { mula: p[0], tamat: p[1] }; }
+  function tamatOf(sid) { return wkOf(sid).tamat; }
   function staf(id) { for (var i = 0; i < STAF.length; i++) if (STAF[i].id === id) return STAF[i]; return null; }
   /* Penyemak Buku bagi setiap sektor (Pengurusan: Ketua Unit Pengurusan). KPPD menyemak semua. */
   function ketuaOf(sek) { for (var i = 0; i < STAF.length; i++) if (STAF[i].sek === sek && STAF[i].ketua) return STAF[i]; return null; }
@@ -82,10 +85,10 @@
     kppd: { id: 'kppd', label: 'KPPD', sid: 's0' }
   };
   var TUJUAN = ['Lawatan sekolah', 'Mesyuarat', 'Bengkel / kursus', 'Program / acara', 'Urusan rasmi lain', 'Urusan peribadi'];
-  var TEMPAT = ['SK Bukit Indah', 'SMK Permata Kuching', 'SK Seri Rimba', 'SMK Taman Mutiara', 'SK Desa Cempaka', 'SK Sungai Teduh',
-    'SJK(C) Chung Hwa Damai', 'SK Sri Kenyalang', 'SMK Bandar Baru Kenari', 'SK Pantai Damai', 'SK Kampung Pinang', 'SK Lembah Hijau',
-    'SMK Seri Matang Baru', 'SK Tanjung Mawar', 'SK Puncak Batu', 'SMK Teluk Bayu', 'Jabatan Pendidikan Negeri', 'Pejabat Pos', 'Bank'];
-  var TODAY = '2026-10-15', TAMAT_KERJA = '17:00';
+  /* Destinasi: senarai rasmi sekolah PPD Kuching (sekolah.js, daripada direktori D1) + tempat lain yang biasa. */
+  var LAIN = ['Jabatan Pendidikan Negeri Sarawak', 'Pejabat Pos', 'Bank', 'Klinik Kesihatan', 'Stadium Negeri Sarawak', 'IPG Kampus Batu Lintang'];
+  var TEMPAT = (window.SEKOLAH || []).map(function (x) { return x.n; }).concat(LAIN);
+  var TODAY = '2026-10-15', TAMAT_KERJA = '17:00'; /* lalai jika WBB pegawai tiada */
   /* Peraturan integriti (dalam produksi dikuatkuasakan oleh pelayan, jam pelayan). */
   var HAD_LEWAT = 15;      /* minit: rekod keluar dibuat lebih lewat daripada ini ditanda "Direkod lewat" */
   var HAD_UNDUR = 120;     /* minit: masa pergi tidak boleh lebih awal daripada ini sebelum sekarang */
@@ -105,34 +108,39 @@
       L.push(r);
     }
     /* Hari lepas */
-    a('s1', '2026-10-12', '08:30', '12:00', '11:48', 'SK Desa Cempaka', 'Lawatan sekolah');
-    a('s1', '2026-10-12', '14:30', '16:00', '15:52', 'SMK Taman Mutiara', 'Lawatan sekolah');
-    a('s3', '2026-10-12', '08:15', '13:00', '13:20', 'SK Sungai Teduh', 'Lawatan sekolah');
-    a('s5', '2026-10-12', '09:00', '11:00', '10:40', 'Jabatan Pendidikan Negeri', 'Mesyuarat');
+    a('s1', '2026-10-12', '08:30', '12:00', '11:48', 'SK BAKO', 'Lawatan sekolah');
+    a('s1', '2026-10-12', '14:30', '16:00', '15:52', 'SMK PETRA JAYA', 'Lawatan sekolah');
+    a('s3', '2026-10-12', '08:15', '13:00', '13:20', 'SK SANTUBONG', 'Lawatan sekolah');
+    a('s5', '2026-10-12', '09:00', '11:00', '10:40', 'Jabatan Pendidikan Negeri Sarawak', 'Mesyuarat');
     a('s15', '2026-10-12', '10:00', '10:45', '10:35', 'Pejabat Pos', 'Urusan rasmi lain');
     a('s14', '2026-10-12', '12:40', '13:30', '13:25', 'Klinik Kesihatan', 'Urusan peribadi');
-    a('s1', '2026-10-13', '08:05', null, null, 'Jabatan Pendidikan Negeri', 'Bengkel / kursus', { pulang: true });
-    a('s4', '2026-10-13', '08:20', '12:30', '12:15', 'SK Bukit Indah', 'Lawatan sekolah');
-    a('s8', '2026-10-13', '07:40', null, null, 'Stadium Negeri', 'Program / acara', { pulang: true });
-    a('s10', '2026-10-13', '09:30', '11:00', '11:05', 'SMK Teluk Bayu', 'Urusan rasmi lain');
-    a('s11', '2026-10-13', '14:00', '16:30', '16:10', 'Jabatan Pendidikan Negeri', 'Mesyuarat');
-    a('s1', '2026-10-14', '09:00', '12:30', '12:41', 'SK Seri Rimba', 'Lawatan sekolah');
-    a('s1', '2026-10-14', '14:15', '16:00', null, 'SK Lembah Hijau', 'Lawatan sekolah'); /* lupa rekod masuk */
-    a('s2', '2026-10-14', '08:30', '10:30', '10:20', 'Jabatan Pendidikan Negeri', 'Mesyuarat');
+    a('s1', '2026-10-13', '08:05', null, null, 'Jabatan Pendidikan Negeri Sarawak', 'Bengkel / kursus', { pulang: true });
+    a('s4', '2026-10-13', '08:20', '12:30', '12:15', 'SK GREEN ROAD', 'Lawatan sekolah');
+    a('s8', '2026-10-13', '07:40', null, null, 'Stadium Negeri Sarawak', 'Program / acara', { pulang: true });
+    a('s10', '2026-10-13', '09:30', '11:00', '11:05', 'SMK TABUAN JAYA', 'Urusan rasmi lain');
+    a('s11', '2026-10-13', '14:00', '16:30', '16:10', 'Jabatan Pendidikan Negeri Sarawak', 'Mesyuarat');
+    a('s1', '2026-10-14', '09:00', '12:30', '12:41', 'SK MUHIBBAH', 'Lawatan sekolah');
+    a('s1', '2026-10-14', '14:15', '16:00', null, 'SK SATRIA JAYA', 'Lawatan sekolah'); /* lupa rekod masuk */
+    a('s2', '2026-10-14', '08:30', '10:30', '10:20', 'Jabatan Pendidikan Negeri Sarawak', 'Mesyuarat');
     a('s4', '2026-10-14', '07:45', null, null, 'IPG Kampus Batu Lintang', 'Bengkel / kursus', { pulang: true, hingga: '2026-10-16', nota: 'Kursus Pentaksiran Bilik Darjah 3 hari' });
-    a('s9', '2026-10-14', '10:00', '11:00', null, 'SK Sri Kenyalang', 'Lawatan sekolah', { batal: '10:06' });
-    a('s6', '2026-10-14', '14:10', '16:00', null, 'SK Pantai Damai', 'Lawatan sekolah'); /* lupa rekod masuk */
-    a('s9', '2026-10-14', '08:45', '12:00', '11:50', 'SMK Seri Matang Baru', 'Program / acara');
-    a('s13', '2026-10-14', '10:15', '11:30', '11:25', 'SK Kampung Pinang', 'Urusan rasmi lain');
+    a('s9', '2026-10-14', '10:00', '11:00', null, 'SK KENYALANG', 'Lawatan sekolah', { batal: '10:06' });
+    a('s6', '2026-10-14', '14:10', '16:00', null, 'SK BUNTAL', 'Lawatan sekolah'); /* lupa rekod masuk */
+    a('s9', '2026-10-14', '08:45', '12:00', '11:50', 'SMK SEMERAH PADI', 'Program / acara');
+    a('s13', '2026-10-14', '10:15', '11:30', '11:25', 'SK KPG SENARI', 'Urusan rasmi lain');
     a('s12', '2026-10-14', '16:20', null, null, 'Bank', 'Urusan peribadi', { pulang: true });
     /* Hari ini, sebelum 08:42 */
-    a('s3', TODAY, '08:10', '12:30', null, 'SK Seri Rimba', 'Lawatan sekolah');
-    a('s5', TODAY, '08:00', '11:00', null, 'Jabatan Pendidikan Negeri', 'Mesyuarat');
-    a('s8', TODAY, '07:45', null, null, 'Stadium Negeri', 'Program / acara', { pulang: true });
-    a('s10', TODAY, '08:15', '08:35', null, 'SMK Taman Mutiara', 'Urusan rasmi lain', { dibuat: '08:38' }); /* direkod lewat */
+    a('s5', TODAY, '08:00', '11:00', null, 'Jabatan Pendidikan Negeri Sarawak', 'Mesyuarat');
+    a('s8', TODAY, '07:45', null, null, 'Stadium Negeri Sarawak', 'Program / acara', { pulang: true });
+    a('s10', TODAY, '08:15', '08:35', null, 'SMK PETRA JAYA', 'Urusan rasmi lain', { dibuat: '08:38' }); /* direkod lewat */
     a('s15', TODAY, '08:30', '10:00', null, 'Pejabat Pos', 'Urusan rasmi lain');
     a('s14', TODAY, '07:50', '08:30', '08:25', 'Klinik Kesihatan', 'Urusan peribadi');
-    a('s13', TODAY, '08:05', '09:30', null, 'SK Bukit Indah', 'Urusan rasmi lain');
+    a('s13', TODAY, '08:05', '09:30', null, 'SK GREEN ROAD', 'Urusan rasmi lain');
+    /* Urusan peribadi terbuka: menunjukkan beza peranan di Papan.
+       s3 (Sektor Pembelajaran): Staf nampak "Urusan peribadi"; Ketua Sektor Pembelajaran & KPPD nampak destinasi.
+       s9 (Sektor Psikologi & Kaunseling): hanya ketua sektornya dan KPPD nampak destinasi.
+       (s4 Lim Mei Ling sedang kursus 3 hari — tugas luar.) */
+    a('s3', TODAY, '08:20', '09:45', null, 'Klinik Kesihatan', 'Urusan peribadi');
+    a('s9', TODAY, '08:30', '10:00', null, 'Bank', 'Urusan peribadi');
     L.forEach(function (r) { if (!r.dibuat) r.dibuat = r.keluar; });
     return L;
   }
@@ -144,7 +152,7 @@
       { id: 'C3', sid: 's1', dari: '2026-10-22', hingga: '2026-10-23', jenis: 'Cuti rehat' }
     ];
   }
-  var KEY = 'ppdk-gerak-v2', KCUTI = 'ppdk-gerak-cuti-v2', KJAM = 'ppdk-gerak-jam';
+  var KEY = 'ppdk-gerak-v4', KCUTI = 'ppdk-gerak-cuti-v4', KJAM = 'ppdk-gerak-jam';
   var LOG, CUTI;
   try { LOG = JSON.parse(ss.get(KEY, 'null')) || seed(); } catch (e) { LOG = seed(); }
   try { CUTI = JSON.parse(ss.get(KCUTI, 'null')) || seedCuti(); } catch (e) { CUTI = seedCuti(); }
@@ -157,7 +165,7 @@
   function hhmm(m) { m = Math.max(0, Math.min(23 * 60 + 59, m)); return ('0' + Math.floor(m / 60)).slice(-2) + ':' + ('0' + m % 60).slice(-2); }
   function now() { return ss.get(KJAM, '08:42'); }
   function setNow(t) { ss.set(KJAM, t); document.dispatchEvent(new Event('jamchange')); }
-  function dur(min) { min = Math.abs(min); var h = Math.floor(min / 60), m = min % 60; return (h ? h + ' j ' : '') + (m || !h ? m + ' min' : '').trim(); }
+  function dur(min) { min = Math.abs(min); var h = Math.floor(min / 60), m = min % 60; return ((h ? h + ' j ' : '') + (m || !h ? m + ' min' : '')).trim(); }
   var HARI = ['Ahad', 'Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat', 'Sabtu'];
   var BULAN = ['Januari', 'Februari', 'Mac', 'April', 'Mei', 'Jun', 'Julai', 'Ogos', 'September', 'Oktober', 'November', 'Disember'];
   function dObj(iso) { var p = iso.split('-').map(Number); return new Date(p[0], p[1] - 1, p[2]); }
@@ -169,8 +177,14 @@
   function fmtShort(iso) { var d = dObj(iso); return HARI[d.getDay()].slice(0, 3) + ' ' + d.getDate() + ' ' + BULAN[d.getMonth()].slice(0, 3); }
   /* Rekod meliputi tarikh d: keluar pada d, atau tugas luar beberapa hari yang merentasi d (dan belum ditutup sebelum d). */
   function covers(r, d) { return r.d === d || (!!r.hingga && r.d < d && d <= r.hingga && !(r.masukD && r.masukD < d)); }
-  function openOf(sid) { /* rekod hari ini (atau tugas luar yang masih berjalan) yang belum ditutup */
-    for (var i = LOG.length - 1; i >= 0; i--) { var r = LOG[i]; if (r.sid === sid && !r.masuk && !r.batal && covers(r, TODAY)) return r; }
+  /* Rekod hari ini (atau tugas luar yang masih berjalan) yang belum ditutup. "Tidak kembali hari ini" ditutup automatik
+     pada waktu pulang (WBB) pegawai, kecuali tugas luar yang berterusan selepas hari ini. */
+  function openOf(sid) {
+    var tamat = toMin(now()) >= toMin(tamatOf(sid));
+    for (var i = LOG.length - 1; i >= 0; i--) {
+      var r = LOG[i];
+      if (r.sid === sid && !r.masuk && !r.batal && covers(r, TODAY) && !(r.pulang && tamat && !(r.hingga && r.hingga > TODAY))) return r;
+    }
     return null;
   }
   function today(sid) {
@@ -207,7 +221,23 @@
   }
   function canSeePrivate(r) { return canSeeFor(r.sid); }
   function destOf(r) { return r.tuj === 'Urusan peribadi' && !canSeePrivate(r) ? '<span class="muted">Urusan peribadi</span>' : esc(r.dest); }
-  function tujOf(r) { return r.tuj === 'Urusan peribadi' && !canSeePrivate(r) ? '' : esc(r.tuj); }
+  /* Jika pemapar boleh melihat urusan peribadi orang lain, tandakan dengan ikon kunci (maklumat terhad). */
+  function tujOf(r) {
+    if (r.tuj !== 'Urusan peribadi') return esc(r.tuj);
+    if (!canSeePrivate(r)) return '';
+    return r.sid === me().id ? esc(r.tuj) : '<span class="lk" title="Hanya pemilik, ketua sektornya dan KPPD nampak destinasi ini">' + icon('lock') + 'Urusan peribadi · terhad</span>';
+  }
+  /* Nota kecil: apa yang dilihat oleh peranan semasa (Papan / Buku). */
+  function roleNote(page) {
+    var r = role(), sek = sekName(me().sek), t;
+    if (page === 'papan') t = r === 'staf' ? 'Sebagai <b>Staf</b>: anda nampak status semua pegawai. Destinasi urusan peribadi rakan disembunyikan.'
+      : r === 'ketua' ? 'Sebagai <b>Ketua Sektor</b>: anda juga nampak destinasi urusan peribadi pegawai ' + esc(sek) + ' (bertanda ' + icon('lock') + ').'
+      : 'Sebagai <b>KPPD</b>: anda nampak destinasi urusan peribadi semua pegawai (bertanda ' + icon('lock') + ').';
+    else t = r === 'staf' ? 'Sebagai <b>Staf</b>: anda hanya nampak rekod anda sendiri.'
+      : r === 'ketua' ? 'Sebagai <b>Ketua Sektor</b>: anda nampak rekod ' + esc(sek) + ', dan boleh muat turun CSV serta cetak.'
+      : 'Sebagai <b>KPPD</b>: anda nampak rekod semua sektor (boleh tapis), dan boleh muat turun CSV serta cetak.';
+    return '<p class="note rnote">' + icon('info') + '<span>' + t + '</span></p>';
+  }
   function jenisCuti(c) { return canSeeFor(c.sid) ? esc(c.jenis) : 'Tidak hadir'; }
   /* Audit: rekod disimpan lebih HAD_LEWAT minit selepas masa keluar yang diisi. */
   function lewatRekod(r) { return r.dibuat && toMin(r.dibuat) - toMin(r.keluar) > HAD_LEWAT ? r.dibuat : null; }
@@ -230,7 +260,7 @@
       tm = r.d !== TODAY ? '<b><span class="pl-n">' + hinggaTxt(r) + '</span></b><small>sejak ' + fmtShort(r.d) + '</small>' : '<b>' + r.keluar + ' → ' + (r.pulang ? '<span class="pl-n">' + hinggaTxt(r) + '</span>' : r.jangka) + '</b>' +
         (st.k === 'lewat' ? '<small class="lw">Lepas ' + dur(st.lebih) + '</small>' : st.k === 'luar' && st.baki != null ? '<small>lagi ' + dur(st.baki) + '</small>' : '');
     }
-    return '<button type="button" class="pr' + (r ? '' : ' pej') + '" data-sid="' + s.id + '"><span class="avatar' + (r ? '' : ' pej') + '">' + ini(s.n) + '</span>' +
+    return '<button type="button" class="pr' + (r ? ' ' + st.k : st.k === 'cuti' ? ' cuti' : ' pej') + '" data-sid="' + s.id + '"><span class="avatar' + (r ? '' : ' pej') + '">' + ini(s.n) + '</span>' +
       '<div><div class="n">' + esc(s.n) + (s.id === me().id ? ' <span class="muted">(saya)</span>' : '') + '</div><div>' + sk(s.sek) + (opts && opts.noSt ? '' : stChip(st.k, st)) + '</div></div>' +
       '<div class="w">' + w + '</div><div class="tm">' + tm + '</div></button>';
   }
@@ -238,7 +268,7 @@
   function openPerson(sid) {
     var s = staf(sid), st = status(sid), list = today(sid);
     var body = '<div class="tags" style="margin-bottom:14px">' + sk(s.sek) + stChip(st.k, st) + '</div>' +
-      '<dl class="dl"><dt>Jawatan</dt><dd>' + esc(s.jaw) + '</dd><dt>Sektor</dt><dd>' + esc(sekName(s.sek)) + '</dd>' +
+      '<dl class="dl"><dt>Jawatan</dt><dd>' + esc(s.jaw) + '</dd><dt>Sektor</dt><dd>' + esc(sekName(s.sek)) + '</dd><dt>Waktu kerja</dt><dd>' + wkOf(sid).mula + '–' + wkOf(sid).tamat + '</dd>' +
       (st.k === 'cuti' ? '<dt>Tidak hadir</dt><dd>' + jenisCuti(st.c) + ' · ' + (st.c.dari === st.c.hingga ? fmtShort(st.c.dari) : fmtShort(st.c.dari) + ' – ' + fmtShort(st.c.hingga)) + '</dd>' : '') + '</dl>' +
       '<div class="section-t">Pergerakan hari ini</div>' + (list.length ? tlHtml(list) : '<p class="muted">Tiada rekod keluar hari ini.</p>');
     drawer({ kicker: fmtDate(TODAY), title: esc(s.n), body: body });
@@ -279,6 +309,7 @@
   function masuk(r, t) { return tryWrite(function () { r.masuk = t || now(); r.masukD = TODAY; }); }
   /* Isi masa masuk untuk rekod hari lepas: ditanda "dibetulkan" dengan masa pembetulan. */
   function isiMasuk(r, t) { return tryWrite(function () { r.masuk = t; r.betul = fmtShort(TODAY) + ' ' + now(); }); }
+  function batalMasuk(r) { return tryWrite(function () { r.masuk = null; delete r.masukD; }); }
   function ubahJangka(r, t, pulang) { return tryWrite(function () { if (pulang) { r.pulang = true; r.jangka = null; } else { delete r.pulang; delete r.hingga; r.jangka = t; } }); }
   /* Batal = tanda sahaja; rekod kekal dalam Buku untuk ketua sektor & KPPD. */
   function batal(r) { if (!bolehBatal(r)) return false; return tryWrite(function () { r.batal = now(); }); }
@@ -290,9 +321,15 @@
   function cutiBatal(c) { return tryWrite(function () { c.batal = now(); }); }
 
   /* ---------- Peranan & tema ---------- */
-  function role() { var r = new URLSearchParams(location.search).get('role') || store.get('ppdk-gerak-peranan', 'staf'); return ROLES[r] ? r : 'staf'; }
+  /* ?role= dalam URL (pautan pengenalan) disimpan sekali supaya kekal semasa navigasi; suis Demo selepas itu menang. */
+  var urlRole = new URLSearchParams(location.search).get('role');
+  if (ROLES[urlRole]) store.set('ppdk-gerak-peranan', urlRole);
+  var curRole = ROLES[urlRole] ? urlRole : store.get('ppdk-gerak-peranan', 'staf');
+  function role() { return ROLES[curRole] ? curRole : 'staf'; }
   function me() { return staf(ROLES[role()].sid); }
-  function setRole(r) { store.set('ppdk-gerak-peranan', r); document.documentElement.setAttribute('data-role', r); refreshBars(); document.dispatchEvent(new CustomEvent('rolechange', { detail: r })); }
+  function setRole(r) {
+    curRole = r; store.set('ppdk-gerak-peranan', r);
+    var u = new URL(location.href); if (u.searchParams.has('role')) { u.searchParams.delete('role'); history.replaceState(null, '', u.pathname + u.search + u.hash); } document.documentElement.setAttribute('data-role', r); refreshBars(); document.dispatchEvent(new CustomEvent('rolechange', { detail: r })); }
   function theme() { var t = store.get('ppdk-demo-tema', ''); if (!t) t = (window.matchMedia && matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light'; return t; }
   function setTheme(t) { store.set('ppdk-demo-tema', t); document.documentElement.setAttribute('data-theme', t); refreshBars(); }
   document.documentElement.setAttribute('data-role', role());
@@ -318,7 +355,7 @@
     var tl = document.getElementById('mtool');
     if (tl) { var open = !document.getElementById('mpanel').hidden; tl.innerHTML = toolHtml(); if (open) { document.getElementById('mpanel').hidden = false; document.getElementById('mfab').setAttribute('aria-expanded', 'true'); } }
     var who = document.getElementById('who'); if (who) who.innerHTML = whoHtml();
-    var ma = document.getElementById('mavatar'); if (ma) ma.textContent = ini(me().n);
+    var ma = document.getElementById('mavatar'); if (ma) { ma.textContent = ini(me().n); ma.setAttribute('aria-label', 'Akaun: ' + me().n); }
   }
   function whoHtml() { var m = me(); return '<span class="avatar">' + ini(m.n) + '</span><div><b>' + esc(m.n) + '</b><span>' + esc(m.jaw) + '</span></div>'; }
   document.addEventListener('jamchange', refreshBars);
@@ -346,7 +383,7 @@
       '<nav class="nav" aria-label="Ruang kerja">' + navHtml + '</nav>' +
       '<div class="side-foot"><div class="who" id="who">' + whoHtml() + '</div>' +
       '<a href="index.html">' + icon('logout') + 'Log keluar</a></div></aside>' +
-      '<div class="main"><header class="mtop"><a class="brand" href="saya.html">PPDK<i>.CH</i></a><span class="avatar" id="mavatar" title="' + esc(me().n) + '">' + ini(me().n) + '</span></header></div>';
+      '<div class="main"><header class="mtop"><a class="brand" href="saya.html">PPDK<i>.CH</i></a><button type="button" class="avatar" id="mavatar" aria-label="Akaun: ' + esc(me().n) + '" aria-haspopup="dialog">' + ini(me().n) + '</button></header></div>';
     body.insertBefore(shell, content);
     shell.querySelector('.main').appendChild(content);
     var bn = document.createElement('nav'); bn.className = 'bnav'; bn.setAttribute('aria-label', 'Navigasi utama');
@@ -354,6 +391,16 @@
       return '<a href="' + n.href + '" class="' + (n.id === opts.page ? 'on' : '') + '"' + (n.id === opts.page ? ' aria-current="page"' : '') + '>' + icon(n.ic) + '<span>' + n.m + '</span></a>';
     }).join('');
     body.appendChild(bn);
+    shell.querySelector('#mavatar').addEventListener('click', accountDrawer);
+  }
+  /* Menu akaun (telefon): nama, jawatan, waktu kerja, Log keluar. */
+  function accountDrawer() {
+    var m = me(), w = wkOf(m.id);
+    drawer({
+      kicker: ROLES[role()].label, title: esc(m.n),
+      body: '<dl class="dl"><dt>Jawatan</dt><dd>' + esc(m.jaw) + '</dd><dt>Sektor</dt><dd>' + esc(sekName(m.sek)) + '</dd><dt>Waktu kerja</dt><dd>' + w.mula + '–' + w.tamat + '</dd></dl>',
+      foot: '<a class="btn btn-line" href="index.html">' + icon('logout') + 'Log keluar</a>'
+    });
   }
 
   /* ---------- Laci & toast ---------- */
@@ -367,7 +414,15 @@
     document.body.appendChild(s); document.body.appendChild(d);
     s.addEventListener('click', closeDrawer);
     d.addEventListener('click', function (e) { if (e.target.closest('[data-close]')) closeDrawer(); });
-    function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); closeDrawer(); } }
+    function onKey(e) {
+      if (e.key === 'Escape') { e.preventDefault(); closeDrawer(); return; }
+      if (e.key !== 'Tab') return;
+      var f = [].filter.call(d.querySelectorAll('a[href],button:not([disabled]),input:not([disabled]),select,textarea,[tabindex]:not([tabindex="-1"])'), function (el) { return el.offsetParent !== null; });
+      if (!f.length) return;
+      var a = f[0], z = f[f.length - 1];
+      if (e.shiftKey && (document.activeElement === a || !d.contains(document.activeElement))) { e.preventDefault(); z.focus(); }
+      else if (!e.shiftKey && (document.activeElement === z || !d.contains(document.activeElement))) { e.preventDefault(); a.focus(); }
+    }
     document.addEventListener('keydown', onKey, true);
     d._release = function () { document.removeEventListener('keydown', onKey, true); if (opener && opener.isConnected) opener.focus(); };
     var f = d.querySelector('[data-close]'); if (f) f.focus();
@@ -380,21 +435,26 @@
     if (rel) rel();
   }
   var tt;
-  function toast(html) {
+  /* o.action = { label, fn }: butang dalam toast (cth. "Buat asal"); toast kekal lebih lama (8 s). */
+  function toast(html, o) {
+    o = o || {};
     var old = document.querySelector('.toast'); if (old) old.remove();
-    var t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status'); t.innerHTML = '<span>' + html + '</span>'; document.body.appendChild(t);
-    clearTimeout(tt); tt = setTimeout(function () { t.remove(); }, 4200);
+    var t = document.createElement('div'); t.className = 'toast'; t.setAttribute('role', 'status');
+    t.innerHTML = '<span>' + html + '</span>' + (o.action ? '<button type="button" class="toast-act">' + esc(o.action.label) + '</button>' : '');
+    document.body.appendChild(t);
+    if (o.action) t.querySelector('.toast-act').addEventListener('click', function () { clearTimeout(tt); t.remove(); o.action.fn(); });
+    clearTimeout(tt); tt = setTimeout(function () { t.remove(); }, o.action ? 8000 : 4200);
   }
 
   window.G = {
     icon: icon, esc: esc, sk: sk, sekName: sekName, ini: ini, first: first,
-    SEKTOR: SEKTOR, STAF: STAF, TUJUAN: TUJUAN, TEMPAT: TEMPAT, TODAY: TODAY, TAMAT_KERJA: TAMAT_KERJA, JENIS_CUTI: JENIS_CUTI,
+    SEKTOR: SEKTOR, STAF: STAF, TUJUAN: TUJUAN, TEMPAT: TEMPAT, TODAY: TODAY, TAMAT_KERJA: TAMAT_KERJA, JENIS_CUTI: JENIS_CUTI, wkOf: wkOf, tamatOf: tamatOf,
     HAD_LEWAT: HAD_LEWAT, HAD_UNDUR: HAD_UNDUR, HAD_BATAL: HAD_BATAL, HAD_HARI: HAD_HARI, SIMPAN_BULAN: SIMPAN_BULAN,
     get LOG() { return LOG; }, get CUTI() { return CUTI; }, staf: staf, ketuaOf: ketuaOf, role: role, me: me, mount: mount, drawer: drawer, closeDrawer: closeDrawer, toast: toast,
     now: now, toMin: toMin, hhmm: hhmm, dur: dur, fmtDate: fmtDate, fmtShort: fmtShort, addDays: addDays, greet: greet,
     openOf: openOf, today: today, covers: covers, tertunggak: tertunggak, cutiOn: cutiOn, cutiSaya: cutiSaya, status: status, STL: STL, stLabel: stLabel, stChip: stChip,
-    destOf: destOf, tujOf: tujOf, jenisCuti: jenisCuti, canSeePrivate: canSeePrivate, canSeeFor: canSeeFor, lewatRekod: lewatRekod, bolehBatal: bolehBatal, hinggaTxt: hinggaTxt,
+    destOf: destOf, tujOf: tujOf, jenisCuti: jenisCuti, canSeePrivate: canSeePrivate, canSeeFor: canSeeFor, roleNote: roleNote, lewatRekod: lewatRekod, bolehBatal: bolehBatal, hinggaTxt: hinggaTxt,
     prRow: prRow, openPerson: openPerson, tlHtml: tlHtml,
-    keluar: keluar, masuk: masuk, isiMasuk: isiMasuk, ubahJangka: ubahJangka, batal: batal, cutiTambah: cutiTambah, cutiBatal: cutiBatal, ss: ss, store: store
+    keluar: keluar, masuk: masuk, batalMasuk: batalMasuk, isiMasuk: isiMasuk, ubahJangka: ubahJangka, batal: batal, cutiTambah: cutiTambah, cutiBatal: cutiBatal, ss: ss, store: store
   };
 })();

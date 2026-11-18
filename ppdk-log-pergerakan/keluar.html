@@ -18,39 +18,44 @@
   <form class="form" id="f" novalidate>
     <div class="fs">
       <label class="lbl" for="dest">Destinasi <span class="req">*</span></label>
-      <input type="text" id="dest" list="tempat" autocomplete="off" placeholder="Nama sekolah atau tempat">
-      <datalist id="tempat"></datalist>
-      <div class="chips" id="recent" aria-label="Destinasi terkini"></div>
-      <p class="err" id="e-dest" hidden>Isi destinasi.</p>
+      <div class="ac">
+        <input type="text" id="dest" autocomplete="off" spellcheck="false" placeholder="Nama sekolah atau tempat" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="ac-list" aria-describedby="e-dest h-priv">
+        <ul class="ac-list" id="ac-list" role="listbox" aria-label="Cadangan destinasi" hidden></ul>
+      </div>
+      <p class="hint lk-note" id="h-priv" hidden></p>
+      <p class="err" id="e-dest" role="alert" hidden>Isi destinasi.</p>
     </div>
 
     <div class="fs">
       <div class="lbl" id="l-tuj">Tujuan <span class="req">*</span></div>
-      <div class="chips" id="tuj" role="group" aria-labelledby="l-tuj"></div>
-      <input type="text" id="nota" placeholder="Catatan ringkas (pilihan), cth. Mesyuarat panel PBD" style="margin-top:10px" maxlength="80">
-      <p class="err" id="e-tuj" hidden>Pilih tujuan.</p>
+      <div class="chips" id="tuj" role="radiogroup" aria-labelledby="l-tuj" aria-describedby="e-tuj"></div>
+      <input type="text" id="nota" placeholder="Catatan (pilihan)" aria-label="Catatan (pilihan)" style="margin-top:10px" maxlength="80">
+      <p class="err" id="e-tuj" role="alert" hidden>Pilih tujuan.</p>
     </div>
 
     <div class="fs tq">
       <div>
         <label class="lbl" for="pergi">Masa pergi <span class="req">*</span></label>
-        <input type="time" id="pergi">
+        <input type="time" id="pergi" aria-describedby="h-pergi">
         <p class="hint" id="h-pergi"></p>
       </div>
       <div>
         <label class="lbl" for="balik">Masa balik (jangka) <span class="req">*</span></label>
-        <input type="time" id="balik">
+        <input type="time" id="balik" aria-describedby="h-balik h-wk e-masa">
         <p class="hint" id="h-balik"></p>
       </div>
     </div>
-    <div class="chips" id="qb" aria-label="Pilihan masa balik"></div>
-    <label class="check" style="margin-top:12px"><input type="checkbox" id="pulang">Tidak kembali ke pejabat hari ini</label>
+    <div class="qb">
+      <div class="lbl-s" id="l-qb">Anggaran tempoh di luar</div>
+      <div class="chips" id="qb" role="group" aria-labelledby="l-qb"></div>
+      <p class="hint" id="h-wk"></p>
+    </div>
     <div class="fs hingga" id="w-hingga" hidden>
       <label class="lbl" for="hingga">Tugas luar sehingga</label>
-      <input type="date" id="hingga">
+      <input type="date" id="hingga" aria-describedby="h-hingga e-masa">
       <p class="hint" id="h-hingga">Untuk kursus atau program beberapa hari. Biarkan hari ini jika hanya hari ini.</p>
     </div>
-    <p class="err" id="e-masa" hidden></p>
+    <p class="err" id="e-masa" role="alert" hidden></p>
 
     <div class="prev" id="prev"></div>
 
@@ -61,6 +66,7 @@
   </form>
 </div>
 
+<script src="sekolah.js"></script>
 <script src="app.js"></script>
 <script>
 (function () {
@@ -83,28 +89,121 @@
     return;
   }
 
-  $('tempat').innerHTML = G.TEMPAT.map(function (t) { return '<option value="' + G.esc(t) + '">'; }).join('');
-  var seen = {}, recent = [];
-  G.LOG.slice().reverse().forEach(function (r) { if (r.sid === m.id && !r.batal && !seen[r.dest] && r.tuj !== 'Urusan peribadi' && recent.length < 3) { seen[r.dest] = 1; recent.push(r); } });
-  $('recent').innerHTML = recent.map(function (r) { return '<button type="button" class="chip" data-dest="' + G.esc(r.dest) + '" data-tuj="' + G.esc(r.tuj) + '">' + G.esc(r.dest) + '</button>'; }).join('');
-  $('recent').hidden = !recent.length;
-  $('tuj').innerHTML = G.TUJUAN.map(function (t) { return '<button type="button" class="chip" aria-pressed="false" data-v="' + t + '">' + t + '</button>'; }).join('');
+
+  /* ---------- Autolengkap destinasi ----------
+     Padanan pintar: setiap perkataan yang ditaip mesti sepadan dengan awal mana-mana perkataan nama
+     ("muhi" → SK MUHIBBAH, "sk tab" → SK TABUAN ...), atau kod sekolah tanpa kira ruang/tanda
+     ("YEA 1207", "yea-1207", "1207" → YEA1207). Nama tanpa ruang juga dikenal ("greenroad"). Singkatan biasa
+     difahami (kampung/kpg, saint/st, cina/sjkc). Destinasi terkini pegawai diutamakan.
+     Teks bebas tetap dibenarkan untuk tempat yang tiada dalam senarai. */
+  var ALIAS = { kampung: 'kpg', kg: 'kpg', saint: 'st', cina: 'sjkc', sjk: 'sjkc', nombor: 'no', menengah: 'smk', rendah: 'sk', jpn: 'jabatan pendidikan negeri' };
+  function norm(s) { return String(s).toLowerCase().replace(/[^a-z0-9\s]/g, ' ').replace(/\s+/g, ' ').trim(); }
+  function compact(s) { return norm(s).replace(/ /g, ''); }
+  function qTokens(q) { var t = norm(q); if (!t) return []; return t.split(' ').map(function (w) { return ALIAS[w] || w; }).join(' ').split(' '); }
+  var recentN = {}, rank = 0;
+  G.LOG.slice().reverse().forEach(function (r) { if (r.sid === m.id && !r.batal && r.tuj !== 'Urusan peribadi' && !(r.dest in recentN)) recentN[r.dest] = ++rank; });
+  var KOD = {}; (window.SEKOLAH || []).forEach(function (x) { KOD[x.n] = x.k; });
+  var POOL = G.TEMPAT.map(function (n) { var kd = KOD[n] || ''; return { n: n, k: kd, kc: compact(kd), nc: compact(n), w: norm(n).split(' ') }; });
+
+  function match(q) {
+    var qt = qTokens(q), cq = compact(q); if (!qt.length) return [];
+    var out = [];
+    POOL.forEach(function (p) {
+      var used = [], score = 0, ok = qt.every(function (t) {
+        for (var i = 0; i < p.w.length; i++) if (used.indexOf(i) < 0 && p.w[i].indexOf(t) === 0) { used.push(i); score += i === 0 ? 1 : 3 + t.length; return true; }
+        return false;
+      });
+      /* Kod sekolah: abaikan ruang/tanda; padanan penuh paling atas, awalan kod, atau digit di mana-mana ("1207"). */
+      var byKod = false;
+      if (p.kc && cq.length >= 3 && (p.kc.indexOf(cq) === 0 || (/^\d+$/.test(cq) && p.kc.indexOf(cq) > 0))) {
+        byKod = true; ok = true; used = []; score = p.kc === cq ? 100 : p.kc.indexOf(cq) === 0 ? 10 : 5;
+      }
+      if (!ok && qt.join(' ').length >= 3 && norm(p.n).indexOf(qt.join(' ')) > 0) { ok = true; score = 0.5; used = []; }
+      if (!ok && cq.length >= 4 && p.nc.indexOf(cq) >= 0) { ok = true; score = 0.4; used = []; } /* "greenroad", "smkpetra" */
+      if (!ok) return;
+      if (recentN[p.n]) score += 20 - recentN[p.n];
+      out.push({ p: p, s: score, used: used, qt: qt, byKod: byKod, cq: cq });
+    });
+    return out.sort(function (a, b) { return b.s - a.s || a.p.n.localeCompare(b.p.n); }).slice(0, 8);
+  }
+  function hl(o) { /* tebalkan bahagian perkataan yang sepadan */
+    return o.p.n.split(' ').map(function (w, i) {
+      if (o.used.indexOf(i) < 0) return G.esc(w);
+      var nw = norm(w), t = o.qt.filter(function (t) { return nw.indexOf(t) === 0; }).sort(function (a, b) { return b.length - a.length; })[0] || '';
+      return '<mark>' + G.esc(w.slice(0, t.length)) + '</mark>' + G.esc(w.slice(t.length));
+    }).join(' ');
+  }
+  function kodHl(o) { /* tebalkan digit/huruf kod yang sepadan (kod disimpan tanpa ruang) */
+    var i = o.p.kc.indexOf(o.cq), k = o.p.k;
+    return G.esc(k.slice(0, i)) + '<mark>' + G.esc(k.slice(i, i + o.cq.length)) + '</mark>' + G.esc(k.slice(i + o.cq.length));
+  }
+  var acSel = -1, acRes = [];
+  function acRender() {
+    var q = $('dest').value, L = $('ac-list');
+    acRes = q.trim() ? match(q) : []; acSel = acRes.length ? 0 : -1;
+    if (!q.trim() || (acRes.length === 1 && norm(acRes[0].p.n) === norm(q))) { acClose(); return; }
+    L.innerHTML = acRes.length ? acRes.map(function (o, i) {
+      return '<li role="option" id="ac-' + i + '" data-i="' + i + '" aria-selected="' + (i === acSel) + '"><span>' + hl(o) + '</span><small>' + (o.byKod ? kodHl(o) : recentN[o.p.n] ? 'Terkini' : G.esc(o.p.k)) + '</small></li>';
+    }).join('') + '<li role="option" class="free" id="ac-free" data-free="1" aria-selected="false">Guna “' + G.esc(q.trim()) + '”<small>' + (acRes.length ? 'teks sendiri' : 'tiada dalam senarai') + '</small></li>'
+      : '<li role="option" class="free" id="ac-free" data-free="1" aria-selected="true">Guna “' + G.esc(q.trim()) + '”<small>tiada dalam senarai</small></li>';
+    L.hidden = false; $('dest').setAttribute('aria-expanded', 'true');
+    if (acSel >= 0) $('dest').setAttribute('aria-activedescendant', 'ac-' + acSel); else $('dest').removeAttribute('aria-activedescendant');
+  }
+  function acClose() { $('ac-list').hidden = true; $('dest').setAttribute('aria-expanded', 'false'); $('dest').removeAttribute('aria-activedescendant'); }
+  /* Indeks acRes.length = baris "Guna teks sendiri". */
+  function acMove(d) {
+    var n = acRes.length + 1; acSel = ((acSel < 0 ? (d > 0 ? -1 : 0) : acSel) + d + n) % n;
+    var kids = $('ac-list').children;
+    [].forEach.call(kids, function (li, i) { li.setAttribute('aria-selected', i === acSel); if (i === acSel) li.scrollIntoView({ block: 'nearest' }); });
+    $('dest').setAttribute('aria-activedescendant', kids[acSel] ? kids[acSel].id : '');
+  }
+  function acPick(i) {
+    var o = acRes[i]; if (o) $('dest').value = o.p.n; else $('dest').value = $('dest').value.trim();
+    acClose(); $('e-dest').hidden = true; $('dest').removeAttribute('aria-invalid'); update();
+  }
+  $('dest').addEventListener('input', acRender);
+  $('dest').addEventListener('keydown', function (e) {
+    var open = !$('ac-list').hidden;
+    if (e.key === 'ArrowDown') { e.preventDefault(); if (open) acMove(1); else acRender(); }
+    else if (e.key === 'ArrowUp' && open) { e.preventDefault(); acMove(-1); }
+    else if (e.key === 'Enter' && open) { e.preventDefault(); acPick(acSel < 0 ? acRes.length : acSel); }
+    else if (e.key === 'Tab' && open) acClose();
+    else if (e.key === 'Escape' && open) { e.preventDefault(); acClose(); }
+  });
+  $('ac-list').addEventListener('mousedown', function (e) {
+    var li = e.target.closest('[data-i],[data-free]'); if (!li) return;
+    e.preventDefault(); acPick(li.hasAttribute('data-free') ? acRes.length : +li.getAttribute('data-i'));
+  });
+  $('dest').addEventListener('blur', function () { setTimeout(acClose, 120); });
+  $('tuj').innerHTML = G.TUJUAN.map(function (t, i) { return '<button type="button" class="chip" role="radio" aria-checked="false" tabindex="' + (i ? -1 : 0) + '" data-v="' + t + '">' + t + '</button>'; }).join('');
+  $('tuj').addEventListener('keydown', function (e) {
+    var k = { ArrowRight: 1, ArrowDown: 1, ArrowLeft: -1, ArrowUp: -1 }[e.key]; if (!k) return;
+    e.preventDefault();
+    var b = [].slice.call($('tuj').children), i = b.indexOf(document.activeElement), n = b[(i + k + b.length) % b.length];
+    setTuj(n.getAttribute('data-v')); n.focus(); $('e-tuj').hidden = true; update();
+  });
 
   var now = G.now();
+  var tempoh = 120, manual = false, pul = false; /* tempoh dipilih (min); manual = masa balik ditaip sendiri */
   $('pergi').value = now;
-  $('balik').value = G.hhmm(G.toMin(now) + 120);
+  $('balik').value = G.hhmm(G.toMin(now) + tempoh);
   var maxHingga = G.addDays(G.TODAY, G.HAD_HARI - 1);
   $('hingga').value = G.TODAY; $('hingga').min = G.TODAY; $('hingga').max = maxHingga;
 
-  function setTuj(t) { tuj = t; [].forEach.call($('tuj').children, function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-v') === t); }); }
+  function setTuj(t) { tuj = t; [].forEach.call($('tuj').children, function (b) { var on = b.getAttribute('data-v') === t; b.setAttribute('aria-checked', on); b.tabIndex = on ? 0 : -1; }); }
+  /* Pintasan tempoh: label tempoh sahaja (bukan masa jam); masa balik dikira daripada masa pergi.
+     Tiada "rehat"/"hujung hari" tetap kerana waktu kerja (WBB) berbeza bagi setiap pegawai. */
+  var wk = G.wkOf(m.id);
   function qbChips() {
-    var p = G.toMin($('pergi').value || now), out = [];
-    [60, 120, 180].forEach(function (n) { out.push({ t: G.hhmm(p + n), l: '+' + G.dur(n) }); });
-    ['12:30', '16:30'].forEach(function (t) { if (G.toMin(t) > p + 30 && !out.some(function (o) { return o.t === t; })) out.push({ t: t, l: t === '12:30' ? 'Sebelum rehat' : 'Hujung hari' }); });
-    $('qb').innerHTML = out.map(function (o) { return '<button type="button" class="chip" data-t="' + o.t + '" aria-pressed="' + (!$('pulang').checked && $('balik').value === o.t) + '">' + o.l + ' · ' + o.t + '</button>'; }).join('');
+    var p = G.toMin($('pergi').value || now), b = $('balik').value;
+    $('qb').innerHTML = [30, 60, 120, 180, 240].map(function (n) {
+      var t = G.hhmm(p + n);
+      return '<button type="button" class="chip" data-n="' + n + '" data-t="' + t + '" aria-pressed="' + (!pul && b === t) + '">' + (n < 60 ? n + ' min' : n / 60 + ' jam') + '</button>';
+    }).join('') + '<button type="button" class="chip" id="pulang" aria-pressed="' + pul + '">' + G.icon('home') + 'Tidak kembali hari ini</button>';
   }
   function update() {
-    var p = $('pergi').value, b = $('balik').value, pul = $('pulang').checked, dest = $('dest').value.trim();
+    now = G.now();
+    var p = $('pergi').value, b = $('balik').value, dest = $('dest').value.trim();
     var hg = pul && $('hingga').value > G.TODAY ? $('hingga').value : '';
     $('balik').disabled = pul;
     $('w-hingga').hidden = !pul;
@@ -112,40 +211,53 @@
     $('h-pergi').textContent = later ? 'Rekod dibuat lebih awal; status bertukar pada ' + p + '.'
       : undur > G.HAD_UNDUR ? 'Tidak boleh lebih ' + G.dur(G.HAD_UNDUR) + ' sebelum sekarang (' + now + ').'
       : undur > G.HAD_LEWAT ? 'Lebih ' + G.HAD_LEWAT + ' min sebelum sekarang: Buku akan menanda "Direkod lewat · disimpan ' + now + '".'
-      : 'Sekarang ' + now + '.';
+      : '';
     $('h-pergi').classList.toggle('lw', undur > G.HAD_LEWAT);
-    $('h-balik').textContent = pul ? (hg ? 'Status "Tugas luar" hingga ' + G.fmtDate(hg) + '.' : 'Rekod ditutup automatik pada ' + G.TAMAT_KERJA + '.') : (p && b && G.toMin(b) > G.toMin(p) ? 'Kira-kira ' + G.dur(G.toMin(b) - G.toMin(p)) + ' di luar.' : '');
+    $('h-balik').textContent = pul ? (hg ? 'Status "Tugas luar" hingga ' + G.fmtDate(hg) + '.' : 'Rekod ditutup automatik pada ' + wk.tamat + ' (waktu pulang anda).') : (p && b && G.toMin(b) > G.toMin(p) ? 'Kira-kira ' + G.dur(G.toMin(b) - G.toMin(p)) + ' di luar.' : '');
+    var lepasWk = !pul && b && G.toMin(b) > G.toMin(wk.tamat);
+    $('h-wk').innerHTML = lepasWk
+      ? '<span class="warn-t">' + G.icon('warn') + 'Masa balik ' + b + ' selepas waktu pulang anda (' + wk.tamat + '). Jika tidak kembali ke pejabat, pilih <b>Tidak kembali hari ini</b>.</span>'
+      : 'Waktu kerja anda: <b>' + wk.mula + '–' + wk.tamat + '</b>';
     $('save').textContent = later ? 'Simpan rekod keluar' : 'Sahkan keluar';
     qbChips();
     var priv = tuj === 'Urusan peribadi';
-    $('prev').innerHTML = '<div class="k">Rakan akan melihat di Papan</div><div class="v"><b>' + G.esc(m.n) + '</b> · ' + (hg ? 'Tugas luar' : 'Di luar pejabat') + '<br>' +
-      (priv ? '<span class="muted">Urusan peribadi</span>' : G.esc(dest || '—') + ' · ' + G.esc(tuj || '—')) +
-      '<br><span style="font-family:var(--mono)">Keluar ' + (p || '—') + ' · ' + (hg ? 'hingga ' + G.fmtShort(hg) : pul ? 'tidak kembali hari ini' : 'jangka pulang ' + (b || '—')) + '</span></div>' +
-      (priv ? '<p class="hint" style="margin-top:8px">' + G.icon('lock') + ' Destinasi urusan peribadi hanya dilihat oleh ketua sektor anda dan KPPD.</p>' : '');
+    $('h-priv').hidden = !priv;
+    $('h-priv').innerHTML = priv ? G.icon('lock') + 'Hanya anda, ketua sektor anda dan KPPD nampak destinasi ini.' : '';
+    $('prev').innerHTML = '<span class="k">Rakan nampak:</span> ' + (hg ? 'Tugas luar · ' : '') +
+      (priv ? '<span class="muted">Urusan peribadi</span>' : (dest ? G.esc(dest) : '<span class="muted">Destinasi</span>')) +
+      ' · <span class="m">' + (hg ? 'hingga ' + G.fmtShort(hg) : pul ? 'tidak kembali hari ini' : 'jangka pulang ' + (b || '—')) + '</span>';
   }
 
   $('f').addEventListener('click', function (e) {
     var t = e.target.closest('#tuj [data-v]'); if (t) { setTuj(t.getAttribute('data-v')); $('e-tuj').hidden = true; update(); return; }
-    var r = e.target.closest('[data-dest]'); if (r) { $('dest').value = r.getAttribute('data-dest'); setTuj(r.getAttribute('data-tuj')); $('e-dest').hidden = true; $('e-tuj').hidden = true; update(); return; }
-    var q = e.target.closest('[data-t]'); if (q) { $('balik').value = q.getAttribute('data-t'); $('pulang').checked = false; $('e-masa').hidden = true; update(); }
+    var q = e.target.closest('[data-t]'); if (q) { tempoh = +q.getAttribute('data-n'); manual = false; pul = false; $('balik').value = q.getAttribute('data-t'); $('e-masa').hidden = true; update(); return; }
+    if (e.target.closest('#pulang')) { pul = !pul; $('e-masa').hidden = true; update(); }
   });
-  ['dest', 'pergi', 'balik', 'pulang', 'hingga', 'nota'].forEach(function (id) { $(id).addEventListener('input', update); $(id).addEventListener('change', update); });
+  /* Tukar masa pergi → masa balik ikut tempoh yang dipilih (kecuali masa balik ditaip sendiri). */
+  $('pergi').addEventListener('input', function () { if (!manual && $('pergi').value) $('balik').value = G.hhmm(G.toMin($('pergi').value) + tempoh); update(); });
+  $('balik').addEventListener('input', function () { manual = true; update(); });
+  ['dest', 'nota', 'hingga'].forEach(function (id) { $(id).addEventListener('input', update); });
+  ['pergi', 'balik', 'hingga'].forEach(function (id) { $(id).addEventListener('change', update); });
+  $('pergi').addEventListener('focus', update);
 
   $('f').addEventListener('submit', function (e) {
     e.preventDefault();
-    var dest = $('dest').value.trim(), p = $('pergi').value, b = $('balik').value, pul = $('pulang').checked, bad = null;
-    $('e-dest').hidden = !!dest; if (!dest) bad = bad || $('dest');
+    update();
+    var dest = $('dest').value.trim(), p = $('pergi').value, b = $('balik').value, bad = null;
+    $('e-dest').hidden = !!dest; if (!dest) { bad = bad || $('dest'); $('dest').setAttribute('aria-invalid', 'true'); } else $('dest').removeAttribute('aria-invalid');
     $('e-tuj').hidden = !!tuj; if (!tuj) bad = bad || $('tuj').firstChild;
     var em = '';
     var hg = $('hingga').value, emEl = null;
     if (!p) { em = 'Isi masa pergi.'; emEl = 'pergi'; }
     else if (G.toMin(G.now()) - G.toMin(p) > G.HAD_UNDUR) { em = 'Masa pergi tidak boleh lebih ' + G.dur(G.HAD_UNDUR) + ' sebelum sekarang. Untuk pembetulan, hubungi ketua sektor.'; emEl = 'pergi'; }
-    else if (!pul && !b) { em = 'Isi masa balik atau tanda "Tidak kembali ke pejabat hari ini".'; emEl = 'balik'; }
+    else if (!pul && !b) { em = 'Isi masa balik atau pilih "Tidak kembali hari ini".'; emEl = 'balik'; }
     else if (!pul && G.toMin(b) <= G.toMin(p)) { em = 'Masa balik mesti selepas masa pergi (' + p + ').'; emEl = 'balik'; }
+    else if (!pul && G.toMin(b) <= G.toMin(G.now())) { em = 'Masa balik mesti selepas sekarang (' + G.now() + ').'; emEl = 'balik'; }
     else if (G.today(m.id).some(function (x) { return x.d === G.TODAY && x.masuk && G.toMin(x.masuk) > G.toMin(p); })) { em = 'Masa pergi bertindih dengan rekod keluar sebelumnya. Pilih masa selepas anda masuk pejabat.'; emEl = 'pergi'; }
     else if (pul && hg > G.TODAY && G.CUTI.some(function (c) { return c.sid === m.id && !c.batal && c.dari <= hg && G.TODAY <= c.hingga; })) { em = 'Tempoh tugas luar bertindih dengan rekod tidak hadir anda.'; emEl = 'hingga'; }
     else if (pul && (!hg || hg < G.TODAY || hg > maxHingga)) { em = 'Tarikh tugas luar mesti antara hari ini dan ' + G.fmtShort(maxHingga) + ' (paling lama ' + G.HAD_HARI + ' hari).'; emEl = 'hingga'; }
     $('e-masa').textContent = em; $('e-masa').hidden = !em; if (em) bad = bad || $(emEl);
+    ['pergi', 'balik', 'hingga'].forEach(function (id) { $(id).toggleAttribute('aria-invalid', !!em && emEl === id); });
     if (bad) { bad.focus(); return; }
     var r = G.keluar({ dest: dest, tuj: tuj, keluar: p, jangka: b, pulang: pul, hingga: pul ? hg : '', nota: $('nota').value.trim() });
     if (r) location.href = 'saya.html?baru=' + r.id;

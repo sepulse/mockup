@@ -1,9 +1,12 @@
-/* Log Pergerakan — gaya tambahan atas base.css + bahasa.css. */
-:root{--mock-h:0px}
+/* Log Pergerakan — gaya tambahan atas base.css + bahasa.css.
+   Susunan: alat mockup · asas · kad status · bahagian & garis masa · baris pegawai · kiraan & tapis ·
+   borang keluar · buku · komputer · telefon · cetak. */
+:root{--mock-h:0px;--on-petrol:#fff}
+:root[data-theme="dark"]{--on-petrol:#0A2B2F}
 .wrap{max-width:1180px}
 .page-h .sub b{font-family:var(--mono);font-weight:600}
 
-/* Alat mockup (bukan sebahagian UI) */
+/* ---------- Alat mockup (bukan sebahagian UI) ---------- */
 .mtool{position:fixed;left:16px;bottom:16px;z-index:95;display:flex;flex-direction:column;align-items:flex-start;gap:8px}
 .mfab{height:30px;padding:0 10px;background:#1d2526;color:#E9E6DE;font:600 10.5px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;border:1px dashed #F59E0B;opacity:.85}
 .mfab:hover{opacity:1}
@@ -15,6 +18,26 @@
 .mlinks a{color:var(--petrol);font-weight:600}
 .mtop small{font:500 10px/1 var(--mono);letter-spacing:.08em;color:var(--muted);margin-left:8px;text-transform:uppercase}
 .mtop .avatar{width:34px;height:34px}
+/* Butang Demo (kiri bawah, komputer) tidak menindih "Log keluar" */
+.side-foot{padding-bottom:44px}
+
+/* ---------- Asas ---------- */
+button.avatar{border:0;cursor:pointer;font:700 12px/1 var(--display)}
+.btn,.chip,.iconbtn,.counts button,.pr,.text-btn{transition:background-color .12s,border-color .12s,color .12s}
+.iconbtn:hover:not([disabled]){border-color:var(--ink);background:var(--paper-2)}
+.iconbtn[disabled]{opacity:.35;cursor:not-allowed}
+.chip:hover{border-color:var(--ink)}
+.chip[aria-pressed="true"],.chip[role="radio"][aria-checked="true"]{background:var(--sel-bg);color:var(--sel-fg);border-color:var(--sel-bg);font-weight:600}
+.warn-t{color:var(--warn);font-weight:600;display:inline-flex;gap:6px;align-items:flex-start}
+.warn-t svg{width:16px;height:16px;flex:none;margin-top:2px}
+/* Anak panah select kekal di tengah walau medan lebih tinggi daripada 42px. */
+select{background-position:calc(100% - 17px) 50%,calc(100% - 12px) 50%}
+.err{color:var(--req);font-size:13.5px;font-weight:600;margin-top:6px}
+.toast-act{color:var(--mint);font-weight:700;text-decoration:underline;text-underline-offset:3px;padding:6px 0;min-height:32px;background:none;border:0;cursor:pointer}
+:root[data-theme="dark"] .toast b,:root[data-theme="dark"] .toast-act{color:var(--petrol-deep)}
+/* Keadaan kosong: kotak garis putus, bukan teks terapung. */
+body .empty{border:1px dashed var(--rule-2);padding:20px 16px;text-align:center;color:var(--ink-2);font-size:15px;line-height:1.45}
+.pl > .empty{border:0}
 
 /* Cip status pergerakan */
 .gst{display:inline-flex;align-items:center;gap:6px;font-weight:600;font-size:13.5px;white-space:nowrap;color:var(--ink-2)}
@@ -23,168 +46,252 @@
 .gst.lewat{color:var(--warn)}
 .gst.pulang{color:var(--muted)}
 
-/* Kad status saya */
-.stat{position:relative;border:1px solid var(--ink);background:var(--card);padding:20px 20px 18px 24px;box-shadow:inset 4px 0 0 var(--rule-2)}
-.stat.luar{box-shadow:inset 4px 0 0 var(--petrol)}
-.stat.lewat{box-shadow:inset 4px 0 0 var(--warn)}
-.stat.pulang{box-shadow:inset 4px 0 0 var(--muted)}
-.stat .k{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;color:var(--ink-2)}
-.stat .k i{width:9px;height:9px;border-radius:50%;background:var(--rule-2);flex:none}
-.stat.luar .k{color:var(--petrol)}.stat.luar .k i{background:var(--petrol)}
-.stat.lewat .k{color:var(--warn)}.stat.lewat .k i{background:var(--warn)}
-.stat .big{display:block;font:800 30px/1.1 var(--display);letter-spacing:-.02em;margin-top:10px}
-.stat .dest{display:flex;align-items:center;gap:7px;font:700 20px/1.3 var(--display);margin-top:10px}
-.stat .dest svg{width:18px;height:18px;color:var(--muted)}
-.stat .s{color:var(--ink-2);font-size:15px;margin-top:4px}
-.stat .times{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-top:16px;padding-top:14px;border-top:1px solid var(--rule)}
-.stat .times div span{display:block;font-size:13px;color:var(--muted)}
-.stat .times div b{display:block;font:600 22px/1.2 var(--mono);margin-top:2px}
-.stat .times div small{display:block;font-size:13px;color:var(--ink-2);margin-top:2px}
-.stat.lewat .times .j small{color:var(--warn);font-weight:600}
-.stat .go{width:100%;min-height:56px;font-size:17px;margin-top:18px}
-.stat .alt{display:flex;flex-wrap:wrap;gap:4px 18px;margin-top:12px}
-.stat .help{margin-top:12px;font-size:14px;color:var(--muted)}
+/* Nota peranan & tanda urusan peribadi terhad */
+.rnote{margin:0 0 14px;padding:9px 12px;background:var(--paper-2);color:var(--ink-2);font-size:13.5px}
+.rnote .i{flex:none}
+.rnote b svg,.rnote span svg{width:13px;height:13px;vertical-align:-2px;margin:0}
+.lk{display:inline-flex;align-items:center;gap:4px;color:var(--petrol)}
+.lk svg{width:13px;height:13px}
 
-.sec{margin-top:30px}
-.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:10px}
+/* ---------- Kad status saya ----------
+   Jalur atas membawa keadaan (warna --sc, latar --sb); badan kad kekal neutral. */
+.stat{--sc:var(--ink-2);--sb:var(--paper-2);position:relative;border:1px solid var(--ink);background:var(--card);padding:20px}
+.stat.luar{--sc:var(--petrol);--sb:color-mix(in srgb,var(--petrol) 10%,var(--card))}
+.stat.lewat{--sc:var(--warn);--sb:var(--warn-bg)}
+.stat .k{display:flex;align-items:center;gap:9px;margin:-20px -20px 18px;padding:12px 20px 11px;background:var(--sb);box-shadow:inset 0 3px 0 var(--sc);border-bottom:1px solid var(--rule);font-weight:600;font-size:14.5px;line-height:1.3;color:var(--sc)}
+.stat .k i{width:8px;height:8px;background:var(--sc);flex:none}
+.stat .big{display:block;font:800 30px/1.1 var(--display);letter-spacing:-.02em}
+.stat .dest{display:flex;align-items:flex-start;gap:8px;font:700 22px/1.25 var(--display);letter-spacing:-.01em}
+.stat .dest svg{width:20px;height:20px;color:var(--sc);margin-top:4px}
+.stat .s{color:var(--ink-2);font-size:15px;margin-top:6px}
+.stat .dest + .s{padding-left:28px}
+.stat .times{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));margin-top:18px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule)}
+.stat .times div{padding:12px 0 13px}
+.stat .times div + div{border-left:1px solid var(--rule);padding-left:16px}
+.stat .times div span{display:block;font-size:13.5px;color:var(--muted)}
+.stat .times div b{display:block;font:600 26px/1.15 var(--mono);letter-spacing:-.02em;margin-top:3px}
+.stat .times div small{display:block;font-size:13.5px;color:var(--ink-2);margin-top:3px}
+.stat.lewat .times .j b,.stat.lewat .times .j small{color:var(--warn)}
+.stat.lewat .times .j small{font-weight:600}
+.stat .go{width:100%;min-height:56px;font-size:17px;margin-top:18px}
+.stat .go svg{width:20px;height:20px}
+.stat .ext{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:16px}
+.stat .ext > span{grid-column:1 / -1;font-size:14px;font-weight:600;color:var(--warn)}
+.stat .ext .chip{height:44px;padding:0 8px;font-size:14.5px;font-weight:600;justify-content:center}
+.stat .alt{display:flex;flex-wrap:wrap;justify-content:space-between;gap:0 18px;margin-top:14px}
+.stat .alt .text-btn{margin-block:0;min-height:44px}
+.stat .alt #batal{color:var(--ink-2)}
+.stat .help{margin-top:14px;font-size:14px;line-height:1.45;color:var(--muted)}
+
+/* ---------- Bahagian & garis masa ---------- */
+.sec{margin-top:32px}
+.sec-h{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:12px;padding-top:11px;border-top:2px solid var(--ink)}
 .sec-h h2{font:700 20px/1.25 var(--display)}
 .sec-h a{color:var(--petrol);font-weight:600;font-size:14.5px}
+.sec-h a::after{content:" →"}
+.sec-h a:hover{text-decoration:underline;text-underline-offset:3px}
 
-/* Garis masa hari ini */
-.tl{display:flex;flex-direction:column}
-.tl .ev{display:grid;grid-template-columns:62px 20px minmax(0,1fr);gap:0 10px;align-items:start}
-.tl .ev .t{font:600 14px/1.3 var(--mono);padding-top:1px}
+.tl{display:flex;flex-direction:column;border:1px solid var(--rule);background:var(--card);padding:14px 14px 0}
+.drawer .tl{border:0;background:none;padding:0}
+.tl .ev{display:grid;grid-template-columns:52px 20px minmax(0,1fr);gap:0 10px;align-items:start}
+.tl .ev .t{font:600 14.5px/1.4 var(--mono)}
 .tl .ev .dot{position:relative;align-self:stretch}
-.tl .ev .dot::before{content:"";position:absolute;left:5px;top:5px;width:10px;height:10px;border:2px solid var(--ink-2);background:var(--card);border-radius:50%}
-.tl .ev .dot::after{content:"";position:absolute;left:10px;top:17px;bottom:-4px;width:1px;background:var(--rule-2)}
+.tl .ev .dot::before{content:"";position:absolute;left:5px;top:5px;width:10px;height:10px;border:2px solid var(--ink-2);background:var(--card)}
+.tl .ev .dot::after{content:"";position:absolute;left:9.5px;top:19px;bottom:-1px;width:1px;background:var(--rule-2)}
 .tl .ev:last-child .dot::after{display:none}
 .tl .ev.o .dot::before{border-color:var(--petrol);background:var(--petrol)}
-.tl .ev .b{padding-bottom:16px;font-size:15px}
+.tl .ev .b{padding-bottom:14px;font-size:15px;line-height:1.4}
 .tl .ev .b small{display:block;color:var(--muted);font-size:13.5px;margin-top:2px}
 
-/* Baris pegawai (papan) */
+/* ---------- Baris pegawai (papan, status saya) ---------- */
 .pl{display:flex;flex-direction:column;border:1px solid var(--rule);background:var(--card)}
 .pr{display:grid;grid-template-columns:40px minmax(0,1.2fr) minmax(0,1.6fr) 170px;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid color-mix(in srgb,var(--rule) 75%,transparent);text-align:left;width:100%;background:transparent;min-height:64px}
 .pr:first-child{border-top:0}
-button.pr:hover{background:var(--paper-2)}
+button.pr:hover,a.pr:hover{background:var(--paper-2)}
 .pr .avatar{width:36px;height:36px;font-size:12px}
-.pr .avatar.pej{background:var(--paper-2);color:var(--ink-2)}
+.pr .avatar.pej{background:transparent;color:var(--ink-2);box-shadow:inset 0 0 0 1px var(--rule-2)}
 .pr .n{font-weight:600;font-size:15.5px;line-height:1.3}
-.pr .n + div{display:flex;gap:8px;align-items:center;margin-top:3px;font-size:13px;color:var(--muted);flex-wrap:wrap}
+.pr .n + div{display:flex;gap:8px;align-items:center;margin-top:4px;font-size:13px;color:var(--muted);flex-wrap:wrap}
 .pr .sk{height:19px;font-size:10px;padding:0 5px}
-.pr .w{font-size:15px;line-height:1.35;min-width:0}
+.pr .w{font-size:15px;line-height:1.4;min-width:0}
+.pr .w:empty{display:none}
 .pr .w small{display:block;color:var(--muted);font-size:13.5px;margin-top:2px}
 .pr .tm{text-align:right;white-space:nowrap;min-width:0}
 .pr .tm b{display:block;font:600 14.5px/1.35 var(--mono);color:var(--ink)}
 .pr .tm b .pl-n{font:600 13.5px/1.35 var(--sans);color:var(--muted)}
 .pr .tm small{display:block;font-size:13px;color:var(--muted);margin-top:2px}
 .pr .tm small.lw{color:var(--warn);font-weight:600}
-.grp-t{display:flex;align-items:center;gap:10px;font:700 16px/1.2 var(--sans);color:var(--ink-2);margin:24px 0 10px}
+/* Lepas jangka: jalur amaran di kiri + latar lembut, supaya menonjol tanpa membaca. */
+.pr.lewat{background:color-mix(in srgb,var(--warn-bg) 60%,var(--card));box-shadow:inset 3px 0 0 var(--warn)}
+button.pr.lewat:hover{background:var(--warn-bg)}
+.pr.lewat .avatar{background:var(--warn);color:var(--card)}
+.pr.pulang .avatar{background:var(--rule-2);color:var(--ink)}
+/* Di pejabat: satu baris padat (nama + sektor sebaris). */
+.pr.pej{min-height:52px;padding-block:8px;align-items:center}
+.pr.pej .avatar{width:32px;height:32px;grid-row:auto}
+.pr.pej > div:nth-child(2){display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.pr.pej .n{font-weight:500}
+.pr.pej .n + div{margin-top:0}
+/* Tajuk kumpulan: tajuk · kiraan · garis hingga ke tepi. */
+.grp-t{display:flex;align-items:center;gap:10px;font:700 16px/1.2 var(--sans);color:var(--ink);margin:28px 0 10px}
 .grp-t .c{font:600 13px/1 var(--mono);color:var(--muted)}
+.grp-t::after{content:"";flex:1;height:1px;background:var(--rule-2)}
 
-/* Jalur kiraan */
-.counts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:1px solid var(--rule);background:var(--card)}
-.counts button{padding:12px 14px;text-align:left;border-right:1px solid var(--rule);min-height:72px}
+/* ---------- Jalur kiraan & tapis (papan) ---------- */
+.counts{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));border:1px solid var(--rule-2);background:var(--card)}
+.counts button{display:flex;flex-direction:column;justify-content:flex-start;padding:13px 14px 12px;text-align:left;border-right:1px solid var(--rule);min-height:84px}
 .counts button:last-child{border-right:0}
+.counts button:hover{background:var(--paper-2)}
 .counts button[aria-pressed="true"]{background:var(--sel-bg);color:var(--sel-fg)}
-.counts button[aria-pressed="true"] span{color:inherit;opacity:.8}
-.counts b{display:block;font:700 28px/1.1 var(--display)}
-.counts span{display:block;font-size:13.5px;color:var(--muted);margin-top:2px}
-.qbar{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.counts button[aria-pressed="true"] span{color:inherit;opacity:.82}
+.counts b{display:block;font:700 30px/1 var(--display);letter-spacing:-.02em}
+.counts span{display:block;font-size:13.5px;line-height:1.3;color:var(--ink-2);margin-top:6px}
+.counts span span{margin-top:0}
+.counts em{display:block;font-style:normal;font-size:12.5px;line-height:1.3;font-weight:600;color:var(--warn);margin-top:2px}
+.counts button[aria-pressed="true"] em{color:inherit}
+.qbar{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
 .qbar select{width:auto;min-width:200px}
 
-/* Borang keluar */
+/* ---------- Borang keluar ---------- */
 .form{max-width:640px}
-.fs{margin-top:22px}
-.fs > label.lbl,.fs > .lbl{display:block;font-size:15px;font-weight:600;color:var(--ink)}
+.fs{margin-top:24px}
+.fs > label.lbl,.fs > .lbl,.tq label.lbl{display:block;font-size:15px;font-weight:600;color:var(--ink);margin-bottom:8px}
+.form input[type=text],.form input[type=time]{min-height:48px}
 .chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
 .chips .chip{height:40px;padding:0 13px;font-size:14px}
+/* Tujuan: grid sekata (bukan cip bergerigi) supaya mudah diimbas dan ditekan. */
+#tuj{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));margin-top:0}
+#tuj .chip{height:46px;padding:0 12px;font-size:14.5px;justify-content:flex-start;white-space:nowrap}
+#tuj + input{margin-top:8px!important}
 .tq{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
-.tq .hint b{font-family:var(--mono)}
-.err{color:var(--req);font-size:13.5px;font-weight:600;margin-top:6px}
-.prev{border:1px dashed var(--rule-2);padding:14px 16px;margin-top:24px;background:var(--paper)}
+.tq .hint b,.qb .hint b{font-family:var(--mono)}
+.qb{margin-top:14px}
+.lbl-s{font-size:14px;font-weight:600;color:var(--ink-2)}
+.lbl-s .muted{font-weight:400}
+/* Tempoh: 5 petak sama lebar + "Tidak kembali" selebar baris. */
+#qb{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+#qb .chip{height:44px;padding:0 4px;justify-content:center;font-size:14px;white-space:nowrap}
+#qb .chip svg{width:16px;height:16px}
+#qb #pulang{grid-column:1 / -1}
+.lk-note{display:flex;gap:6px;align-items:flex-start;color:var(--petrol);margin-top:8px}
+.lk-note svg{width:15px;height:15px;flex:none;margin-top:2px}
+/* Autolengkap destinasi */
+.ac{position:relative}
+.ac-list{position:absolute;left:0;right:0;top:calc(100% + 2px);z-index:30;background:var(--card);border:1px solid var(--ink);box-shadow:0 10px 24px rgba(0,0,0,.14);max-height:min(340px,50vh);overflow:auto;list-style:none;margin:0;padding:4px 0}
+.ac-list li{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:10px 14px;min-height:44px;cursor:pointer;font-size:15px}
+.ac-list li small{font:500 12px var(--mono);color:var(--muted);flex:none}
+.ac-list li[aria-selected="true"]{background:var(--paper-2);box-shadow:inset 3px 0 0 var(--petrol)}
+.ac-list li mark{background:none;color:inherit;font-weight:700;text-decoration:underline;text-underline-offset:3px}
+.ac-list li.none{cursor:default;color:var(--muted);font-size:14px}
+.ac-list li.free{color:var(--ink-2);font-style:normal;border-top:1px solid var(--rule)}
+/* Pratonton "Rakan nampak" */
+.prev{margin-top:22px;padding:11px 14px;font-size:14.5px;line-height:1.5;border:1px dashed var(--rule-2);background:var(--paper)}
 .prev .k{font-size:13.5px;color:var(--muted);font-weight:600}
 .prev .v{font-size:15.5px;margin-top:4px;line-height:1.45}
-.savebar{position:sticky;bottom:0;background:var(--paper);padding:14px 0;margin-top:20px;border-top:1px solid var(--rule);display:flex;gap:12px;align-items:center}
-.savebar .btn-ink{flex:1;min-height:52px;font-size:16px}
+.prev .m{font-family:var(--mono);font-size:13.5px}
+.savebar{position:sticky;bottom:0;background:var(--paper);padding:14px 0;margin-top:20px;border-top:1px solid var(--ink);display:flex;gap:12px;align-items:center}
+.savebar .btn{min-height:52px}
+.savebar .btn-ink{flex:1;font-size:16px}
 
-/* Buku pergerakan */
-.dnav{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.dnav b{font:700 17px/1.2 var(--display);min-width:190px;text-align:center}
+/* ---------- Buku pergerakan ---------- */
+.dnav{display:flex;align-items:center;flex-wrap:wrap}
+.dnav .iconbtn{width:44px;height:44px;background:var(--card)}
+.dnav b{font:700 16.5px/1.2 var(--display);min-width:210px;height:44px;padding:0 14px;display:grid;place-items:center;text-align:center;background:var(--card);border-block:1px solid var(--rule-2)}
+.dnav .text-btn{margin-left:14px}
 .tbl{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--rule);font-size:14.5px}
-.tbl th{text-align:left;font-size:13px;font-weight:600;color:var(--muted);padding:10px 12px;border-bottom:1px solid var(--rule-2);white-space:nowrap}
+.tbl th{text-align:left;font-size:13px;font-weight:600;color:var(--ink-2);padding:10px 12px;border-bottom:1px solid var(--ink);white-space:nowrap}
 .tbl td{padding:11px 12px;border-top:1px solid color-mix(in srgb,var(--rule) 75%,transparent);vertical-align:top}
+.tbl td b{font-weight:600}
 .tbl td.m{font-family:var(--mono);white-space:nowrap}
+.tbl .lk{white-space:nowrap}
+.tbl tbody tr:hover td{background:var(--paper-2)}
 .flag,.tbl .flag{color:var(--warn);font-weight:600;font-family:var(--sans);font-size:13px}
 .tbl tr.cx td{color:var(--muted);text-decoration:line-through}
 .day{margin-top:20px}
 .day h3{font:700 16px/1.2 var(--sans);color:var(--ink-2);margin-bottom:8px}
 .ent{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 12px;padding:12px 14px;border:1px solid var(--rule);background:var(--card)}
 .ent + .ent{border-top:0}
-.ent .n{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:2px}
-.ent .n b{font-size:15.5px}
+.ent .n{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:3px}
+.ent .n b{font-size:15.5px;font-weight:600}
 .ent .n .sk{height:19px;font-size:10px;padding:0 5px}
 .ent .t{text-align:right;white-space:nowrap}
 .ent .t b{display:block;font:600 14.5px/1.35 var(--mono)}
 .ent .t small{display:block;font-size:13px;color:var(--muted);margin-top:2px}
-.ent .w{font-size:15px;line-height:1.35;min-width:0}
+.ent .w{font-size:15px;line-height:1.4;min-width:0}
 .ent .w small{display:block;color:var(--muted);font-size:13.5px;margin-top:2px}
-.counts em{display:block;font-style:normal;font-size:12.5px;font-weight:600;color:var(--warn);margin-top:2px}
-.counts button[aria-pressed="true"] em{color:inherit}
-.pr .w:empty{display:none}
-/* Di pejabat: satu baris padat (nama + sektor sebaris). */
-.pr.pej{min-height:52px;padding-block:8px;align-items:center}
-.pr.pej .avatar{width:32px;height:32px;grid-row:auto}
-.pr.pej > div:nth-child(2){display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.pr.pej .n + div{margin-top:0}
 
-/* Komputer: dua lajur pada Status saya */
+/* ---------- Baris padat (lajur kanan komputer & telefon): destinasi · tujuan sebaris ---------- */
 @media (min-width:1100px){
-  .two{display:grid;grid-template-columns:minmax(0,600px) minmax(0,1fr);gap:36px;align-items:start}
-  .two > .r-col{position:sticky;top:24px}
+  .two{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(340px,1fr);gap:36px;align-items:start}
+  .two > .r-col{position:sticky;top:24px;margin-top:0}
   .two .sec:first-child{margin-top:0}
-  .r-col .pr{grid-template-columns:36px minmax(0,1fr) auto;gap:4px 12px;align-items:start}
+  .r-col .pr{grid-template-columns:36px minmax(0,1fr) auto;gap:3px 12px;align-items:start}
   .r-col .pr .avatar{grid-row:1 / span 2}
   .r-col .pr .w{grid-column:2 / -1}
+  .r-col .pr .w small{display:inline;margin:0}
+  .r-col .pr .w small::before{content:"·";margin:0 6px}
   .r-col .pr .tm{grid-column:3;grid-row:1}
 }
 
-/* Telefon */
+/* ---------- Telefon ---------- */
 @media (max-width:780px){
   .bnav{grid-template-columns:repeat(4,1fr)}
+  .bnav a.on{box-shadow:inset 0 3px 0 var(--petrol)}
   .mtool{top:13px;bottom:auto;left:auto;right:58px;align-items:flex-end}
   .mfab{opacity:.7}
-  .pr{grid-template-columns:36px minmax(0,1fr) auto;gap:4px 12px;align-items:start}
+  /* Laci skrin penuh: butang Demo tidak menindih butang Tutup. */
+  body:has(#drawer) .mtool{display:none}
+  .toast{bottom:calc(64px + env(safe-area-inset-bottom,0px) + 12px)}
+  .toast-act{min-height:44px}
+  .iconbtn,.chips .chip{min-height:44px;min-width:44px}
+  .chips .chip{height:44px}
+  input[type=text],input[type=search],input[type=time],select{min-height:48px}
+  .stat{padding:18px 16px}
+  .stat .k{margin:-18px -16px 16px;padding-inline:16px}
+  .stat .big{font-size:28px}
+  .sec{margin-top:28px}
+  .pr{grid-template-columns:36px minmax(0,1fr) auto;gap:3px 12px;align-items:start;min-height:56px;padding:12px}
   .pr .avatar{grid-row:1 / span 2}
   .pr .w{grid-column:2 / -1}
+  .pr .w small{display:inline;margin:0}
+  .pr .w small::before{content:"·";margin:0 6px}
   .pr .tm{grid-column:3;grid-row:1}
-  /* Kiraan: satu baris 4 petak padat. */
-  .counts button{padding:9px 8px;min-height:64px}
+  .grp-t{margin:24px 0 8px}
+  /* Kiraan: satu baris 4 petak padat; "Di luar" lebih lebar untuk nota lepas jangka. */
+  .counts{grid-template-columns:.9fr 1.3fr 1.05fr 1.05fr 1.05fr}
+  .counts button{padding:9px 7px 8px;min-height:72px}
   .counts b{font-size:22px}
-  .counts span{font-size:12.5px;line-height:1.25}
-  .counts em{font-size:11.5px;line-height:1.2}
+  .counts span{font-size:11.5px;margin-top:5px}
+  .counts em{font-size:10.5px}
   /* Carian + sektor dalam satu baris. */
-  .qbar{flex-wrap:nowrap;gap:8px}
-  .qbar .search{flex:1 1 auto}
-  .qbar select{flex:0 0 150px;min-width:0;width:150px}
-  .grp-t{margin:20px 0 8px}
-  .pr{min-height:56px;padding:10px 12px}
-  .page-h .tags .btn{min-height:40px}
-  .dnav{width:100%;flex-wrap:nowrap}
-  .dnav b{flex:1;min-width:0;font-size:16px}
-  .toolbar select{flex:1 1 100%}
+  /* Carian penuh lebar; sektor di baris bawah supaya teks contoh tidak terpotong */
+  .qbar{flex-wrap:wrap;gap:8px}
+  .qbar .search{flex:1 1 100%}
+  .qbar select{flex:1 1 100%;min-width:0;width:100%}
+  .qbar .search svg{left:10px}
+  .qbar .search input{padding:9px 6px 9px 34px;text-overflow:ellipsis}
+  .qbar .search input::placeholder{font-size:14px}
+  #tuj{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #tuj .chip{height:48px}
   .tq{grid-template-columns:1fr 1fr}
-  .tbl-wrap{display:none}
-  .stat .big{font-size:28px}
   .savebar{bottom:calc(64px + env(safe-area-inset-bottom,0px));margin:20px -16px 0;padding:12px 16px}
+  .page-h .tags .btn{min-height:44px}
+  .dnav{width:100%;flex-wrap:nowrap}
+  .dnav b{flex:1;min-width:0;font-size:16px;padding:0 6px}
+  .dnav .text-btn{margin-left:10px;white-space:nowrap}
+  .toolbar select{flex:1 1 100%}
+  .tbl-wrap{display:none}
 }
+/* Tanda kunci "terhad" kekal pada baris sendiri (elak titik pemisah tergantung). */
+.pr .w small:has(.lk){display:block;margin-top:2px}
+.pr .w small:has(.lk)::before{content:none}
 @media (min-width:781px){.cards-m{display:none}}
 @media print{.dnav button,.qbar,#csv,#cetak{display:none!important}.tbl-wrap{display:block!important}.cards-m{display:none!important}}
 
 /* Tidak hadir, jejak audit, tunggakan, tugas luar */
 .gst.cuti{color:var(--muted)}
-.stat.cuti{box-shadow:inset 4px 0 0 var(--muted)}
-.stat.cuti .k i{background:var(--muted)}
+.stat.cuti{--sc:var(--muted)}
+.pr.cuti .avatar{background:var(--rule-2);color:var(--ink)}
 .stat .help.lw,.hint.lw{color:var(--warn);font-weight:600}
 .stat .alt .text-btn svg{width:15px;height:15px}
 .cuti-l{list-style:none;margin:14px 0 0;padding:10px 0 0;border-top:1px solid var(--rule);display:grid;gap:6px}
@@ -206,33 +313,10 @@ button.pr:hover{background:var(--paper-2)}
 .absen li .muted{font-size:13px}
 .simpan{margin-top:14px}
 
-/* ---------- Aksen petrol (ikut QR & Short URL ppdk.ch) ---------- */
-:root:not([data-theme="dark"]){--sel-bg:var(--petrol-deep);--sel-fg:var(--on-dark)}
+/* ---------- Aksen petrol halaman Pautan & QR (kad status & jadual ikut reka bentuk visual baharu) ---------- */
 :root{--amber-on-dark:#F2C27A;--stage-lines:repeating-linear-gradient(90deg,transparent 0 47px,rgba(255,255,255,.045) 47px 48px)}
 .eyebrow{color:var(--petrol);font-weight:600;margin-bottom:8px}
 .page-h h1{position:relative}
-/* Pentas petrol: kad status utama */
-.stat{background:var(--petrol-deep) var(--stage-lines);color:var(--on-dark);border-color:var(--petrol-deep);box-shadow:inset 4px 0 0 var(--on-dark-2)}
-.stat.luar{box-shadow:inset 4px 0 0 var(--mint)}
-.stat.lewat{box-shadow:inset 4px 0 0 var(--amber-on-dark)}
-.stat.pulang,.stat.cuti{box-shadow:inset 4px 0 0 var(--on-dark-2)}
-.stat .k,.stat.luar .k{color:var(--mint)}
-.stat .k i,.stat.luar .k i{background:var(--mint)}
-.stat.lewat .k{color:var(--amber-on-dark)}.stat.lewat .k i{background:var(--amber-on-dark)}
-.stat.pulang .k,.stat.cuti .k{color:var(--on-dark-2)}.stat.pulang .k i,.stat.cuti .k i{background:var(--on-dark-2)}
-.stat .s,.stat .help,.stat .times div span,.stat .times div small,.stat .dest svg{color:var(--on-dark-2)}
-.stat .help b{color:var(--on-dark)}
-.stat .help.lw,.stat.lewat .times .j small{color:var(--amber-on-dark)}
-.stat .times{border-top-color:var(--petrol-line)}
-.stat .btn-ink{background:var(--mint);color:#0A2B2F}
-.stat .btn-ink:hover{background:#A6E9DE}
-.stat .btn-line{border-color:rgba(242,240,234,.4);color:var(--on-dark)}
-.stat .btn-line:hover{border-color:var(--on-dark);background:rgba(255,255,255,.06)}
-.stat .text-btn{color:var(--mint)}
-.stat .cuti-l{border-top-color:var(--petrol-line)}
-.stat .cuti-l li{color:var(--on-dark)}
-.stat .cuti-l li svg{color:var(--on-dark-2)}
-.stat :focus-visible{outline-color:var(--mint)}
 /* Pentas petrol: hasil QR */
 .qp .q-out.card{background:var(--petrol-deep) var(--stage-lines);color:var(--on-dark);border-color:var(--petrol-deep)}
 .qp .q-out .k{color:var(--mint);font:600 11px var(--mono);letter-spacing:.08em;text-transform:uppercase}
@@ -243,8 +327,3 @@ button.pr:hover{background:var(--paper-2)}
 .q-out .btn-line{border-color:rgba(242,240,234,.4);color:var(--on-dark)}
 .q-out .text-btn{color:var(--mint)}
 .q-out :focus-visible{outline-color:var(--mint)}
-/* Pengepala jadual & kumpulan */
-.tbl th{background:var(--petrol-deep);color:var(--on-dark);border-bottom-color:var(--petrol-deep);font:600 11px var(--mono);letter-spacing:.06em;text-transform:uppercase}
-.grp-t{border-left:3px solid var(--petrol);padding-left:10px}
-.counts b{color:var(--petrol)}
-.counts button[aria-pressed="true"] b{color:var(--mint)}

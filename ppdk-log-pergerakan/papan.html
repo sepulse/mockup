@@ -14,9 +14,10 @@
 <div id="content" class="wrap">
   <div class="page-h"><div><div class="eyebrow mono">Log Pergerakan · Papan</div><h1>Papan Pergerakan</h1><div class="sub" id="sub"></div></div></div>
 
+  <div id="rnote"></div>
   <div class="counts" id="counts" role="group" aria-label="Tapis status"></div>
   <div class="qbar">
-    <label class="search"><span class="sr">Cari pegawai</span><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="q" type="search" placeholder="Cari nama"></label>
+    <label class="search"><span class="sr">Cari pegawai atau destinasi</span><svg class="i" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg><input id="q" type="search" placeholder="Cari nama atau destinasi"></label>
     <select id="sek" aria-label="Sektor"></select>
   </div>
   <div id="list"></div>
@@ -36,6 +37,7 @@
   $('sek').innerHTML = '<option value="">Semua sektor</option>' + G.SEKTOR.map(function (s) { return '<option value="' + s.k + '">' + G.esc(s.n) + '</option>'; }).join('');
 
   function render() {
+    $('rnote').innerHTML = G.roleNote('papan');
     $('sub').innerHTML = G.fmtDate(G.TODAY) + ' · dikemas kini <b style="font-family:var(--mono)">' + G.now() + '</b>';
     var q = $('q').value.trim().toLowerCase();
     var all = G.STAF.filter(function (s) { return !st.sek || s.sek === st.sek; }).map(function (s) { return { s: s, st: G.status(s.id) }; });
